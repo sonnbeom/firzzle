@@ -17,10 +17,32 @@ repositories {
 	mavenCentral()
 }
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+
+	repositories {
+		mavenCentral()
+	}
+
+	configurations {
+		compileOnly {
+			extendsFrom annotationProcessor
+		}
+	}
+
+	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter'
+		compileOnly 'org.projectlombok:lombok'
+		annotationProcessor 'org.projectlombok:lombok'
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	}
+
+	tasks.withType(JavaCompile).configureEach {
+		options.annotationProcessorPath = configurations.annotationProcessor
+	}
 }
 
 tasks.named('test') {
