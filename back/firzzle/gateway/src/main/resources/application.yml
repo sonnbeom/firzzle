@@ -21,22 +21,33 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
-        - id: auth-route
+        - id: auth-service-v1
           uri: lb://auth-server
           predicates:
-            - Path=/api/auth/**
+            - Path=/api/v1/auth/**
           filters:
-            - RewritePath=/api/auth/(?<segment>/.*)?, /${segment}
+            - RewritePath=/api/v1/auth/(?<segment>.*), /v1/${segment}
 
-        - id: learning-route
+        - id: auth-service-v2
+          uri: lb://auth-server
+          predicates:
+            - Path=/api/v2/auth/**
+          filters:
+            - RewritePath=/api/v2/auth/(?<segment>.*), /v2/${segment}
+
+        - id: learning-service-v1
           uri: lb://learning-server
           predicates:
-            - Path=/api/learning/**
+            - Path=/api/v1/learning/**
           filters:
-            - RewritePath=/api/*/learning/(?<segment>/.*)?, /${segment}
+            - RewritePath=/api/v1/learning/(?<segment>.*), /v1/${segment}
 
-
-
+        - id: learning-service-v2
+          uri: lb://learning-server
+          predicates:
+            - Path=/api/v2/learning/**
+          filters:
+            - RewritePath=/api/v2/learning/(?<segment>.*), /v2/${segment}
 
 eureka:
   client:
@@ -44,4 +55,4 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka
-#      defaultZone: http://eureka-server:8761/eureka/
+      #      defaultZone: http://eureka-server:8761/eureka/
