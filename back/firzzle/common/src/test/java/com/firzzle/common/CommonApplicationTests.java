@@ -1,10 +1,10 @@
-package com.firzzle.commnon;
+package com.firzzle.common;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class CommnonApplicationTests {
+class CommonApplicationTests {
 
     @Test
     void contextLoads() {
