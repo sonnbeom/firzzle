@@ -6,10 +6,12 @@ import './global.css';
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
-      <body>
+      <body className='scrollbar-none'>
         <QueryProvider>
-          <Header />
-          {children}
+          <div className='flex min-h-screen w-full flex-col overflow-y-auto'>
+            <Header />
+            {children}
+          </div>
         </QueryProvider>
       </body>
     </html>
