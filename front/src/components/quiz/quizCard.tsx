@@ -23,13 +23,12 @@ const QuizCard = ({ selected, number }: QuizCardProps) => {
       </p>
 
       {/* 버튼들 */}
-      <div className='mb-4 flex flex-row gap-2'>
+      <div className='mb-4 flex flex-row gap-5'>
         {/* O 버튼*/}
         <div className='w-full'>
           <Button
-            size='lg'
             variant={selected === 'O' ? 'default' : 'outline'}
-            className={`relative flex w-full items-center justify-center py-6 text-lg font-semibold sm:text-xl ${
+            className={`relative flex w-full items-center justify-center py-4 text-lg font-semibold sm:text-xl ${
               selected === 'O'
                 ? 'bg-blue-400 text-white hover:bg-blue-400'
                 : 'border-blue-400 text-blue-400 hover:bg-blue-50 hover:text-blue-400'
@@ -43,9 +42,8 @@ const QuizCard = ({ selected, number }: QuizCardProps) => {
         {/* X 버튼*/}
         <div className='w-full'>
           <Button
-            size='lg'
             variant={selected === 'X' ? 'default' : 'outline'}
-            className={`relative flex w-full items-center justify-center py-6 text-lg font-semibold sm:text-xl ${
+            className={`relative flex w-full items-center justify-center py-4 text-lg font-semibold sm:text-xl ${
               selected === 'X'
                 ? 'bg-red-500 text-white hover:bg-red-500'
                 : 'border-red-500 text-red-500 hover:bg-red-50 hover:text-red-500'
