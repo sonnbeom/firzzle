@@ -15,6 +15,8 @@ const buttonVariants = cva(
         secondary: 'bg-blue-300 text-white',
         ghost: 'bg-gray-50 text-gray-700',
         text: 'bg-white text-gray-950 hover:bg-gray-50',
+        tabactive: 'text-blue-400 font-semibold text-xl',
+        tabinactive: 'text-gray-700 text-xl hover:bg-gray-50',
       },
       size: {
         default: 'px-[26px] py-[6px] has-[>svg]:px-3',
