@@ -25,6 +25,8 @@ dependencies {
 
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.4'
 	implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
+
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 tasks.named('test') {
