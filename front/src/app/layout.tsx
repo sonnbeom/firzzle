@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
-import { QueryProvider } from 'layouts/QueryProvider';
+import { QueryProvider } from 'providers/QueryProvider';
+import './global.css';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
