@@ -1,0 +1,33 @@
+<svg width="0" height="0" fill="none" style="visibility: hidden; position: absolute;" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <symbol id='arrow-left' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="m14.5 15.47-1.06 1.062L8.898 12l4.542-4.531 1.06 1.062L11.021 12l3.479 3.47ZM12 2.25c-5.376 0-9.75 4.374-9.75 9.75s4.374 9.75 9.75 9.75 9.75-4.374 9.75-9.75S17.376 2.25 12 2.25Z" clip-rule="evenodd"/>
+        </symbol>
+        <symbol id='arrow-right' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="M10.56 16.532 9.5 15.47 12.979 12 9.5 8.531l1.06-1.062L15.102 12l-4.542 4.532ZM12 2.25c-5.376 0-9.75 4.374-9.75 9.75s4.374 9.75 9.75 9.75 9.75-4.374 9.75-9.75S17.376 2.25 12 2.25Z" clip-rule="evenodd"/>
+        </symbol>
+        <symbol id='content' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="M6.88 15.84h10.24v-1.5H6.88v1.5Zm5.33-9.89L9.95 3.17h-7.7v17.66h19.5V5.95h-9.54Z" clip-rule="evenodd"/>
+        </symbol>
+        <symbol id='menu' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M21 5.25H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Zm0 5H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Zm0 5H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Zm0 5H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Z"/>
+        </symbol>
+        <symbol id='newchat' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" d="m19.51 5.85-5.94-3.43c-.97-.56-2.17-.56-3.15 0L4.49 5.85a3.15 3.15 0 0 0-1.57 2.73v6.84c0 1.12.6 2.16 1.57 2.73l5.94 3.43c.97.56 2.17.56 3.15 0l5.94-3.43a3.15 3.15 0 0 0 1.57-2.73V8.58a3.192 3.192 0 0 0-1.58-2.73Zm-5.26 7.55-1.04.6-1.04.6c-1.33.77-2.42.14-2.42-1.4v-2.4c0-1.54 1.09-2.17 2.42-1.4l1.04.6 1.04.6c1.33.77 1.33 2.03 0 2.8Z"/>
+        </symbol>
+        <symbol id='search' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 5h6m-6 3h3" opacity=".4"/>
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 11.5c0 5.25-4.25 9.5-9.5 9.5S2 16.75 2 11.5 6.25 2 11.5 2"/>
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m22 22-2-2" opacity=".4"/>
+        </symbol>
+        <symbol id='snapbook' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="M2.05 10.95h8v-8h-8v8Zm19.9-6.828L14.222 2.05l-2.07 7.728 7.727 2.07 2.07-7.727ZM2.05 21.95h8v-8h-8v8Zm11 0h8v-8h-8v8Z" clip-rule="evenodd"/>
+        </symbol>
+        <symbol id='upload' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M16.19 2H7.81C4.17 2 2 4.17 2 7.81v8.37C2 19.83 4.17 22 7.81 22h8.37c3.64 0 5.81-2.17 5.81-5.81V7.81C22 4.17 19.83 2 16.19 2Zm-.13 12c-.15.15-.34.22-.53.22s-.38-.08-.53-.22l-3-3-3 3c-.29.29-.77.29-1.06 0a.754.754 0 0 1 0-1.06l3.53-3.53c.29-.29.77-.29 1.06 0l3.53 3.53c.29.29.29.76 0 1.06Z"/>
+        </symbol>
+        <symbol id='write' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M21 22H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75ZM19.02 3.48c-1.94-1.94-3.84-1.99-5.83 0l-1.21 1.21c-.1.1-.14.26-.1.4a8.129 8.129 0 0 0 5.53 5.53.4.4 0 0 0 .41-.1l1.2-1.21c.99-.98 1.47-1.93 1.47-2.89.01-.99-.47-1.95-1.47-2.94Zm-3.41 8.05c-.29-.14-.57-.28-.84-.44a8.8 8.8 0 0 1-.64-.42c-.17-.11-.37-.27-.56-.43a1.22 1.22 0 0 1-.17-.15c-.33-.28-.7-.64-1.03-1.04-.03-.02-.08-.09-.15-.18-.1-.12-.27-.32-.42-.55a5.49 5.49 0 0 1-.39-.59c-.16-.27-.3-.54-.44-.82-.184-.394-.7-.51-1.007-.203L4.339 12.33c-.13.13-.25.38-.28.55l-.54 3.83c-.1.68.09 1.32.51 1.75.36.35.86.54 1.4.54.12 0 .24-.01.36-.03l3.84-.54c.18-.03.43-.15.55-.28l5.633-5.633c.3-.3.188-.818-.203-.987Z"/>
+        </symbol>
+    </defs>
+</svg>
