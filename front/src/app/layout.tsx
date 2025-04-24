@@ -8,7 +8,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang='en'>
       <body className='scrollbar-none'>
         <QueryProvider>
-          <div className='flex min-h-screen w-full flex-col overflow-y-auto'>
+          <div className='flex h-screen w-full flex-col'>
             <Header />
             {children}
           </div>
