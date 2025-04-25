@@ -10,6 +10,9 @@ const TabHeader = () => {
 
   const isActive = (path: string) => {
     const lastPath = pathname.split('/').pop();
+    if (typeof path === 'number') {
+      return true;
+    }
     return lastPath === path;
   };
 
