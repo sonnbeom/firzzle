@@ -1,13 +1,13 @@
 import React from 'react';
 
 // components
-import QuizCard from '@/components/quiz/quizCard';
-// import QuizAnswer from '@/components/quiz/quizAnswer';
+import QuizCard from '@/components/quiz/QuizCard';
+// import QuizAnswer from '@/components/quiz/QuizAnswer';
 import { Button } from '@/components/ui/button';
 
 const QuizPage = () => {
   return (
-    <div className='relative min-h-screen w-full'>
+    <div className='relative min-h-screen w-full px-2 sm:px-4'>
       {/* QuizCard */}
 
       <div className='space-y-6 pb-28'>
