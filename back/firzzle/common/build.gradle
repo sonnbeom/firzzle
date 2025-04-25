@@ -19,10 +19,32 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // DataBox 관련 의존성
+    implementation 'org.jsoup:jsoup:1.17.2'  // HTML 파싱 (deleteHtmlTag 메서드용)
+    implementation 'com.nimbusds:oauth2-oidc-sdk:11.10.1'  // MapUtils 클래스 사용
+
+    // 로그백 의존성 (Spring Boot Starter에 이미 포함되어 있음)
+    implementation 'ch.qos.logback:logback-classic'
+
+    implementation 'org.apache.commons:commons-lang3:3.0'
+    implementation 'commons-io:commons-io:2.11.0'
+
+    // 테스트 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// 다른 모듈에서 common 모듈의 클래스 접근을 위한 설정
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
 }

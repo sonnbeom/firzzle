@@ -1,0 +1,612 @@
+.
+  |-.gitattributes
+  |-.gitignore
+  |-.gradle
+  |  |-8.13
+  |  |  |-checksums
+  |  |  |  |-checksums.lock
+  |  |  |  |-md5-checksums.bin
+  |  |  |  |-sha1-checksums.bin
+  |  |  |-executionHistory
+  |  |  |  |-executionHistory.bin
+  |  |  |  |-executionHistory.lock
+  |  |  |-expanded
+  |  |  |-fileChanges
+  |  |  |  |-last-build.bin
+  |  |  |-fileHashes
+  |  |  |  |-fileHashes.bin
+  |  |  |  |-fileHashes.lock
+  |  |  |  |-resourceHashesCache.bin
+  |  |  |-gc.properties
+  |  |  |-vcsMetadata
+  |  |-buildOutputCleanup
+  |  |  |-buildOutputCleanup.lock
+  |  |  |-cache.properties
+  |  |  |-outputFiles.bin
+  |  |-file-system.probe
+  |  |-vcs-1
+  |  |  |-gc.properties
+  |-.idea
+  |  |-.gitignore
+  |  |-compiler.xml
+  |  |-gradle.xml
+  |  |-misc.xml
+  |  |-modules
+  |  |-modules.xml
+  |  |  |-auth
+  |  |  |  |-firzzle.auth.main.iml
+  |  |  |-common
+  |  |  |  |-firzzle.common.main.iml
+  |  |  |-discovery
+  |  |  |  |-firzzle.discovery.main.iml
+  |  |  |-gateway
+  |  |  |  |-firzzle.gateway.main.iml
+  |  |-vcs.xml
+  |  |-workspace.xml
+  |-admin
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-.gradle
+  |  |  |-8.13
+  |  |  |  |-checksums
+  |  |  |  |  |-checksums.lock
+  |  |  |  |-executionHistory
+  |  |  |  |  |-executionHistory.lock
+  |  |  |  |-expanded
+  |  |  |  |-fileChanges
+  |  |  |  |  |-last-build.bin
+  |  |  |  |-fileHashes
+  |  |  |  |  |-fileHashes.bin
+  |  |  |  |  |-fileHashes.lock
+  |  |  |  |-gc.properties
+  |  |  |  |-vcsMetadata
+  |  |  |-buildOutputCleanup
+  |  |  |  |-buildOutputCleanup.lock
+  |  |  |  |-cache.properties
+  |  |  |-vcs-1
+  |  |  |  |-gc.properties
+  |  |-build.gradle
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-HELP.md
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-admin
+  |  |  |  |  |  |  |  |-AdminApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.properties
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-admin
+  |  |  |  |  |  |  |  |-AdminApplicationTests.java
+  |-auth
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-build
+  |  |-build.gradle
+  |  |  |-classes
+  |  |  |  |-java
+  |  |  |  |  |-main
+  |  |  |  |  |  |-com
+  |  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |  |-auth
+  |  |  |  |  |  |  |  |  |-AuthApplication.class
+  |  |  |  |  |  |  |  |  |-test
+  |  |  |  |  |  |  |  |  |  |-AuthTestControllerV1.class
+  |  |  |  |  |  |  |  |  |  |-AuthTestControllerV2.class
+  |  |  |-generated
+  |  |  |  |-sources
+  |  |  |  |  |-annotationProcessor
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |  |  |-headers
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |-resources
+  |  |  |  |-main
+  |  |  |  |  |-application.yml
+  |  |  |-tmp
+  |  |  |  |-compileJava
+  |  |  |  |  |-compileTransaction
+  |  |  |  |  |  |-backup-dir
+  |  |  |  |  |  |-stash-dir
+  |  |  |  |  |  |  |-AuthTestControllerV1.class.uniqueId0
+  |  |  |  |  |-previous-compilation-data.bin
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-auth
+  |  |  |  |  |  |  |  |-AuthApplication.java
+  |  |  |  |  |  |  |  |-test
+  |  |  |  |  |  |  |  |  |-AuthTestControllerV1.java
+  |  |  |  |  |  |  |  |  |-AuthTestControllerV2.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.yml
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-auth
+  |  |  |  |  |  |  |  |-AuthApplicationTests.java
+  |-banner.txt
+  |-build
+  |-build.gradle
+  |  |-reports
+  |  |  |-problems
+  |  |  |  |-problems-report.html
+  |-common
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-build
+  |  |-build.gradle
+  |  |  |-classes
+  |  |  |  |-java
+  |  |  |  |  |-main
+  |  |  |  |  |  |-com
+  |  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |  |-common
+  |  |  |  |  |  |  |  |  |-CommonApplication.class
+  |  |  |  |  |  |  |  |  |-config
+  |  |  |  |  |  |  |  |  |  |-I18nConfig.class
+  |  |  |  |  |  |  |  |  |  |-SwaggerConfig.class
+  |  |  |  |  |  |  |  |  |-exception
+  |  |  |  |  |  |  |  |  |  |-BusinessException.class
+  |  |  |  |  |  |  |  |  |  |-ErrorCode.class
+  |  |  |  |  |  |  |  |  |  |-ErrorResponse.class
+  |  |  |  |  |  |  |  |  |  |-GlobalExceptionHandler.class
+  |  |  |  |  |  |  |  |  |-request
+  |  |  |  |  |  |  |  |  |  |-PageRequestDTO.class
+  |  |  |  |  |  |  |  |  |-response
+  |  |  |  |  |  |  |  |  |  |-CustomApiResponse$CustomApiResponseBuilder.class
+  |  |  |  |  |  |  |  |  |  |-CustomApiResponse$Error.class
+  |  |  |  |  |  |  |  |  |  |-CustomApiResponse$Status.class
+  |  |  |  |  |  |  |  |  |  |-CustomApiResponse.class
+  |  |  |  |  |  |  |  |  |  |-MessageResponse$MessageResponseBuilder.class
+  |  |  |  |  |  |  |  |  |  |-MessageResponse.class
+  |  |  |  |  |  |  |  |  |  |-PageResponseDTO$PageResponseDTOBuilder.class
+  |  |  |  |  |  |  |  |  |  |-PageResponseDTO.class
+  |  |  |-generated
+  |  |  |  |-sources
+  |  |  |  |  |-annotationProcessor
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |  |  |-headers
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |-libs
+  |  |  |  |-common-0.0.1-SNAPSHOT-plain.jar
+  |  |  |-resources
+  |  |  |  |-main
+  |  |  |  |  |-application.yml
+  |  |  |  |  |-application-common.yml
+  |  |  |  |  |-application-dev.yml
+  |  |  |  |  |-application-local.yml
+  |  |  |  |  |-application-prod.yml
+  |  |  |-tmp
+  |  |  |  |-compileJava
+  |  |  |  |  |-compileTransaction
+  |  |  |  |  |  |-backup-dir
+  |  |  |  |  |  |-stash-dir
+  |  |  |  |  |-previous-compilation-data.bin
+  |  |  |  |-jar
+  |  |  |  |  |-MANIFEST.MF
+  |  |-common.iml
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-HELP.md
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-common
+  |  |  |  |  |  |  |  |-CommonApplication.java
+  |  |  |  |  |  |  |  |-config
+  |  |  |  |  |  |  |  |  |-I18nConfig.java
+  |  |  |  |  |  |  |  |  |-SwaggerConfig.java
+  |  |  |  |  |  |  |  |-exception
+  |  |  |  |  |  |  |  |  |-BusinessException.java
+  |  |  |  |  |  |  |  |  |-ErrorCode.java
+  |  |  |  |  |  |  |  |  |-ErrorResponse.java
+  |  |  |  |  |  |  |  |  |-GlobalExceptionHandler.java
+  |  |  |  |  |  |  |  |-request
+  |  |  |  |  |  |  |  |  |-PageRequestDTO.java
+  |  |  |  |  |  |  |  |-response
+  |  |  |  |  |  |  |  |  |-CustomApiResponse.java
+  |  |  |  |  |  |  |  |  |-MessageResponse.java
+  |  |  |  |  |  |  |  |  |-PageResponseDTO.java
+  |  |  |  |  |  |  |  |-utils
+  |  |  |  |-resources
+  |  |  |  |  |-application.yml
+  |  |  |  |  |-application-common.yml
+  |  |  |  |  |-application-dev.yml
+  |  |  |  |  |-application-local.yml
+  |  |  |  |  |-application-prod.yml
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-common
+  |  |  |  |  |  |  |  |-CommonApplicationTests.java
+  |-directory_structure.txt
+  |-discovery
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-build
+  |  |-build.gradle
+  |  |  |-classes
+  |  |  |  |-java
+  |  |  |  |  |-main
+  |  |  |-generated
+  |  |  |  |-sources
+  |  |  |  |  |-annotationProcessor
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |  |  |-headers
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |-resources
+  |  |  |  |-main
+  |  |  |  |  |-application.yml
+  |  |  |-tmp
+  |  |  |  |-compileJava
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-discovery
+  |  |  |  |  |  |  |  |-DiscoveryApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.yml
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-discovery
+  |  |  |  |  |  |  |  |-DiscoveryApplicationTests.java
+  |-gateway
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-build
+  |  |-build.gradle
+  |  |  |-classes
+  |  |  |  |-java
+  |  |  |  |  |-main
+  |  |  |  |  |  |-com
+  |  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |  |-gateway
+  |  |  |  |  |  |  |  |  |-GatewayApplication.class
+  |  |  |-generated
+  |  |  |  |-sources
+  |  |  |  |  |-annotationProcessor
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |  |  |-headers
+  |  |  |  |  |  |-java
+  |  |  |  |  |  |  |-main
+  |  |  |-resources
+  |  |  |  |-main
+  |  |  |  |  |-application.yml
+  |  |  |-tmp
+  |  |  |  |-compileJava
+  |  |  |  |  |-previous-compilation-data.bin
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-gateway
+  |  |  |  |  |  |  |  |-GatewayApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.yml
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-gateway
+  |  |  |  |  |  |  |  |-GatewayApplicationTests.java
+  |-gradle
+  |  |-wrapper
+  |  |  |-gradle-wrapper.jar
+  |  |  |-gradle-wrapper.properties
+  |-gradlew
+  |-gradlew.bat
+  |-jwt
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-.gradle
+  |  |  |-8.13
+  |  |  |  |-checksums
+  |  |  |  |  |-checksums.lock
+  |  |  |  |-executionHistory
+  |  |  |  |  |-executionHistory.lock
+  |  |  |  |-expanded
+  |  |  |  |-fileChanges
+  |  |  |  |  |-last-build.bin
+  |  |  |  |-fileHashes
+  |  |  |  |  |-fileHashes.bin
+  |  |  |  |  |-fileHashes.lock
+  |  |  |  |-gc.properties
+  |  |  |  |-vcsMetadata
+  |  |  |-buildOutputCleanup
+  |  |  |  |-buildOutputCleanup.lock
+  |  |  |  |-cache.properties
+  |  |  |-vcs-1
+  |  |  |  |-gc.properties
+  |  |-build.gradle
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-HELP.md
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-jwt
+  |  |  |  |  |  |  |  |-JwtApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.properties
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-jwt
+  |  |  |  |  |  |  |  |-JwtApplicationTests.java
+  |-learning
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-build.gradle
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-learning
+  |  |  |  |  |  |  |  |-LearningApplication.java
+  |  |  |  |  |  |  |  |-test
+  |  |  |  |  |  |  |  |  |-LearningTestControllerV1.java
+  |  |  |  |  |  |  |  |  |-LearningTestControllerV2.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.yml
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-learning
+  |  |  |  |  |  |  |  |-LearningApplicationTests.java
+  |-llm
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-.gradle
+  |  |  |-8.13
+  |  |  |  |-checksums
+  |  |  |  |  |-checksums.lock
+  |  |  |  |-executionHistory
+  |  |  |  |  |-executionHistory.lock
+  |  |  |  |-expanded
+  |  |  |  |-fileChanges
+  |  |  |  |  |-last-build.bin
+  |  |  |  |-fileHashes
+  |  |  |  |  |-fileHashes.bin
+  |  |  |  |  |-fileHashes.lock
+  |  |  |  |-gc.properties
+  |  |  |  |-vcsMetadata
+  |  |  |-buildOutputCleanup
+  |  |  |  |-buildOutputCleanup.lock
+  |  |  |  |-cache.properties
+  |  |  |-vcs-1
+  |  |  |  |-gc.properties
+  |  |-build.gradle
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-HELP.md
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-llm
+  |  |  |  |  |  |  |  |-LlmApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.properties
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-llm
+  |  |  |  |  |  |  |  |-LlmApplicationTests.java
+  |-main
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-.gradle
+  |  |  |-8.13
+  |  |  |  |-checksums
+  |  |  |  |  |-checksums.lock
+  |  |  |  |-executionHistory
+  |  |  |  |  |-executionHistory.lock
+  |  |  |  |-expanded
+  |  |  |  |-fileChanges
+  |  |  |  |  |-last-build.bin
+  |  |  |  |-fileHashes
+  |  |  |  |  |-fileHashes.bin
+  |  |  |  |  |-fileHashes.lock
+  |  |  |  |-gc.properties
+  |  |  |  |-vcsMetadata
+  |  |  |-buildOutputCleanup
+  |  |  |  |-buildOutputCleanup.lock
+  |  |  |  |-cache.properties
+  |  |  |-vcs-1
+  |  |  |  |-gc.properties
+  |  |-build.gradle
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-HELP.md
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-main
+  |  |  |  |  |  |  |  |-MainApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.properties
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-main
+  |  |  |  |  |  |  |  |-MainApplicationTests.java
+  |-settings.gradle
+  |-stt
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-.gradle
+  |  |  |-8.13
+  |  |  |  |-checksums
+  |  |  |  |  |-checksums.lock
+  |  |  |  |-executionHistory
+  |  |  |  |  |-executionHistory.lock
+  |  |  |  |-expanded
+  |  |  |  |-fileChanges
+  |  |  |  |  |-last-build.bin
+  |  |  |  |-fileHashes
+  |  |  |  |  |-fileHashes.bin
+  |  |  |  |  |-fileHashes.lock
+  |  |  |  |-gc.properties
+  |  |  |  |-vcsMetadata
+  |  |  |-buildOutputCleanup
+  |  |  |  |-buildOutputCleanup.lock
+  |  |  |  |-cache.properties
+  |  |  |-vcs-1
+  |  |  |  |-gc.properties
+  |  |-build.gradle
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-HELP.md
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-stt
+  |  |  |  |  |  |  |  |-SttApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.properties
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-stt
+  |  |  |  |  |  |  |  |-SttApplicationTests.java
+  |-user-domain
+  |  |-.gitattributes
+  |  |-.gitignore
+  |  |-.gradle
+  |  |  |-8.13
+  |  |  |  |-checksums
+  |  |  |  |  |-checksums.lock
+  |  |  |  |-executionHistory
+  |  |  |  |  |-executionHistory.lock
+  |  |  |  |-expanded
+  |  |  |  |-fileChanges
+  |  |  |  |  |-last-build.bin
+  |  |  |  |-fileHashes
+  |  |  |  |  |-fileHashes.bin
+  |  |  |  |  |-fileHashes.lock
+  |  |  |  |-gc.properties
+  |  |  |  |-vcsMetadata
+  |  |  |-buildOutputCleanup
+  |  |  |  |-buildOutputCleanup.lock
+  |  |  |  |-cache.properties
+  |  |  |-vcs-1
+  |  |  |  |-gc.properties
+  |  |-build.gradle
+  |  |-gradle
+  |  |  |-wrapper
+  |  |  |  |-gradle-wrapper.jar
+  |  |  |  |-gradle-wrapper.properties
+  |  |-gradlew
+  |  |-gradlew.bat
+  |  |-HELP.md
+  |  |-settings.gradle
+  |  |-src
+  |  |  |-main
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-userdomain
+  |  |  |  |  |  |  |  |-UserDomainApplication.java
+  |  |  |  |-resources
+  |  |  |  |  |-application.properties
+  |  |  |-test
+  |  |  |  |-java
+  |  |  |  |  |-com
+  |  |  |  |  |  |-firzzle
+  |  |  |  |  |  |  |-userdomain
+  |  |  |  |  |  |  |  |-UserDomainApplicationTests.java
