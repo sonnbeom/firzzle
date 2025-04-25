@@ -1,4 +1,4 @@
-FROM openjdk:17
+FROM openjdk:17-jdk-slim
 
 RUN ln -snf /usr/share/zoneinfo/Asia/Seoul /etc/localtime && echo Asia/Seoul > /etc/timezone
 
