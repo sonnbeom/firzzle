@@ -10,7 +10,9 @@ interface IconsProps extends SVGProps<SVGSVGElement> {
     | 'search'
     | 'snapbook'
     | 'upload'
-    | 'write';
+    | 'write'
+    | 'arrow-down'
+    | 'arrow-up';
   size?: number;
   color?: string;
 }
