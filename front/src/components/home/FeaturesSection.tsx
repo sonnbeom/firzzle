@@ -6,7 +6,7 @@ import {
   PlayCircle,
   BarChart3,
 } from 'lucide-react';
-import { FeatureCard } from '@/components/ui/FeatureCard';
+import { FeatureCard } from '@/components/home/FeatureCard';
 
 const FeaturesSection = () => {
   const features = [
