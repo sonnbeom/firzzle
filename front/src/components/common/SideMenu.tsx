@@ -20,7 +20,7 @@ const SideMenu = () => {
   ];
 
   return (
-    <div className='flex w-full flex-col items-start gap-3'>
+    <div className='flex w-full flex-col items-start gap-1'>
       <TabButton
         title='사진첩'
         isActive={true}
