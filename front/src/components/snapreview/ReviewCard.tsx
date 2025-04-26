@@ -16,15 +16,17 @@ const reviews = Array(4)
 const ReviewCard = () => {
   return (
     <div className='space-y-4 p-4 md:p-6'>
-      <div className='text-sm text-gray-600'>사진을 클릭하면 영상 해당 부분이 재생됩니다.</div>
+      <div className='text-sm text-gray-600'>
+        사진을 클릭하면 영상 해당 부분이 재생됩니다.
+      </div>
       <div className='flex gap-4'>
         {/* 이미지 그룹 */}
-        <div className='bg-blue-50 p-4 w-1/3'>
+        <div className='w-1/3 bg-blue-50 p-4'>
           <div className='space-y-8'>
             {reviews.map((item, idx) => (
               <div
                 key={`image-${idx}`}
-                className='relative bg-white w-full h-[180px]'
+                className='relative h-[180px] w-full bg-white'
               >
                 <div className='absolute inset-0 p-2'>
                   <Image
@@ -32,7 +34,7 @@ const ReviewCard = () => {
                     alt='강의 썸네일'
                     fill
                     sizes='33vw'
-                    className='object-cover rounded'
+                    className='rounded object-cover'
                   />
                 </div>
               </div>
@@ -41,21 +43,23 @@ const ReviewCard = () => {
         </div>
 
         {/* 텍스트 그룹 */}
-        <div className='flex-1 min-w-0'>
+        <div className='min-w-0 flex-1'>
           <div className='space-y-8'>
             {reviews.map((item, idx) => (
               <div key={`text-${idx}`} className='relative h-[180px] p-4'>
-                <div className='absolute left-0 right-0 bottom-[-16px] border-b border-blue-50'></div>
+                <div className='absolute right-0 bottom-[-16px] left-0 border-b border-blue-50'></div>
                 {item.flag ? (
                   <textarea
-                    className='h-[140px] w-full resize-none text-sm sm:text-md text-gray-700 focus:outline-none mt-2'
+                    className='sm:text-md mt-2 h-[140px] w-full resize-none text-sm text-gray-700 focus:outline-none'
                     defaultValue={item.description}
                   />
                 ) : (
-                  <p className='text-sm sm:text-md text-gray-700 break-words mt-2'>{item.description}</p>
+                  <p className='sm:text-md mt-2 text-sm break-words text-gray-700'>
+                    {item.description}
+                  </p>
                 )}
                 <button
-                  className='absolute bottom-4 right-2 p-2'
+                  className='absolute right-2 bottom-0 p-2'
                   aria-label={item.flag ? 'Upload' : 'Edit'}
                 >
                   <Icons
