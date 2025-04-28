@@ -5,21 +5,22 @@ import { Button } from '@/components/ui/button';
 
 interface QuizCardProps {
   selected: 'O' | 'X' | null;
-  number: number;
+  quizNo: number;
+  question: string;
+  onSelect: (value: 'O' | 'X') => void;
 }
 
-const QuizCard = ({ selected, number }: QuizCardProps) => {
+const QuizCard = ({ selected, quizNo, question, onSelect }: QuizCardProps) => {
   return (
     <div className='rounded-[14px] border border-gray-50 bg-white px-8 py-2 shadow-sm transition-all sm:py-4'>
       {/* 문제 번호 */}
       <div className='text-center text-[24px] font-bold text-gray-900 sm:text-[30px]'>
-        {String(number).padStart(2, '0')}
+        {String(quizNo).padStart(2, '0')}
       </div>
 
       {/* 문제 */}
       <p className='text-md mb-6 text-left font-medium text-gray-900 sm:mb-10 sm:text-lg'>
-        머신러닝에서 모델이 학습 데이터에 과도하게 맞춰져 새로운 데이터에 대한
-        예측 성능이 떨어지는 현상을 과소적합(underfitting)이라고 한다.
+        {question}
       </p>
 
       {/* 버튼들 */}
@@ -27,12 +28,13 @@ const QuizCard = ({ selected, number }: QuizCardProps) => {
         {/* O 버튼*/}
         <div className='w-full'>
           <Button
-            variant={selected === 'O' ? 'default' : 'outline'}
+            variant='outline'
             className={`relative flex w-full items-center justify-center py-4 text-lg font-semibold sm:text-xl ${
               selected === 'O'
                 ? 'bg-blue-400 text-white hover:bg-blue-400'
                 : 'border-blue-400 text-blue-400 hover:bg-blue-50 hover:text-blue-400'
             }`}
+            onClick={() => onSelect('O')}
           >
             <span className='absolute left-4 text-2xl sm:text-[36px]'>O</span>
             <span className='text-center'>맞아요</span>
@@ -42,12 +44,13 @@ const QuizCard = ({ selected, number }: QuizCardProps) => {
         {/* X 버튼*/}
         <div className='w-full'>
           <Button
-            variant={selected === 'X' ? 'default' : 'outline'}
-            className={`relative flex w-full items-center justify-center py-4 text-lg font-semibold sm:text-xl ${
+            variant='outline'
+            className={`relative flex w-full items-center justify-center border py-4 text-lg font-semibold sm:text-xl ${
               selected === 'X'
-                ? 'bg-red-500 text-white hover:bg-red-500'
+                ? 'border-red-500 bg-red-500 text-white hover:bg-red-500'
                 : 'border-red-500 text-red-500 hover:bg-red-50 hover:text-red-500'
             }`}
+            onClick={() => onSelect('X')}
           >
             <span className='absolute left-4 text-2xl sm:text-[36px]'>X</span>
             <span className='text-center'>아니에요</span>
