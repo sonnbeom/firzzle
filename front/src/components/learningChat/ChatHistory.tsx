@@ -1,9 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Mode } from 'types/learningChat';
 import ChatBubble from './ChatBubble';
 
-const ChatHistory = () => {
+interface ChatHistoryProps {
+  currentMode: Mode;
+}
+
+const ChatHistory = ({ currentMode }: ChatHistoryProps) => {
   const chatHistroyRef = useRef<HTMLDivElement>(null);
 
   const dummyData = [
@@ -44,9 +49,12 @@ const ChatHistory = () => {
       ref={chatHistroyRef}
       className='flex h-full w-full flex-col gap-4 overflow-y-auto'
     >
-      {dummyData.map((item) => (
-        <ChatBubble key={item.id} userId={item.userId} text={item.text} />
-      ))}
+      {dummyData.map(
+        (item) =>
+          item.mode === currentMode && (
+            <ChatBubble key={item.id} userId={item.userId} text={item.text} />
+          ),
+      )}
     </div>
   );
 };
