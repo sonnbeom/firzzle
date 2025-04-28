@@ -29,7 +29,7 @@ const ChatHistory = () => {
   ];
 
   return (
-    <div className='flex w-full flex-1 flex-col gap-4'>
+    <div className='flex h-full w-full flex-col gap-4'>
       {dummyData.map((item) => (
         <ChatBubble key={item.id} userId={item.userId} text={item.text} />
       ))}
