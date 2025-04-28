@@ -1,4 +1,4 @@
-import ChatBubble from './ChatBubble';
+import ChatHistory from './ChatHistory';
 import ChatTextAreaField from './ChatTextAreaField';
 import ModeSelector from './ModeSelector';
 import NewChatButton from './NewChatButton';
@@ -12,11 +12,7 @@ const LearningChatContent = () => {
         <NewChatButton />
       </div>
       {/* 채팅 내역 필드 */}
-      <div className='w-full flex-1'>
-        <div className='flex justify-end'>
-          <ChatBubble text='안녕하세요' />
-        </div>
-      </div>
+      <ChatHistory />
       {/* 채팅 입력 필드 */}
       <ChatTextAreaField />
     </div>
