@@ -1,11 +1,4 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-
-// components
-import QuizAnswer from '@/components/quiz/quizAnswer';
-import QuizCard from '@/components/quiz/quizCard';
-import { Button } from '@/components/ui/button';
+import QuizContainer from '@/components/quiz/QuizContainer';
 
 interface QuizContent {
   quizNo: number;
@@ -14,15 +7,8 @@ interface QuizContent {
   description: string;
 }
 
-const QuizPage = () => {
-  const [selected, setSelected] = useState<Array<'O' | 'X' | null>>([
-    null,
-    null,
-    null,
-  ]);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [showAnswer, setShowAnswer] = useState(false);
-
+export default function QuizPage() {
+  // api 연결 이후 서버의 데이터 페칭 로직으로 대체
   const quizContents: QuizContent[] = [
     {
       quizNo: 1,
@@ -49,56 +35,5 @@ const QuizPage = () => {
     },
   ];
 
-  useEffect(() => {
-    if (selected.every((value) => value !== null)) {
-      setIsCompleted(true);
-    }
-  }, [selected]);
-
-  const handleSelect = (index: number, value: 'O' | 'X') => {
-    const newSelected = [...selected];
-    newSelected[index] = value;
-    setSelected(newSelected);
-  };
-
-  return (
-    <div className='relative min-h-screen w-full px-2 sm:px-10'>
-      {/* QuizCard */}
-
-      <div className='space-y-6 pb-28'>
-        {quizContents.map((quiz, index) =>
-          showAnswer ? (
-            <QuizAnswer
-              key={quiz.quizNo}
-              quizNo={quiz.quizNo}
-              question={quiz.question}
-              answer={selected[index] === 'O' ? quiz.answer : !quiz.answer}
-              description={quiz.description}
-            />
-          ) : (
-            <QuizCard
-              key={quiz.quizNo}
-              quizNo={quiz.quizNo}
-              question={quiz.question}
-              selected={selected[index]}
-              onSelect={(value) => handleSelect(index, value)}
-            />
-          ),
-        )}
-      </div>
-      {!showAnswer && (
-        <div className='bottom-0 left-0 w-full bg-white py-4'>
-          <Button
-            variant={isCompleted ? 'default' : 'disabled'}
-            className={`w-full py-6 text-lg font-semibold ${isCompleted ? 'bg-blue-400 hover:bg-blue-400' : ''} text-white`}
-            onClick={() => isCompleted && setShowAnswer(true)}
-          >
-            도전하기
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default QuizPage;
+  return <QuizContainer quizContents={quizContents} />;
+}

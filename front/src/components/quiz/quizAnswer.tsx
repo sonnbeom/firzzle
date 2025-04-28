@@ -30,8 +30,10 @@ const QuizAnswer = ({
 
       {/* 정답 여부 + 해설 */}
       <div className='rounded-xl border border-gray-50 bg-white px-6 py-4 shadow-sm transition-all sm:py-[16px]'>
-        <div className={`mb-2 text-center text-lg font-bold sm:mb-[18px] sm:text-xl ${answer ? 'text-blue-400' : 'text-red-500'}`}>
-          {answer ? '정답이에요!' : '틀렸어요!'}
+        <div
+          className={`mb-2 text-center text-lg font-bold sm:mb-[18px] sm:text-xl ${answer ? 'text-blue-400' : 'text-red-500'}`}
+        >
+          {answer ? '정답이에요!' : '오답이에요!'}
         </div>
         <p className='text-md leading-relaxed text-gray-900 sm:text-lg'>
           {description}
