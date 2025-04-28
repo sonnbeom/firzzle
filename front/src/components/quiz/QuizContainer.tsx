@@ -2,8 +2,8 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import QuizAnswer from './quizAnswer';
-import QuizCard from './quizCard';
+import QuizAnswer from './QuizAnswer';
+import QuizCard from './QuizCard';
 
 interface QuizContent {
   quizNo: number;
