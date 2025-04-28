@@ -7,7 +7,12 @@ interface QuizAnswerProps {
   description: string;
 }
 
-const QuizAnswer = ({ quizNo, question, answer, description }: QuizAnswerProps) => {
+const QuizAnswer = ({
+  quizNo,
+  question,
+  answer,
+  description,
+}: QuizAnswerProps) => {
   return (
     <div className='space-y-6 py-4 sm:py-6'>
       {/* 문제 번호 + 질문 */}
@@ -25,7 +30,7 @@ const QuizAnswer = ({ quizNo, question, answer, description }: QuizAnswerProps) 
 
       {/* 정답 여부 + 해설 */}
       <div className='rounded-xl border border-gray-50 bg-white px-6 py-4 shadow-sm transition-all sm:py-[16px]'>
-        <div className='mb-2 text-center text-lg font-bold text-blue-400 sm:mb-[18px] sm:text-xl'>
+        <div className={`mb-2 text-center text-lg font-bold sm:mb-[18px] sm:text-xl ${answer ? 'text-blue-400' : 'text-red-500'}`}>
           {answer ? '정답이에요!' : '틀렸어요!'}
         </div>
         <p className='text-md leading-relaxed text-gray-900 sm:text-lg'>
