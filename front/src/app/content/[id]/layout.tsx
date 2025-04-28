@@ -14,7 +14,7 @@ const DetailLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
       <div className='flex flex-7 flex-col items-center gap-4 overflow-hidden'>
         <DetailHeader />
-        <div className='h-full w-full overflow-hidden'>{children}</div>
+        <div className='h-full w-full overflow-y-auto'>{children}</div>
       </div>
     </div>
   );
