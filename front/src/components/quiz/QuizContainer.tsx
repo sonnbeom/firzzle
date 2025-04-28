@@ -6,7 +6,7 @@ import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
 
 interface QuizContent {
-  quizNo: number;
+  quizNo: string;
   question: string;
   answer: boolean;
   description: string;
@@ -37,7 +37,7 @@ const QuizContainer = ({ quizContents }: QuizContainerProps) => {
   );
 
   return (
-    <div className='relative min-h-screen w-full px-2 sm:px-10'>
+    <div className='relative min-h-screen w-full px-2 md:px-10'>
       <div className='space-y-6 pb-28'>
         {/* 퀴즈 컴포넌트 */}
         {quizContents.map((quiz, index) =>
