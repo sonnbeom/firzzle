@@ -1,16 +1,16 @@
 import { ReactNode } from 'react';
 import Header from '@/components/common/Header';
-import { QueryProvider } from 'layouts/QueryProvider';
+import { QueryProvider } from 'provider/QueryProvider';
 import './global.css';
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
-      <body className='scrollbar-none'>
+      <body>
         <QueryProvider>
-          <div className='flex h-screen w-full flex-col'>
+          <div className='relative flex h-[100dvh] w-full flex-col'>
             <Header />
-            {children}
+            <div className='flex-1 overflow-hidden'>{children}</div>
           </div>
         </QueryProvider>
       </body>
