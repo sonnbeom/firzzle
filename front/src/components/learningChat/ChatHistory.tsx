@@ -1,6 +1,11 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import ChatBubble from './ChatBubble';
 
 const ChatHistory = () => {
+  const chatHistroyRef = useRef<HTMLDivElement>(null);
+
   const dummyData = [
     {
       id: '1',
@@ -28,8 +33,17 @@ const ChatHistory = () => {
     },
   ];
 
+  useEffect(() => {
+    if (chatHistroyRef.current) {
+      chatHistroyRef.current.scrollTop = chatHistroyRef.current.scrollHeight;
+    }
+  }, [dummyData]);
+
   return (
-    <div className='flex h-full w-full flex-col gap-4'>
+    <div
+      ref={chatHistroyRef}
+      className='flex h-full w-full flex-col gap-4 overflow-y-auto'
+    >
       {dummyData.map((item) => (
         <ChatBubble key={item.id} userId={item.userId} text={item.text} />
       ))}

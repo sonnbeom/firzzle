@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, KeyboardEvent, useState } from 'react';
 import { MAX_LEARNING_CHAT_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
 
@@ -28,11 +28,19 @@ const ChatTextAreaField = () => {
     setValue('');
   };
 
+  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   return (
     <div className='flex items-end gap-1 rounded bg-white py-2 pr-4 pl-2'>
       <textarea
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         placeholder='어떤 정보가 궁금하신가요?'
         className='w-full flex-1 resize-none rounded-md border border-none border-gray-300 px-2 text-gray-900 focus:outline-none'
         style={{ height: value ? 'auto' : '24px' }}
