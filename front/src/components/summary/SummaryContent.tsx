@@ -1,29 +1,42 @@
+'use client';
+
+import { SummaryData, SummaryLevel } from 'types/summary';
 import SelectableText from './SelectableText';
 import SummaryCard from './SummaryCard';
 
-const SummaryContent = () => {
-  const dummyData = [
-    {
-      id: '1',
-      title: '01 머신러닝 개요',
-      description: '머신러닝의 개요를 알아보자',
-      time: '01:35',
-    },
-  ];
+interface SummaryContentProps {
+  level: SummaryLevel;
+  easyData: SummaryData[];
+  highData: SummaryData[];
+}
 
+const SummaryContent = ({ level, easyData, highData }: SummaryContentProps) => {
   return (
     <div className='flex w-full flex-col gap-7 px-2'>
       <SelectableText>
-        {dummyData &&
-          dummyData.length > 0 &&
-          dummyData.map((item) => (
+        {/* Easy 데이터 */}
+        <div className={level === 'Easy' ? 'block' : 'hidden'}>
+          {easyData.map((item) => (
             <SummaryCard
-              key={item.id}
+              key={`easy-${item.id}`}
               title={item.title}
               description={item.description}
               time={item.time}
             />
           ))}
+        </div>
+
+        {/* High 데이터 */}
+        <div className={level === 'High' ? 'block' : 'hidden'}>
+          {highData.map((item) => (
+            <SummaryCard
+              key={`high-${item.id}`}
+              title={item.title}
+              description={item.description}
+              time={item.time}
+            />
+          ))}
+        </div>
       </SelectableText>
     </div>
   );

@@ -1,23 +1,30 @@
-'use client';
-
-import LevelButton from '@/components/summary/LevelButton';
-import SummaryContent from '@/components/summary/SummaryContent';
+import SummaryContainer from '@/components/summary/SummaryContainer';
 
 const Summary = () => {
+  const dummyData = {
+    easyData: [
+      {
+        id: '1',
+        title: '01 머신러닝 개요',
+        description: '머신러닝의 개요를 알아보자',
+        time: '01:35',
+      },
+    ],
+    highData: [
+      {
+        id: '1',
+        title: '01 머신러닝 개요',
+        description: '머신러닝의 개요를 핵심만 알아보자',
+        time: '01:35',
+      },
+    ],
+  };
+
   return (
-    <div className='flex w-full flex-col gap-7'>
-      {/* 요약 수준 탭 */}
-      <div className='flex w-full gap-2'>
-        <LevelButton
-          isActive={true}
-          title='쉽게 설명해주세요'
-          onClick={() => {}}
-        />
-        <LevelButton title='배경 지식이 있어요' onClick={() => {}} />
-      </div>
-      {/* 요약 내용 */}
-      <SummaryContent />
-    </div>
+    <SummaryContainer
+      easyData={dummyData.easyData}
+      highData={dummyData.highData}
+    />
   );
 };
 
