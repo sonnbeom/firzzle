@@ -4,6 +4,16 @@ server:
 spring:
   application:
     name: stt-server
+  kafka:
+    bootstrap-servers: 43.202.107.226:9092
+    consumer:
+      group-id: stt-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 eureka:
   client:
