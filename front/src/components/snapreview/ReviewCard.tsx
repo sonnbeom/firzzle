@@ -6,10 +6,12 @@ import React, { useState } from 'react';
 // components
 import Icons from '../common/Icons';
 
+// interface
 interface Review {
   id: string;
   description: string | null;
   thumbnail: string;
+  timestamp: number;
 }
 
 interface ReviewCardProps {
@@ -26,7 +28,7 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
 
   const handleSaveClick = async (id: string, description: string) => {
     try {
-      // 나중에 여기에 API 호출 추가
+      // 나중에 여기에 내용 수정 API 호출 추가
       setLocalReviews((prev) =>
         prev.map((review) =>
           review.id === id ? { ...review, description } : review,
@@ -34,17 +36,28 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
       );
       setEditingId(null);
     } catch (error) {
-      console.error('Failed to update review:', error);
+      console.error('수정 실패:', error);
     }
   };
 
   const handleDescriptionChange = (id: string, newDescription: string) => {
+    const truncatedDescription = newDescription.slice(0, 250);
     setLocalReviews((prev) =>
       prev.map((review) =>
-        review.id === id ? { ...review, description: newDescription } : review,
+        review.id === id
+          ? { ...review, description: truncatedDescription }
+          : review,
       ),
     );
   };
+
+  // 임시 alert, api 연결 이후 youtube api로 영상 재생
+  const handleImageClick = (timestamp?: number) => {
+    if (timestamp !== undefined) {
+      alert(`영상 시간: ${timestamp}초`);
+    }
+  };
+
   return (
     <div className='space-y-4 p-4 md:p-6'>
       <div className='text-sm text-gray-600'>
@@ -65,7 +78,8 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
                     alt='강의 썸네일'
                     fill
                     sizes='33vw'
-                    className='rounded object-cover'
+                    className='object-cover'
+                    onClick={() => handleImageClick(item.timestamp)}
                   />
                 </div>
               </div>
@@ -78,12 +92,10 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
           <div className='space-y-8'>
             {localReviews.map((item) => (
               <div key={`text-${item.id}`} className='relative h-[180px] p-4'>
-                {editingId === item.id && (
-                  <div className='absolute right-0 bottom-[-16px] left-0 border-b border-blue-50'></div>
-                )}
+                <div className='absolute right-0 bottom-[-16px] left-0 border-b border-blue-50'></div>
                 {editingId === item.id ? (
                   <textarea
-                    className='md:text-md mt-2 h-[140px] w-full resize-none border border-gray-300 text-sm text-gray-700 focus:border-blue-400'
+                    className='md:text-md mt-2 h-[140px] w-full resize-none border border-blue-50 text-sm text-gray-700 focus:border-blue-400'
                     value={item.description || ''}
                     placeholder='내용을 작성해 주세요.'
                     onChange={(e) =>
@@ -101,21 +113,26 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
                     </p>
                   </div>
                 )}
-                <button
-                  className='absolute right-2 bottom-2 p-4'
-                  onClick={() =>
-                    editingId === item.id
-                      ? handleSaveClick(item.id, item.description || '')
-                      : handleEditClick(item.id)
-                  }
-                  aria-label={editingId === item.id ? 'Save' : 'Edit'}
-                >
-                  <Icons
-                    id={editingId === item.id ? 'upload' : 'write'}
-                    size={24}
-                    color={'text-gray-900'}
-                  />
-                </button>
+                <div className={`justify-end flex items-center ${editingId === item.id ? '-mt-12 -mr-2' : '-mt-2 -mr-4 '}`}>
+                  <span className='text-sm text-gray-500'>
+                    ({item.description?.length || 0}/250)
+                  </span>
+                  <button
+                    className='mr-2 p-2'
+                    onClick={() =>
+                      editingId === item.id
+                        ? handleSaveClick(item.id, item.description || '')
+                        : handleEditClick(item.id)
+                    }
+                    aria-label={editingId === item.id ? 'Save' : 'Edit'}
+                  >
+                    <Icons
+                      id={editingId === item.id ? 'upload' : 'write'}
+                      size={24}
+                      color={'text-gray-900'}
+                    />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

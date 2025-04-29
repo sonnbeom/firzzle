@@ -10,6 +10,7 @@ const reviews = Array(4)
     id: String(index),
     description: null,
     thumbnail: '/assets/images/Firzzle.png',
+    timestamp: 100,
   }));
 
 function SnapReviewPage() {
