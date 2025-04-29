@@ -5,6 +5,7 @@ interface QuizAnswerProps {
   question: string;
   answer: boolean;
   description: string;
+  timestamp?: number;
 }
 
 const QuizAnswer = ({
@@ -12,6 +13,7 @@ const QuizAnswer = ({
   question,
   answer,
   description,
+  timestamp,
 }: QuizAnswerProps) => {
   return (
     <div className='space-y-6 py-4 md:py-6'>
@@ -39,7 +41,10 @@ const QuizAnswer = ({
           {description}
         </p>
         <div className='flex justify-end'>
-          <button className='text-md flex items-center gap-1 font-semibold text-blue-400 transition-colors hover:text-blue-500'>
+          <button
+            onClick={() => timestamp && alert(`타임스탬프: ${timestamp}`)}
+            className='text-md flex items-center gap-1 font-semibold text-blue-400 transition-colors hover:text-blue-500'
+          >
             복습하러 가기
             <span className='text-lg'>&gt;</span>
           </button>

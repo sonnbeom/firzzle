@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +20,6 @@ const BasicDialog = ({
   description,
   children,
 }: BasicDialogProps) => {
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -29,9 +27,7 @@ const BasicDialog = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <div className='mt-4 flex justify-end space-x-4'>
-          {children}
-        </div>
+        <div className='mt-4 flex justify-end space-x-4'>{children}</div>
       </DialogContent>
     </Dialog>
   );
