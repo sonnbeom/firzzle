@@ -18,12 +18,15 @@ repositories {
 }
 
 dependencies {
+	implementation project(':common')
+	implementation project(':user-domain')  // user-domain 모듈 사용
+
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.4'
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -34,4 +37,13 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+// 독립 실행 가능한 라이브러리 모듈
+bootJar {
+	enabled = true  // 부트 JAR 활성화
+}
+
+jar {
+	enabled = true   // 일반 JAR 활성화
 }
