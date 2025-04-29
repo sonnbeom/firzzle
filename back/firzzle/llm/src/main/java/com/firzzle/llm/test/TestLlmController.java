@@ -1,20 +1,19 @@
-package com.firzzle.main.test;
+package com.firzzle.llm.test;
 
-import com.firzzle.common.logging.dto.LogEvent;
-import com.firzzle.common.logging.service.LoggingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Log4j2
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1")
-public class MainTestController {
-
+public class TestLlmController {
     @GetMapping("/test")
     public String test(){
-        LoggingService.log(LogEvent.userAction("test_user_id","test_action"));
-        return "테스트 호출 - 메인 v1 서버";
+        return "테스트 호출 - llm v1 서버";
     }
+
 }
