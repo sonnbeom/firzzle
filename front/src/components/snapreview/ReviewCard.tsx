@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 
 // components
+import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
 
 // interface
@@ -41,7 +42,10 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
   };
 
   const handleDescriptionChange = (id: string, newDescription: string) => {
-    const truncatedDescription = newDescription.slice(0, 250);
+    const truncatedDescription = newDescription.slice(
+      0,
+      MAX_SNAP_REVIEW_LENGTH,
+    );
     setLocalReviews((prev) =>
       prev.map((review) =>
         review.id === id
@@ -113,9 +117,11 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
                     </p>
                   </div>
                 )}
-                <div className={`justify-end flex items-center ${editingId === item.id ? '-mt-12 -mr-2' : '-mt-2 -mr-4 '}`}>
+                <div
+                  className={`flex items-center justify-end ${editingId === item.id ? '-mt-12 -mr-2' : '-mt-2 -mr-4'}`}
+                >
                   <span className='text-sm text-gray-500'>
-                    ({item.description?.length || 0}/250)
+                    ({item.description?.length || 0}/{MAX_SNAP_REVIEW_LENGTH})
                   </span>
                   <button
                     className='mr-2 p-2'
