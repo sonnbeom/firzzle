@@ -13,15 +13,14 @@ interface PendingNavigationInfo {
 
 interface UsePreventNavigationReturn {
   showDialog: boolean;
-  handleDialogChange: (open: boolean) => void;
+  setShowDialog: (show: boolean) => void;
   pendingNavigation: PendingNavigationInfo | null;
+  setPendingNavigation: React.Dispatch<React.SetStateAction<PendingNavigationInfo | null>>;
+  blockUnload: React.MutableRefObject<boolean>;
+  router: ReturnType<typeof useRouter>;
+  originalPushRef: React.MutableRefObject<((href: string, options?: object) => Promise<boolean>) | null>;
 }
 
-/**
- * 페이지 이탈 방지를 위한 커스텀 훅
- * @param shouldPrevent 이탈 방지 여부를 결정하는 조건
- * @returns 다이얼로그 관련 상태와 핸들러
- */
 export const usePreventNavigation = (
   shouldPrevent: boolean,
 ): UsePreventNavigationReturn => {
@@ -33,15 +32,6 @@ export const usePreventNavigation = (
   >(null);
   const [pendingNavigation, setPendingNavigation] =
     useState<PendingNavigationInfo | null>(null);
-
-  // 뒤로가기 감지 및 처리 함수
-  const handlePopState = useCallback(() => {
-    if (shouldPrevent) {
-      window.history.pushState(null, '', window.location.href);
-      setPendingNavigation({ type: 'back' });
-      setShowDialog(true);
-    }
-  }, [shouldPrevent]);
 
   useEffect(() => {
     if (!shouldPrevent) {
@@ -57,13 +47,25 @@ export const usePreventNavigation = (
 
     // 라우터 오버라이드
     router.push = (href: string, options?: object) => {
-      setPendingNavigation({
-        type: 'push',
-        url: href,
-        options,
-      });
-      setShowDialog(true);
-      return Promise.resolve(false);
+      if (blockUnload.current) {
+        setPendingNavigation({
+          type: 'push',
+          url: href,
+          options,
+        });
+        setShowDialog(true);
+        return Promise.resolve(false);
+      }
+      return originalPushRef.current?.(href, options) || Promise.resolve(false);
+    };
+
+    // 뒤로가기 감지 및 처리 함수
+    const handlePopState = () => {
+      if (shouldPrevent) {
+        window.history.pushState(null, '', window.location.href);
+        setPendingNavigation({ type: 'back' });
+        setShowDialog(true);
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -74,7 +76,7 @@ export const usePreventNavigation = (
       if (originalPushRef.current) router.push = originalPushRef.current;
       blockUnload.current = false;
     };
-  }, [shouldPrevent, router, handlePopState]);
+  }, [shouldPrevent, router]);
 
   // 경고 다이얼로그 상태 관리
   const handleDialogChange = (open: boolean) => {
@@ -84,9 +86,43 @@ export const usePreventNavigation = (
     }
   };
 
+  const executeNavigation = useCallback(() => {
+    if (!pendingNavigation) return;
+
+    try {
+      // 페이지 이탈 방지 해제
+      blockUnload.current = false;
+
+      if (pendingNavigation.type === 'push' && pendingNavigation.url) {
+        // 다른 페이지로 이동
+        if (originalPushRef.current) {
+          const pushFn = originalPushRef.current;
+          pushFn(pendingNavigation.url, pendingNavigation.options);
+        }
+      } else if (pendingNavigation.type === 'back') {
+        // popstate 이벤트 리스너 제거 후 뒤로가기 실행
+        const popstateListener = (e: PopStateEvent) => {
+          e.preventDefault();
+          window.removeEventListener('popstate', popstateListener);
+          window.history.back();
+        };
+        
+        window.addEventListener('popstate', popstateListener, { once: true });
+        window.history.back();
+      }
+    } catch (error) {
+      console.error('Navigation failed:', error);
+      blockUnload.current = true; // 에러 발생 시 다시 방지 활성화
+    }
+  }, [pendingNavigation]);
+
   return {
     showDialog,
-    handleDialogChange,
+    setShowDialog,
     pendingNavigation,
+    setPendingNavigation,
+    blockUnload,
+    router,
+    originalPushRef,
   };
 };

@@ -49,33 +49,43 @@ const QuizContainer = ({ quizContents }: QuizContainerProps) => {
 
   // 페이지 이탈 방지 로직
   const hasAnswered = selected.some((value) => value !== null);
-  const { showDialog, handleDialogChange, pendingNavigation } =
-    usePreventNavigation(hasAnswered && !showAnswer);
+  const { 
+    showDialog, 
+    setShowDialog, 
+    pendingNavigation, 
+    setPendingNavigation,
+    blockUnload,
+    router,
+    originalPushRef
+  } = usePreventNavigation(hasAnswered && !showAnswer);
 
   return (
     <div className='relative min-h-screen w-full px-2 md:px-10'>
       {/* Dialog */}
       <BasicDialog
         isOpen={showDialog}
-        onOpenChange={handleDialogChange}
+        onOpenChange={setShowDialog}
         title='주의'
         description='현재 화면을 벗어나면 문제는 초기화됩니다. 계속하시겠습니까?'
       >
-        <Button variant='ghost' onClick={() => handleDialogChange(false)}>
+        <Button variant='ghost' onClick={() => setShowDialog(false)}>
           취소
         </Button>
         <Button
           onClick={() => {
-            handleDialogChange(false);
-            if (pendingNavigation?.type === 'push' && pendingNavigation.url) {
+            setShowDialog(false);
+            setPendingNavigation((prev) => {
               setTimeout(() => {
-                window.location.href = pendingNavigation.url!;
+                blockUnload.current = false;
+                if (prev?.type === 'push' && prev.url && originalPushRef.current) {
+                  const pushFn = originalPushRef.current;
+                  pushFn(prev.url, prev.options);
+                } else if (prev?.type === 'back') {
+                  window.history.back();
+                }
               }, 10);
-            } else if (pendingNavigation?.type === 'back') {
-              setTimeout(() => {
-                window.history.back();
-              }, 10);
-            }
+              return null;
+            });
           }}
         >
           확인
