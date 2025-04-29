@@ -2,8 +2,6 @@
 
 import Image from 'next/image';
 import React, { useState } from 'react';
-
-// components
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
 
