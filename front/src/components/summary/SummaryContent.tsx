@@ -1,3 +1,4 @@
+import SelectableText from './SelectableText';
 import SummaryCard from './SummaryCard';
 
 const SummaryContent = () => {
@@ -12,16 +13,18 @@ const SummaryContent = () => {
 
   return (
     <div className='flex w-full flex-col gap-7 px-2'>
-      {dummyData &&
-        dummyData.length > 0 &&
-        dummyData.map((item) => (
-          <SummaryCard
-            key={item.id}
-            title={item.title}
-            description={item.description}
-            time={item.time}
-          />
-        ))}
+      <SelectableText>
+        {dummyData &&
+          dummyData.length > 0 &&
+          dummyData.map((item) => (
+            <SummaryCard
+              key={item.id}
+              title={item.title}
+              description={item.description}
+              time={item.time}
+            />
+          ))}
+      </SelectableText>
     </div>
   );
 };
