@@ -8,7 +8,7 @@ const ChatTextAreaField = () => {
   const [value, setValue] = useState('');
 
   const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    // 글자수 제한 (1000자)
+    // 글자수 제한
     if (e.target.value.trim().length > MAX_LEARNING_CHAT_LENGTH) {
       alert('허용 가능한 글자수를 초과하였습니다.');
       return;
