@@ -26,6 +26,13 @@ dependencies {
     implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.springframework.kafka:spring-kafka'
+
 }
 
 tasks.named('test') {
