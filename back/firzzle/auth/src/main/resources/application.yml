@@ -1,3 +1,10 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: auth-server
+
 eureka:
   client:
     register-with-eureka: true
@@ -20,10 +27,6 @@ jasypt:
 # 공통 설정 (Common) 프로필
 # -----------------------------------------
 ---
-
-# 애플리케이션 기본 설정
-application:
-  name: auth-server
 
 # 트랜잭션 설정
 transaction:
@@ -139,7 +142,7 @@ decorator:
 
 # 내부 인터페이스 설정 (주석 처리)
 # internal-interface:
-#   baseUrl: http://localhost:8080
+#   baseUrl: http://localhost:8080f
 
 # Actuator 설정
 management:
@@ -297,8 +300,8 @@ oauth2:
       login-redirect: http://local.firzzle.site/api/v1/oauth2/login/kakao
 
 # 서버 포트 설정
-server:
-  port: 8989
+#server:
+#  port: 8989
 
 # 내부 인터페이스 설정 (주석 처리)
 # internal-interface:
