@@ -13,7 +13,7 @@ const reviews = Array(4)
     timestamp: 100,
   }));
 
-function SnapReviewPage() {
+const SnapReviewPage = () => {
   return (
     <div className='relative min-h-screen w-full px-2 md:px-4'>
       <div className='space-y-10 pb-20'>
@@ -21,6 +21,6 @@ function SnapReviewPage() {
       </div>
     </div>
   );
-}
+};
 
 export default SnapReviewPage;
