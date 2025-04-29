@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { ErrorResponse } from 'types/common/ErrorResponse';
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: process.env.NEXT_BASE_URL,
   withCredentials: true,
   headers: {
