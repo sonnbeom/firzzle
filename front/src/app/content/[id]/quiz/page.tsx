@@ -11,7 +11,6 @@ interface QuizContent {
   timestamp: number;
 }
 
-function QuizPage() {
   // api 연결 이후 서버의 데이터 페칭 로직으로 대체
   const quizContents: QuizContent[] = [
     {
@@ -42,6 +41,7 @@ function QuizPage() {
     },
   ];
 
+function QuizPage() {
   return <QuizContainer quizContents={quizContents} />;
 }
 
