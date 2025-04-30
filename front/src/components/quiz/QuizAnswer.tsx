@@ -43,10 +43,7 @@ const QuizAnswer = ({
         </p>
         <div className='flex justify-end'>
           <TimeStamp time={timestamp} type='review'>
-            <button className='text-md flex items-center gap-1 font-semibold text-blue-400 transition-colors hover:text-blue-500'>
-              복습하러 가기
-              <span className='text-lg'>&gt;</span>
-            </button>
+            <></>{' '}
           </TimeStamp>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { ReactNode } from 'react';
 import { usePlayerStore } from 'stores/playerStore';
 import { formatTimeStamp } from 'utils/formatTimeStamp';
@@ -64,12 +65,20 @@ const TimeStamp = (props: TimeStampProps) => {
 
     case 'image':
       return (
-        <div className='relative h-full w-full'>
+        <div className='relative h-[180px] w-full bg-white'>
           <button
-            className='group relative block h-full w-full cursor-pointer'
+            className='absolute inset-0 p-2'
             onClick={handleClick}
           >
-            {props.children}
+            <div className='relative h-full w-full'>
+              <Image
+                src={props.imageUrl}
+                alt='스납 이미지'
+                fill
+                sizes='33vw'
+                className='object-contain'
+              />
+            </div>
           </button>
         </div>
       );

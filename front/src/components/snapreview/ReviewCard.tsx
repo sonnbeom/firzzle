@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useState } from 'react';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
@@ -82,17 +81,7 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
                   width={600}
                   height={400}
                 >
-                  <div className='relative h-full w-full p-2'>
-                    <div className='relative h-full w-full'>
-                      <Image
-                        src={item.thumbnail}
-                        alt={`리뷰사진 ${item.id}`}
-                        fill
-                        sizes='33vw'
-                        className='object-contain'
-                      />
-                    </div>
-                  </div>
+                  <></>
                 </TimeStamp>
               </div>
             ))}
