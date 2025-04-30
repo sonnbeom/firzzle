@@ -39,8 +39,8 @@ const quizContents: QuizContent[] = [
   },
 ];
 
-const QuizPage = () => {
+async function QuizPage() {
   return <QuizContainer quizContents={quizContents} />;
-};
+}
 
 export default QuizPage;
