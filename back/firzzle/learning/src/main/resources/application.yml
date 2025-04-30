@@ -1,29 +1,85 @@
 server:
-  port: 8084
+  port: 8084  # learning 서비스 포트
 
 spring:
   application:
     name: learning-server
+
+  # 데이터베이스 설정
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: jdbc:mysql://localhost:3306/firzzle_ai_playground?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: asd
+    maximum-pool-size: 10  # 이 설정 추가: 최소 1 이상
+
+  # 파일 업로드 설정
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # Kafka 설정
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     consumer:
       group-id: learning-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+# Eureka 설정
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka
-#      defaultZone: http://eureka-server:8761/eureka/
+      # 프로덕션 환경에서는 아래 설정 사용
+      # defaultZone: http://eureka-server:8761/eureka/
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.learning.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
 
+# 로깅 설정
+logging:
+  level:
+    com.firzzle.learning: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.springframework.cloud: INFO
 
+# 애플리케이션 설정
+app:
+  # 파일 저장 경로 설정
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+
+  # Kafka 토픽 설정
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+
+# Swagger/OpenAPI 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  packages-to-scan: com.firzzle.learning.controller

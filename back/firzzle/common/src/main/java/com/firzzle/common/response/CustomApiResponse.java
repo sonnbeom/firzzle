@@ -16,20 +16,20 @@ public class CustomApiResponse<T> {
     
     public static <T> CustomApiResponse<T> success(T data) {
         return CustomApiResponse.<T>builder()
-                .status(Status.SUCCESS)
+                .status(Status.OK)
                 .data(data)
                 .build();
     }
     
     public static <T> CustomApiResponse<T> error(int statusCode, String message) {
         return CustomApiResponse.<T>builder()
-                .status(Status.ERROR)
+                .status(Status.FAIL)
                 .error(new Error(statusCode, message))
                 .build();
     }
 
     public enum Status {
-        SUCCESS, ERROR
+        OK, FAIL;
     }
 
     @Getter

@@ -6,9 +6,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 @Schema(description = "페이지 요청 정보")
 @Getter
@@ -48,52 +45,33 @@ public class PageRequestDTO {
 	}
 
 	/**
-	 * Spring Data JPA의 Pageable 객체로 변환합니다.
-	 * @return 현재 DTO 설정에 맞는 Pageable 객체
+	 * MyBatis에서 사용할 오프셋 값을 계산합니다.
+	 * @return 현재 페이지의 오프셋
 	 */
 	@Schema(hidden = true)
-	public Pageable toPageable() {
-		if (sortBy != null && !sortBy.isEmpty()) {
-			Sort.Direction direction = sortDirection.equals("ASC") ?
-					Sort.Direction.ASC : Sort.Direction.DESC;
-			return PageRequest.of(pageNumber, pageSize, direction, sortBy);
-		}
-		return PageRequest.of(pageNumber, pageSize);
+	public int getOffset() {
+		return pageNumber * pageSize;
 	}
 
 	/**
-	 * 정렬 조건이 포함된 Pageable 객체로 변환합니다.
-	 * @param defaultSortBy 기본 정렬 필드
-	 * @param defaultDirection 기본 정렬 방향
-	 * @return 정렬 조건이 적용된 Pageable 객체
+	 * MyBatis에서 사용할 LIMIT 값을 반환합니다.
+	 * @return 가져올 레코드 수
 	 */
 	@Schema(hidden = true)
-	public Pageable toPageable(String defaultSortBy, Sort.Direction defaultDirection) {
-		if (sortBy != null && !sortBy.isEmpty()) {
-			Sort.Direction direction = sortDirection.equals("ASC") ?
-					Sort.Direction.ASC : Sort.Direction.DESC;
-			return PageRequest.of(pageNumber, pageSize, direction, sortBy);
-		} else if (defaultSortBy != null && !defaultSortBy.isEmpty()) {
-			return PageRequest.of(pageNumber, pageSize, defaultDirection, defaultSortBy);
-		}
-		return PageRequest.of(pageNumber, pageSize);
+	public int getLimit() {
+		return pageSize;
 	}
 
 	/**
-	 * 여러 정렬 조건을 포함한 복잡한 Pageable 객체로 변환합니다.
-	 * @param orders 정렬 조건 목록
-	 * @return 복잡한 정렬 조건이 적용된 Pageable 객체
+	 * SQL ORDER BY 절 문자열을 생성합니다.
+	 * @return ORDER BY 절 문자열
 	 */
 	@Schema(hidden = true)
-	public Pageable toPageable(Sort.Order... orders) {
+	public String getOrderByClause() {
 		if (sortBy != null && !sortBy.isEmpty()) {
-			Sort.Direction direction = sortDirection.equals("ASC") ?
-					Sort.Direction.ASC : Sort.Direction.DESC;
-			return PageRequest.of(pageNumber, pageSize, direction, sortBy);
-		} else if (orders != null && orders.length > 0) {
-			return PageRequest.of(pageNumber, pageSize, Sort.by(orders));
+			return String.format("ORDER BY %s %s", sortBy, sortDirection);
 		}
-		return PageRequest.of(pageNumber, pageSize);
+		return "";
 	}
 
 	/**
@@ -121,28 +99,5 @@ public class PageRequestDTO {
 	@Schema(hidden = true)
 	public PageRequestDTO first() {
 		return new PageRequestDTO(0, pageSize, sortBy, sortDirection);
-	}
-
-	/**
-	 * JPQL에서 사용할 수 있는 오프셋을 계산합니다.
-	 * (Native Query 또는 QueryDSL 등에서 필요할 경우 사용)
-	 * @return 현재 페이지의 오프셋
-	 */
-	@Schema(hidden = true)
-	public int getOffset() {
-		return pageNumber * pageSize;
-	}
-
-	/**
-	 * Native Query에서 사용할 수 있는 ORDER BY 절을 생성합니다.
-	 * (필요한 경우에만 사용)
-	 * @return ORDER BY 절 문자열
-	 */
-	@Schema(hidden = true)
-	public String getOrderBy() {
-		if (sortBy != null && !sortBy.isEmpty()) {
-			return String.format("%s %s", sortBy, sortDirection);
-		}
-		return null;
 	}
 }

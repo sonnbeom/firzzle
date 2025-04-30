@@ -1,4 +1,4 @@
 package com.firzzle.auth.service;
 
-public class AuthServiceV1 {
+public class AuthService {
 }

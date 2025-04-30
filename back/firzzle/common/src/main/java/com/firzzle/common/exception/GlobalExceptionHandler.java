@@ -1,6 +1,7 @@
 package com.firzzle.common.exception;
 
-import com.firzzle.common.response.CustomApiResponse;
+import com.firzzle.common.response.Response;
+import com.firzzle.common.response.Status;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,75 +41,81 @@ public class GlobalExceptionHandler {
 
     // 잘못된 인증 정보
 //    @ExceptionHandler(BadCredentialsException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleBadCredentialsException(BadCredentialsException e) {
+//    protected ResponseEntity<Response<Void>> handleBadCredentialsException(BadCredentialsException e) {
 //        log.error("Bad Credentials Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "아이디 또는 비밀번호가 일치하지 않습니다."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("아이디 또는 비밀번호가 일치하지 않습니다.")
+//                .build()
+//            );
 //    }
 
     // 계정 만료
 //    @ExceptionHandler(AccountExpiredException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleAccountExpiredException(AccountExpiredException e) {
+//    protected ResponseEntity<Response<Void>> handleAccountExpiredException(AccountExpiredException e) {
 //        log.error("Account Expired Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "계정이 만료되었습니다. 관리자에게 문의하세요."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("계정이 만료되었습니다. 관리자에게 문의하세요.")
+//                .build()
+//            );
 //    }
 
     // 계정 잠김
 //    @ExceptionHandler(LockedException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleLockedException(LockedException e) {
+//    protected ResponseEntity<Response<Void>> handleLockedException(LockedException e) {
 //        log.error("Locked Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "계정이 잠겼습니다. 관리자에게 문의하세요."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("계정이 잠겼습니다. 관리자에게 문의하세요.")
+//                .build()
+//            );
 //    }
 
     // 비활성화된 계정
 //    @ExceptionHandler(DisabledException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleDisabledException(DisabledException e) {
+//    protected ResponseEntity<Response<Void>> handleDisabledException(DisabledException e) {
 //        log.error("Disabled Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "비활성화된 계정입니다. 관리자에게 문의하세요."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("비활성화된 계정입니다. 관리자에게 문의하세요.")
+//                .build()
+//            );
 //    }
 
     // 불충분한 인증
 //    @ExceptionHandler(InsufficientAuthenticationException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleInsufficientAuthenticationException(InsufficientAuthenticationException e) {
+//    protected ResponseEntity<Response<Void>> handleInsufficientAuthenticationException(InsufficientAuthenticationException e) {
 //        log.error("Insufficient Authentication Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "추가 인증이 필요합니다."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("추가 인증이 필요합니다.")
+//                .build()
+//            );
 //    }
 
     // 인증 정보 없음
 //    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleAuthenticationCredentialsNotFoundException(
+//    protected ResponseEntity<Response<Void>> handleAuthenticationCredentialsNotFoundException(
 //            AuthenticationCredentialsNotFoundException e) {
 //        log.error("Authentication Credentials Not Found Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "인증 정보를 찾을 수 없습니다. 다시 로그인해주세요."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("인증 정보를 찾을 수 없습니다. 다시 로그인해주세요.")
+//                .build()
+//            );
 //    }
 
     /**
@@ -119,43 +126,46 @@ public class GlobalExceptionHandler {
 
     // JWT 토큰 만료
 //    @ExceptionHandler(ExpiredJwtException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleExpiredJwtException(ExpiredJwtException e) {
+//    protected ResponseEntity<Response<Void>> handleExpiredJwtException(ExpiredJwtException e) {
 //        log.error("Expired JWT Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "인증이 만료되었습니다. 다시 로그인해주세요."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("인증이 만료되었습니다. 다시 로그인해주세요.")
+//                .build()
+//            );
 //    }
 
     // JWT 서명 오류
     @ExceptionHandler(SignatureException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleSignatureException(SignatureException e) {
+    protected ResponseEntity<Response<Void>> handleSignatureException(SignatureException e) {
         log.error("JWT Signature Exception 발생: ", e);
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(CustomApiResponse.error(
-                        HttpStatus.UNAUTHORIZED.value(),
-                        "유효하지 않은 인증입니다. 다시 로그인해주세요."
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("유효하지 않은 인증입니다. 다시 로그인해주세요.")
+                        .build()
+                );
     }
 
     // JWT 형식 오류
 //    @ExceptionHandler(MalformedJwtException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleMalformedJwtException(MalformedJwtException e) {
+//    protected ResponseEntity<Response<Void>> handleMalformedJwtException(MalformedJwtException e) {
 //        log.error("Malformed JWT Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.UNAUTHORIZED)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.UNAUTHORIZED.value(),
-//                "잘못된 형식의 인증입니다. 다시 로그인해주세요."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("잘못된 형식의 인증입니다. 다시 로그인해주세요.")
+//                .build()
+//            );
 //    }
 
     // 헤더 누락 처리
     @ExceptionHandler(MissingRequestHeaderException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
+    protected ResponseEntity<Response<Void>> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
         log.error("Required header is missing: {}", e.getHeaderName(), e);
 
         String text = "유효하지 않은 입력값입니다.";
@@ -163,15 +173,16 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(CustomApiResponse.error(
-                        HttpStatus.BAD_REQUEST.value(),
-                        text
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(text)
+                        .build()
+                );
     }
 
     // 쿠키 누락 처리
     @ExceptionHandler(MissingRequestCookieException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleMissingRequestCookieException(MissingRequestCookieException e) {
+    protected ResponseEntity<Response<Void>> handleMissingRequestCookieException(MissingRequestCookieException e) {
         log.error("Required cookie is missing: {}", e.getCookieName(), e);
 
         String text = "유효하지 않은 입력값입니다.";
@@ -179,10 +190,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(CustomApiResponse.error(
-                        HttpStatus.BAD_REQUEST.value(),
-                        text
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(text)
+                        .build()
+                );
     }
 
     /**
@@ -193,14 +205,15 @@ public class GlobalExceptionHandler {
 
     // 접근 권한 없음
 //    @ExceptionHandler(AccessDeniedException.class)
-//    protected ResponseEntity<CustomApiResponse<Void>> handleAccessDeniedException(AccessDeniedException e) {
+//    protected ResponseEntity<Response<Void>> handleAccessDeniedException(AccessDeniedException e) {
 //        log.error("Access Denied Exception 발생: ", e);
 //        return ResponseEntity
 //            .status(HttpStatus.FORBIDDEN)
-//            .body(CustomApiResponse.error(
-//                HttpStatus.FORBIDDEN.value(),
-//                "해당 리소스에 대한 접근 권한이 없습니다."
-//            ));
+//            .body(Response.<Void>builder()
+//                .status(Status.FAIL)
+//                .message("해당 리소스에 대한 접근 권한이 없습니다.")
+//                .build()
+//            );
 //    }
 
     /**
@@ -211,51 +224,58 @@ public class GlobalExceptionHandler {
 
     // 요청 파라미터 검증 실패
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    protected ResponseEntity<Response<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("MethodArgumentNotValidException", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(CustomApiResponse.error(
-                        HttpStatus.BAD_REQUEST.value(),
-                        e.getBindingResult().getAllErrors().get(0).getDefaultMessage() // 추후 양식에 맞게 수정 예정
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()) // 추후 양식에 맞게 수정 예정
+                        .build()
+                );
     }
 
     // 요청 바인딩 실패
     @ExceptionHandler(BindException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleBindException(BindException e) {
+    protected ResponseEntity<Response<Void>> handleBindException(BindException e) {
         log.error("BindException", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(CustomApiResponse.error(
-                        HttpStatus.BAD_REQUEST.value(),
-                        e.getBindingResult().getAllErrors().get(0).getDefaultMessage() // 추후 양식에 맞게 수정 예정
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(e.getBindingResult().getAllErrors().get(0).getDefaultMessage()) // 추후 양식에 맞게 수정 예정
+                        .build()
+                );
     }
 
     // 제약 조건 위반
     @ExceptionHandler(ConstraintViolationException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException e) {
+    protected ResponseEntity<Response<Void>> handleConstraintViolationException(ConstraintViolationException e) {
         log.error("ConstraintViolationException", e);
 
         ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(CustomApiResponse.error(
-                        errorCode.getStatus().value(),
-                        errorCode.getMessage(messageSource)
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(errorCode.getMessage(messageSource))
+                        .build()
+                );
     }
 
     // 파라미터 타입 불일치
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+    protected ResponseEntity<Response<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.error("MethodArgumentTypeMismatchException", e);
         ErrorCode errorCode = ErrorCode.INVALID_TYPE_VALUE;
 
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(CustomApiResponse.error(errorCode.getStatus().value(), errorCode.getMessage(messageSource)));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(errorCode.getMessage(messageSource))
+                        .build()
+                );
     }
 
     /**
@@ -266,16 +286,17 @@ public class GlobalExceptionHandler {
 
     // 지원하지 않는 HTTP 메소드 요청
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+    protected ResponseEntity<Response<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
         log.error("HttpRequestMethodNotSupportedException", e);
         ErrorCode errorCode = ErrorCode.METHOD_NOT_ALLOWED;
 
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(CustomApiResponse.error(
-                        errorCode.getStatus().value(),
-                        errorCode.getMessage(messageSource)
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(errorCode.getMessage(messageSource))
+                        .build()
+                );
     }
 
     /**
@@ -286,14 +307,15 @@ public class GlobalExceptionHandler {
 
     // 데이터베이스 제약조건 위반
     @ExceptionHandler(DataIntegrityViolationException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+    protected ResponseEntity<Response<Void>> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
         log.error("데이터베이스 제약조건 위반: ", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_GATEWAY)
-                .body(CustomApiResponse.error(
-                        HttpStatus.BAD_GATEWAY.value(),
-                        "데이터 처리 중 오류가 발생했습니다."
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("데이터 처리 중 오류가 발생했습니다.")
+                        .build()
+                );
     }
 
     /**
@@ -304,38 +326,41 @@ public class GlobalExceptionHandler {
 
     // Null Pointer 예외
     @ExceptionHandler(NullPointerException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleNullPointerException(NullPointerException e) {
+    protected ResponseEntity<Response<Void>> handleNullPointerException(NullPointerException e) {
         log.error("Null Pointer Exception 발생: ", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(CustomApiResponse.error(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "서버 처리 중 오류가 발생했습니다."
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("서버 처리 중 오류가 발생했습니다.")
+                        .build()
+                );
     }
 
     // Runtime 예외
     @ExceptionHandler(RuntimeException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleRuntimeException(RuntimeException e) {
+    protected ResponseEntity<Response<Void>> handleRuntimeException(RuntimeException e) {
         log.error("Runtime Exception 발생: ", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(CustomApiResponse.error(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "서버 처리 중 오류가 발생했습니다."
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("서버 처리 중 오류가 발생했습니다.")
+                        .build()
+                );
     }
 
     // 기타 모든 예외
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleException(Exception e) {
+    protected ResponseEntity<Response<Void>> handleException(Exception e) {
         log.error("서버 오류 발생: ", e);  // 로그에 스택트레이스 포함
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(CustomApiResponse.error(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+                        .build()
+                );
     }
 
     /**
@@ -346,7 +371,7 @@ public class GlobalExceptionHandler {
 
     // 사용자 정의 예외
     @ExceptionHandler(BusinessException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleBusinessException(BusinessException e) {
+    protected ResponseEntity<Response<Void>> handleBusinessException(BusinessException e) {
         log.error("BusinessException", e);
 
         ErrorCode errorCode = e.getErrorCode();
@@ -357,10 +382,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(status)
-                .body(CustomApiResponse.error(
-                        status.value(),
-                        message
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message(message)
+                        .build()
+                );
     }
 
     /**
@@ -370,24 +396,26 @@ public class GlobalExceptionHandler {
      */
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+    protected ResponseEntity<Response<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.error("File Size Exceeded Exception 발생: ", e);
         return ResponseEntity
                 .status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(CustomApiResponse.error(
-                        HttpStatus.PAYLOAD_TOO_LARGE.value(),
-                        "파일 크기가 허용된 최대 크기를 초과했습니다. 파일 크기를 확인해 주세요."
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("파일 크기가 허용된 최대 크기를 초과했습니다. 파일 크기를 확인해 주세요.")
+                        .build()
+                );
     }
 
     @ExceptionHandler(MultipartException.class)
-    protected ResponseEntity<CustomApiResponse<Void>> handleMultipartException(MultipartException e) {
+    protected ResponseEntity<Response<Void>> handleMultipartException(MultipartException e) {
         log.error("Multipart Exception 발생: ", e);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(CustomApiResponse.error(
-                        HttpStatus.BAD_REQUEST.value(),
-                        "파일 업로드 처리 중 오류가 발생했습니다. 다시 시도해 주세요."
-                ));
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("파일 업로드 처리 중 오류가 발생했습니다. 다시 시도해 주세요.")
+                        .build()
+                );
     }
 }

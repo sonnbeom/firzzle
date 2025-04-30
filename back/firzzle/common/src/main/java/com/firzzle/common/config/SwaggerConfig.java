@@ -35,7 +35,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Rabbit API Documentation")
+                        .title("Firzzle API Documentation")
                         .version("1.0.0")
                         .description("API Documentation")
                         .termsOfService("http://swagger.io/terms/")

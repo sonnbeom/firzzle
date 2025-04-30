@@ -1,3 +1,2 @@
 rootProject.name = 'firzzle'
-include('auth', 'gateway', 'discovery', 'learning', 'common','llm', 'admin', 'jwt',
-'learning', 'llm', 'main', 'stt', 'user-domain')
+include('auth', 'gateway', 'discovery', 'learning', 'common', 'llm', 'admin', 'jwt', 'main', 'stt', 'user-domain')

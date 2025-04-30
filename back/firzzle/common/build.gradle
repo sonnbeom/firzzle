@@ -32,13 +32,23 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.0'
     implementation 'commons-io:commons-io:2.18.0'
 
+    //shedlock
+    implementation("net.javacrumbs.shedlock:shedlock-spring:4.42.0")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:4.42.0")
+
+    // Database
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
+    implementation 'mysql:mysql-connector-java:8.0.33'
+
     // Jackson
     implementation 'com.fasterxml.jackson.core:jackson-core'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 
     // Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 
     // 테스트 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
