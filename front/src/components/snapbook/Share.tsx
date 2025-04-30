@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Button } from '../ui/button';
 
@@ -42,7 +44,6 @@ const Share = ({ isOpen, onClose, url = 'https://firzzleai.photobook.com' }: Sha
             </Button>
           </div>
         </div>
-
       </div>
     </div>
   );

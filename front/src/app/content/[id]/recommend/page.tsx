@@ -2,7 +2,7 @@ import React from 'react';
 import Expert from '@/components/recommend/Expert';
 import Lecture from '@/components/recommend/Lecture';
 
-const RecommendPage = () => {
+async function RecommendPage() {
   return (
     <div className='relative min-h-screen w-full px-2 sm:px-4'>
       <div className='space-y-10 pb-20'>
@@ -11,6 +11,6 @@ const RecommendPage = () => {
       </div>
     </div>
   );
-};
+}
 
 export default RecommendPage;
