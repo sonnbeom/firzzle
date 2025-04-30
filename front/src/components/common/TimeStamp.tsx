@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { ReactNode } from 'react';
 import { usePlayerStore } from 'stores/playerStore';
 import { formatTimeStamp } from 'utils/formatTimeStamp';

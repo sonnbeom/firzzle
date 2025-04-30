@@ -73,7 +73,7 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
             {localReviews.map((item) => (
               <div
                 key={`image-${item.id}`}
-                className='relative aspect-video w-full overflow-hidden bg-white'
+                className='relative h-[180px] w-full bg-white'
               >
                 <TimeStamp
                   time={item.timestamp}
@@ -82,14 +82,16 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
                   width={600}
                   height={400}
                 >
-                  <div className='relative h-full w-full'>
-                    <Image
-                      src={item.thumbnail}
-                      alt={`리뷰사진 ${item.id}`}
-                      fill
-                      sizes='(max-width: 768px) 100vw, 33vw'
-                      className='object-contain'
-                    />
+                  <div className='relative h-full w-full p-2'>
+                    <div className='relative h-full w-full'>
+                      <Image
+                        src={item.thumbnail}
+                        alt={`리뷰사진 ${item.id}`}
+                        fill
+                        sizes='33vw'
+                        className='object-contain'
+                      />
+                    </div>
                   </div>
                 </TimeStamp>
               </div>
