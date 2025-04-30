@@ -1,31 +1,17 @@
 import SummaryContainer from '@/components/summary/SummaryContainer';
+import { getSummary } from '@/api/summary';
 
-const Summary = () => {
-  const dummyData = {
-    easyData: [
-      {
-        id: '1',
-        title: '01 머신러닝 개요',
-        description: '머신러닝의 개요를 알아보자',
-        time: 95,
-      },
-    ],
-    highData: [
-      {
-        id: '1',
-        title: '01 머신러닝 개요',
-        description: '머신러닝의 개요를 핵심만 알아보자',
-        time: 95,
-      },
-    ],
+interface PageProps {
+  params: {
+    id: string;
   };
+}
 
-  return (
-    <SummaryContainer
-      easyData={dummyData.easyData}
-      highData={dummyData.highData}
-    />
-  );
+const Summary = async ({ params }: PageProps) => {
+  const awaitedParams = await params;
+  const { data } = await getSummary(awaitedParams.id);
+
+  return <SummaryContainer easyData={data.easyData} highData={data.highData} />;
 };
 
 export default Summary;

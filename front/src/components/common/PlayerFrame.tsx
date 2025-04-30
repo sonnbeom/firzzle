@@ -23,7 +23,7 @@ const PlayerFrame = ({ playerId }: PlayerFrameProps) => {
 
     window.onYouTubeIframeAPIReady = () => {
       const player = new window.YT.Player('youtube-player', {
-        playerId: playerId,
+        videoId: playerId,
         playerVars: {
           autoplay: 0, // 자동 재생 비활성화
           controls: 1, // 컨트롤 버튼 표시
