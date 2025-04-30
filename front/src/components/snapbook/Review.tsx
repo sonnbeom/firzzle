@@ -22,15 +22,20 @@ const Review = ({ images, title, date }: ReviewProps) => {
           {images.map((image, index) => (
             <div
               key={index}
-              className='group relative aspect-video overflow-hidden'
+              className='group relative aspect-video w-full overflow-hidden bg-white'
             >
-              <Image
-                src={image.src}
-                alt={'리뷰사진'}
-                fill
-                sizes='(max-width: 768px) 100vw, 50vw'
-                className='object-cover transition-transform duration-300 group-hover:scale-110'
-              />
+              <div className='relative h-full w-full'>
+                <Image
+                  src={image.src}
+                  alt='리뷰사진'
+                  fill
+                  sizes={
+                    images.length > 1 ? '(max-width: 768px) 100vw, 50vw' : '100vw'
+                  }
+                  className='object-contain transition-transform duration-300 group-hover:scale-110'
+                />
+              </div>
+
               <div className='absolute inset-0 flex flex-col justify-center bg-black/60 p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100'>
                 <p className='sm:text-md text-center text-sm font-semibold text-white'>
                   {image.description}
