@@ -1,9 +1,9 @@
-import TimeStamp from './TimeStamp';
+import TimeStamp from '../common/TimeStamp';
 
 interface SummaryCardProps {
   title: string;
   description: string;
-  time: string;
+  time: number;
 }
 
 const SummaryCard = ({ title, description, time }: SummaryCardProps) => {
@@ -15,7 +15,9 @@ const SummaryCard = ({ title, description, time }: SummaryCardProps) => {
           <p className='text-xl font-semibold break-words whitespace-pre-wrap text-gray-950'>
             {title}
           </p>
-          <TimeStamp time={time} />
+          <TimeStamp type='time' time={time}>
+            {time}
+          </TimeStamp>
         </div>
         {/* 상세 요약 */}
         <p className='text-lg break-words whitespace-pre-wrap text-gray-950'>
