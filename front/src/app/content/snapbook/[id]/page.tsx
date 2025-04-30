@@ -38,9 +38,9 @@ const getMockData = async (id: string): Promise<SnapItem> => ({
   ],
 });
 
-async function SnapBookDetailPage({ params }: { params: { id: string } }) {
-  const snapData = await getMockData(params.id);
-
+async function SnapBookDetailPage(props: { params: Promise<{ id: string }> }) {
+  const { id } = await props.params;
+  const snapData = await getMockData(id);
   return (
     <div className='container mx-auto px-4'>
       <div className='space-y-6'>
