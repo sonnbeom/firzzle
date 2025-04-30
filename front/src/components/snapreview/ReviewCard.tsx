@@ -4,6 +4,7 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
+import TimeStamp from '../common/TimeStamp';
 
 // interface
 interface Review {
@@ -72,18 +73,25 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
             {localReviews.map((item) => (
               <div
                 key={`image-${item.id}`}
-                className='relative h-[180px] w-full bg-white'
+                className='relative aspect-video w-full overflow-hidden bg-white'
               >
-                <div className='absolute inset-0 p-2'>
-                  <Image
-                    src={item.thumbnail}
-                    alt='강의 썸네일'
-                    fill
-                    sizes='33vw'
-                    className='object-cover'
-                    onClick={() => handleImageClick(item.timestamp)}
-                  />
-                </div>
+                <TimeStamp
+                  time={item.timestamp}
+                  type='image'
+                  imageUrl={item.thumbnail}
+                  width={600}
+                  height={400}
+                >
+                  <div className='relative h-full w-full'>
+                    <Image
+                      src={item.thumbnail}
+                      alt={`리뷰사진 ${item.id}`}
+                      fill
+                      sizes='(max-width: 768px) 100vw, 33vw'
+                      className='object-contain'
+                    />
+                  </div>
+                </TimeStamp>
               </div>
             ))}
           </div>

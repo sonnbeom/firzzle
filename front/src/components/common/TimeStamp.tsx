@@ -65,18 +65,14 @@ const TimeStamp = (props: TimeStampProps) => {
 
     case 'image':
       return (
-        <button
-          className={`relative cursor-pointer w-[${props.width}px] h-[${props.height}px]`}
-          onClick={handleClick}
-        >
-          <Image
-            src={props.imageUrl}
-            alt='스냅 이미지'
-            fill
-            sizes='100vw'
-            className='object-cover'
-          />
-        </button>
+        <div className='relative h-full w-full'>
+          <button
+            className='group relative block h-full w-full cursor-pointer'
+            onClick={handleClick}
+          >
+            {props.children}
+          </button>
+        </div>
       );
 
     default:
