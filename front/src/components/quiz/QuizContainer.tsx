@@ -3,9 +3,9 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import BasicDialog from '@/components/common/BasicDialog';
 import { Button } from '@/components/ui/button';
+import { usePreventNavigation } from '@/hooks/usePreventNavigation';
 import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
-import { usePreventNavigation } from '@/hooks/usePreventNavigation';
 
 declare global {
   interface Window {
@@ -49,14 +49,14 @@ const QuizContainer = ({ quizContents }: QuizContainerProps) => {
 
   // 페이지 이탈 방지 로직
   const hasAnswered = selected.some((value) => value !== null);
-  const { 
-    showDialog, 
-    setShowDialog, 
-    pendingNavigation, 
+  const {
+    showDialog,
+    setShowDialog,
+    pendingNavigation,
     setPendingNavigation,
     blockUnload,
     router,
-    originalPushRef
+    originalPushRef,
   } = usePreventNavigation(hasAnswered && !showAnswer);
 
   return (
@@ -77,7 +77,11 @@ const QuizContainer = ({ quizContents }: QuizContainerProps) => {
             setPendingNavigation((prev) => {
               setTimeout(() => {
                 blockUnload.current = false;
-                if (prev?.type === 'push' && prev.url && originalPushRef.current) {
+                if (
+                  prev?.type === 'push' &&
+                  prev.url &&
+                  originalPushRef.current
+                ) {
                   const pushFn = originalPushRef.current;
                   pushFn(prev.url, prev.options);
                 } else if (prev?.type === 'back') {

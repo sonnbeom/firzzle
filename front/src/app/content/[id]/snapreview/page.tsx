@@ -1,6 +1,4 @@
 import React from 'react';
-
-//components
 import ReviewCard from '@/components/snapreview/ReviewCard';
 
 // 임시 데이터 (나중에 API 연동)
@@ -13,7 +11,7 @@ const reviews = Array(4)
     timestamp: 100,
   }));
 
-function SnapReviewPage() {
+async function SnapReviewPage() {
   return (
     <div className='relative min-h-screen w-full px-2 md:px-4'>
       <div className='space-y-10 pb-20'>

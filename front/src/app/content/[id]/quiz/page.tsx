@@ -39,7 +39,7 @@ const quizContents: QuizContent[] = [
   },
 ];
 
-function QuizPage() {
+async function QuizPage() {
   return <QuizContainer quizContents={quizContents} />;
 }
 

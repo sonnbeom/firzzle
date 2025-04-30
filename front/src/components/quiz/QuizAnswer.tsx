@@ -1,4 +1,5 @@
 import React from 'react';
+import TimeStamp from '../common/TimeStamp';
 
 interface QuizAnswerProps {
   quizNo: string;
@@ -41,13 +42,7 @@ const QuizAnswer = ({
           {description}
         </p>
         <div className='flex justify-end'>
-          <button
-            onClick={() => timestamp && alert(`타임스탬프: ${timestamp}`)}
-            className='text-md flex items-center gap-1 font-semibold text-blue-400 transition-colors hover:text-blue-500'
-          >
-            복습하러 가기
-            <span className='text-lg'>&gt;</span>
-          </button>
+          <TimeStamp time={timestamp} type='review' />
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@ import Icons from './Icons';
 // 기본 타입
 interface TimeStampBaseProps {
   time: number;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 // MM:SS 타입
@@ -65,18 +65,19 @@ const TimeStamp = (props: TimeStampProps) => {
 
     case 'image':
       return (
-        <button
-          className={`relative cursor-pointer w-[${props.width}px] h-[${props.height}px]`}
-          onClick={handleClick}
-        >
-          <Image
-            src={props.imageUrl}
-            alt='스냅 이미지'
-            fill
-            sizes='100vw'
-            className='object-cover'
-          />
-        </button>
+        <div className='relative h-[180px] w-full bg-white'>
+          <button className='absolute inset-0 p-2' onClick={handleClick}>
+            <div className='relative h-full w-full'>
+              <Image
+                src={props.imageUrl}
+                alt='스냅 이미지'
+                fill
+                sizes='33vw'
+                className='object-contain'
+              />
+            </div>
+          </button>
+        </div>
       );
 
     default:

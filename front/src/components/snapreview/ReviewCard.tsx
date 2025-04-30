@@ -1,9 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import React, { useState } from 'react';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
+import TimeStamp from '../common/TimeStamp';
 
 // interface
 interface Review {
@@ -74,16 +74,13 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
                 key={`image-${item.id}`}
                 className='relative h-[180px] w-full bg-white'
               >
-                <div className='absolute inset-0 p-2'>
-                  <Image
-                    src={item.thumbnail}
-                    alt='강의 썸네일'
-                    fill
-                    sizes='33vw'
-                    className='object-cover'
-                    onClick={() => handleImageClick(item.timestamp)}
-                  />
-                </div>
+                <TimeStamp
+                  time={item.timestamp}
+                  type='image'
+                  imageUrl={item.thumbnail}
+                  width={600}
+                  height={400}
+                />
               </div>
             ))}
           </div>
