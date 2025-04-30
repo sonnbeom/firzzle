@@ -16,7 +16,7 @@ declare global {
       Player: new (
         elementId: string,
         options: {
-          playerId: string;
+          videoId: string;
           playerVars?: {
             autoplay?: 0 | 1;
             controls?: 0 | 1;
