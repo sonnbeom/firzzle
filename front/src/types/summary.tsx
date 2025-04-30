@@ -4,5 +4,5 @@ export interface SummaryData {
   id: string;
   title: string;
   description: string;
-  time: string;
+  time: number;
 }

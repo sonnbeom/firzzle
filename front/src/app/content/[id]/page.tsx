@@ -7,7 +7,7 @@ const Summary = () => {
         id: '1',
         title: '01 머신러닝 개요',
         description: '머신러닝의 개요를 알아보자',
-        time: '01:35',
+        time: 95,
       },
     ],
     highData: [
@@ -15,7 +15,7 @@ const Summary = () => {
         id: '1',
         title: '01 머신러닝 개요',
         description: '머신러닝의 개요를 핵심만 알아보자',
-        time: '01:35',
+        time: 95,
       },
     ],
   };
