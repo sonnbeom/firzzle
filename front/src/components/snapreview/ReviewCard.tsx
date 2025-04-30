@@ -80,9 +80,7 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
                   imageUrl={item.thumbnail}
                   width={600}
                   height={400}
-                >
-                  <></>
-                </TimeStamp>
+                />
               </div>
             ))}
           </div>

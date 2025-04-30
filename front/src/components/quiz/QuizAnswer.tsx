@@ -42,9 +42,7 @@ const QuizAnswer = ({
           {description}
         </p>
         <div className='flex justify-end'>
-          <TimeStamp time={timestamp} type='review'>
-            <></>{' '}
-          </TimeStamp>
+          <TimeStamp time={timestamp} type='review' />
         </div>
       </div>
     </div>
