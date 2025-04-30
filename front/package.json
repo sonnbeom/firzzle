@@ -5,7 +5,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "mock": "npx tsx watch ./src/mocks/server.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.11",
@@ -16,6 +17,8 @@
     "chart.js": "^4.4.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "lucide-react": "^0.488.0",
     "next": "^15.3.0",
     "react": "^19.1.0",
@@ -29,7 +32,10 @@
     "@eslint/compat": "^1.2.8",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.24.0",
+    "@mswjs/http-middleware": "^0.10.3",
     "@next/eslint-plugin-next": "^15.3.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
     "@types/lodash": "^4.17.16",
     "@types/node": "22.14.1",
     "@types/react": "19.1.1",
@@ -44,6 +50,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "eslint-plugin-unused-imports": "^4.1.4",
     "globals": "^16.0.0",
+    "msw": "^2.7.5",
     "playwright": "^1.51.1",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
@@ -52,5 +59,10 @@
     "typescript": "5.8.3",
     "typescript-eslint": "^8.29.1",
     "vitest": "^3.1.1"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

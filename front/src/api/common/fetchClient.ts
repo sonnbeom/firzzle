@@ -64,16 +64,20 @@ export class FetchClient {
       ),
     );
 
-    // api url 생성
-    const apiUrl = `${this.baseUrl}${url}${
-      params &&
-      '?' +
-        new URLSearchParams(
-          Object.entries(params)
-            .filter(([_, value]) => value != null)
-            .map(([key, value]) => [key, String(value)]),
-        ).toString()
-    }`;
+    let apiUrl = `${this.baseUrl}${url}`;
+
+    if (params && Object.keys(params).length > 0) {
+      const queryString = new URLSearchParams(
+        Object.entries(params)
+          .filter(([_, value]) => value != null)
+          .map(([key, value]) => [key, String(value)]),
+      ).toString();
+      if (queryString) {
+        apiUrl += `?${queryString}`;
+      }
+    }
+
+    console.log('Fetching URL:', apiUrl);
 
     // fetch 요청 응답
     const response = await fetch(apiUrl, {
