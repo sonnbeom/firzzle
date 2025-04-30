@@ -64,7 +64,7 @@ async function getSnapBookData(): Promise<DateGroup[]> {
 async function SnapBookPage() {
   const snapBookData = await getSnapBookData();
 
-  return <SnapList initialGroups={snapBookData} />;
+  return <SnapList snapLists={snapBookData} />;
 }
 
 export default SnapBookPage;
