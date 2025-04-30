@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import VideoFrame from '@/components/common/VideoFrame';
+import PlayerFrame from '@/components/common/PlayerFrame';
 import UrlInputField from '@/components/home/UrlInputField';
 
 const ContentPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const playerId = 'dQw4w9WgXcQ';
 
   return (
     <div className='flex w-full flex-col items-center gap-10'>
@@ -25,7 +26,7 @@ const ContentPage = () => {
       )}
 
       <div className='flex w-[800px] flex-col items-center gap-10'>
-        <VideoFrame />
+        <PlayerFrame playerId={playerId} />
         {!isSubmitted ? (
           <UrlInputField />
         ) : (

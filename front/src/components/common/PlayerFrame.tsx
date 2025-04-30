@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import useVideoStore from 'stores/videoStore';
-import { YouTubePlayer } from 'types/video';
+import { usePlayerStore } from 'stores/playerStore';
+import { YouTubePlayer } from 'types/player';
 
-interface VideoFrameProps {
-  videoId: string;
+interface PlayerFrameProps {
+  playerId: string;
 }
 
-const VideoFrame = ({ videoId }: VideoFrameProps) => {
+const PlayerFrame = ({ playerId }: PlayerFrameProps) => {
   const playerRef = useRef<YouTubePlayer | null>(null);
-  const setPlayerRef = useVideoStore((state) => state.setPlayerRef);
+  const { setPlayerRef } = usePlayerStore();
 
   useEffect(() => {
     // YouTube IFrame Player API 스크립트 로드를 위한 태그 생성
@@ -23,7 +23,7 @@ const VideoFrame = ({ videoId }: VideoFrameProps) => {
 
     window.onYouTubeIframeAPIReady = () => {
       const player = new window.YT.Player('youtube-player', {
-        videoId: videoId,
+        playerId: playerId,
         playerVars: {
           autoplay: 0, // 자동 재생 비활성화
           controls: 1, // 컨트롤 버튼 표시
@@ -47,7 +47,7 @@ const VideoFrame = ({ videoId }: VideoFrameProps) => {
         playerRef.current = null;
       }
     };
-  }, [videoId, setPlayerRef]);
+  }, [playerId, setPlayerRef]);
 
   return (
     <div className='relative aspect-video w-full'>
@@ -59,4 +59,4 @@ const VideoFrame = ({ videoId }: VideoFrameProps) => {
   );
 };
 
-export default VideoFrame;
+export default PlayerFrame;

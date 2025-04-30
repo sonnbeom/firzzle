@@ -1,17 +1,13 @@
 import { RefObject } from 'react';
 import { create } from 'zustand';
-import { YouTubePlayer } from 'types/video';
+import { YouTubePlayer } from 'types/player';
 
-interface VideoState {
-  videoId: string;
+interface PlayerState {
   playerRef: RefObject<YouTubePlayer> | null;
   setPlayerRef: (ref: RefObject<YouTubePlayer>) => void;
 }
 
-const useVideoStore = create<VideoState>((set) => ({
-  videoId: '',
+export const usePlayerStore = create<PlayerState>((set) => ({
   playerRef: null,
   setPlayerRef: (ref) => set({ playerRef: ref }),
 }));
-
-export default useVideoStore;

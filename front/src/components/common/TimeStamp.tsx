@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { ReactNode } from 'react';
-import useVideoStore from 'stores/videoStore';
+import { usePlayerStore } from 'stores/playerStore';
 import { formatTimeStamp } from 'utils/formatTimeStamp';
 import Icons from './Icons';
 
@@ -32,7 +32,7 @@ interface ImageProps extends TimeStampBaseProps {
 type TimeStampProps = TimeTextProps | ReviewLinkProps | ImageProps;
 
 const TimeStamp = (props: TimeStampProps) => {
-  const playerRef = useVideoStore((state) => state.playerRef);
+  const { playerRef } = usePlayerStore();
 
   // 타임스탬프 클릭 시 플레이어 이동
   const handleClick = () => {
