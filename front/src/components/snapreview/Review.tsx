@@ -2,8 +2,6 @@
 
 import Image from 'next/image';
 import React, { useState } from 'react';
-
-// components
 import Icons from '../common/Icons';
 import { Button } from '../ui/button';
 import Share from './Share';
@@ -56,10 +54,7 @@ const Review = () => {
         >
           공유하기
         </Button>
-        <Share
-          isOpen={isShareOpen}
-          onClose={() => setIsShareOpen(false)}
-        />
+        <Share isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
       </div>
       <div className='mx-auto max-w-7xl rounded-lg bg-blue-50 p-6'>
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>

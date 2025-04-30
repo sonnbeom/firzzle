@@ -1,6 +1,4 @@
 import React from 'react';
-
-// components
 import { Button } from '@/components/ui/button';
 
 interface QuizCardProps {

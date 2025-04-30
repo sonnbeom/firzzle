@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <QueryProvider>
           <div className='relative flex h-[100dvh] w-full flex-col'>
             <Header />
-            <div className='flex-1 overflow-hidden'>{children}</div>
+            <div className='flex-1'>{children}</div>
           </div>
         </QueryProvider>
       </body>
