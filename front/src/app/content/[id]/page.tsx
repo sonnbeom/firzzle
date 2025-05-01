@@ -2,14 +2,14 @@ import SummaryContainer from '@/components/summary/SummaryContainer';
 import { getSummary } from '@/api/summary';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const Summary = async ({ params }: PageProps) => {
-  const awaitedParams = await params;
-  const { data } = await getSummary(awaitedParams.id);
+  const { id } = await params;
+  const { data } = await getSummary(id);
 
   return <SummaryContainer easyData={data.easyData} highData={data.highData} />;
 };
