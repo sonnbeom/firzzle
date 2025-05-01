@@ -1,10 +1,13 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import PlayerFrame from '@/components/common/PlayerFrame';
 import UrlInputField from '@/components/home/UrlInputField';
 
 const ContentPage = () => {
+  const searchParams = useSearchParams();
+  const urlParam = searchParams.get('url');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const playerId = 'dQw4w9WgXcQ';
 
@@ -28,7 +31,7 @@ const ContentPage = () => {
       <div className='flex w-[800px] flex-col items-center gap-10'>
         <PlayerFrame playerId={playerId} />
         {!isSubmitted ? (
-          <UrlInputField />
+          <UrlInputField defaultUrl={urlParam || ''} />
         ) : (
           <div className='flex flex-col items-center text-lg font-medium text-gray-900'>
             <p>입력하신 영상을 학습 자료로 분석 중이에요</p>
