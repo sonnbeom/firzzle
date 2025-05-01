@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 import { usePagination } from '@/hooks/usePagination';
 import Icons from '../common/Icons';
@@ -75,14 +76,14 @@ const Expert = ({ experts, keyword }: ExpertProps) => {
                 {item.description}
               </p>
             </div>
-            <a
+            <Link
               href={item.url}
               target='_blank'
               rel='noopener noreferrer'
               className='mt-2 rounded-full bg-blue-50 px-4 py-1.5 text-sm text-blue-500 hover:bg-blue-100'
             >
               프로필 보기
-            </a>
+            </Link>
           </div>
         ))}
       </div>
