@@ -66,12 +66,13 @@ const Lecture = ({ lectures, keyword }: LectureProps) => {
               <Image
                 src={item.thumbnail}
                 alt='강의 썸네일'
-                fill
-                sizes='(max-width: 300px) 100vw, 300px'
-                className='object-cover'
+                width={300}
+                height={169}
+                priority
+                className='h-full w-full object-contain'
               />
             </div>
-            <p className='mt-2 text-sm text-gray-700'>{item.title}</p>
+            <p className='mt-2 text-sm text-gray-700 line-clamp-2'>{item.title}</p>
           </div>
         ))}
       </div>
