@@ -1,5 +1,5 @@
-import { api } from './common/apiInstance';
 import { SummaryData } from '@/types/summary';
+import { api } from './common/apiInstance';
 
 // 임시 응답 타입
 interface SummaryResponse {
