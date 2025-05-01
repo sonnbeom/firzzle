@@ -1,15 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import BasicButton from '../common/BasicButton';
 import Icons from '../common/Icons';
 
 interface UrlInputFieldProps {
   defaultUrl?: string;
+  onSubmit: (url: string) => void;
+  onConfirm: () => void;
+  onClear: () => void;
 }
 
-const UrlInputField = ({ defaultUrl = '' }: UrlInputFieldProps) => {
+const UrlInputField = ({
+  defaultUrl = '',
+  onSubmit,
+  onConfirm,
+  onClear,
+}: UrlInputFieldProps) => {
   const [value, setValue] = useState(defaultUrl);
+  const [debouncedValue, setDebouncedValue] = useState(defaultUrl);
+  const previousValueRef = useRef(defaultUrl);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [value]);
+
+  useEffect(() => {
+    if (debouncedValue !== previousValueRef.current) {
+      if (debouncedValue) {
+        onSubmit(debouncedValue);
+      } else {
+        onClear();
+      }
+      previousValueRef.current = debouncedValue;
+    }
+  }, [debouncedValue, onSubmit, onClear]);
 
   return (
     <div className='flex w-full items-center gap-4'>
@@ -25,7 +54,7 @@ const UrlInputField = ({ defaultUrl = '' }: UrlInputFieldProps) => {
         />
       </div>
 
-      <BasicButton isDisabled={value === ''} title='확인' onClick={() => {}} />
+      <BasicButton isDisabled={value === ''} title='확인' onClick={onConfirm} />
     </div>
   );
 };
