@@ -52,29 +52,37 @@ const Expert = ({ experts, keyword }: ExpertProps) => {
           </button>
         </div>
       )}
-      <div className='mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3'>
+      <div className='mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3'>
         {visibleExperts.map((item, idx) => (
           <div
             key={idx}
-            className='flex flex-col items-center rounded-xl p-4 shadow'
-            style={{
-              background:
-                'linear-gradient(to bottom, #324eef 50%, #ffffff 50%)',
-            }}
+            className='flex h-[320px] w-full flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform'
           >
-            <div className='relative h-[100px] w-[100px] overflow-hidden rounded-full border border-gray-200'>
+            <div className='relative mb-3 h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-blue-200'>
               <Image
                 src={item.thumbnail}
-                alt='전문가 이미지'
-                fill
-                sizes='100px'
-                className='object-cover'
+                alt={`${item.name} 전문가 이미지`}
+                width={96}
+                height={96}
+                className='h-full w-full object-contain'
               />
             </div>
-            <p className='mt-2 font-semibold text-gray-700'>{item.name}</p>
-            <p className='mt-2 mb-2 text-center text-xs text-gray-700'>
-              {item.description}
-            </p>
+            <h3 className='mb-2 flex-shrink-0 text-lg font-bold text-gray-800'>
+              {item.name}
+            </h3>
+            <div className='mb-3 h-[120px] w-full'>
+              <p className='text-center text-sm text-gray-600'>
+                {item.description}
+              </p>
+            </div>
+            <a
+              href={item.url}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='mt-2 rounded-full bg-blue-50 px-4 py-1.5 text-sm text-blue-500 hover:bg-blue-100'
+            >
+              프로필 보기
+            </a>
           </div>
         ))}
       </div>
