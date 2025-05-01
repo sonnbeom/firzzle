@@ -1,32 +1,59 @@
+'use client';
+
 import Image from 'next/image';
 import React from 'react';
-
-// components
+import { usePagination } from '@/hooks/usePagination';
 import Icons from '../common/Icons';
 
-const experts = Array(3).fill({
-  name: '홍길동',
-  description: 'HR Planning & Analytics, Design Thinking 전문가',
-  thumbnail: '/assets/images/AI Playground.png',
-});
+interface ExpertProps {
+  experts: Array<{
+    name: string;
+    description: string;
+    thumbnail: string;
+    url: string;
+  }>;
+  keyword: string;
+}
 
-const Expert = () => {
+const Expert = ({ experts, keyword }: ExpertProps) => {
+  const {
+    visibleItems: visibleExperts,
+    showPagination,
+    canGoPrev,
+    canGoNext,
+    handlePrevPage,
+    handleNextPage,
+  } = usePagination({
+    items: experts,
+    itemsPerPage: 3,
+  });
+
   return (
     <div>
       <h2 className='text-center text-lg font-medium text-gray-900 sm:text-xl'>
-        <span className='font-semibold text-blue-400'>인공지능</span> 전문가와
+        <span className='font-semibold text-blue-400'>{keyword}</span> 전문가와
         대화해보세요
       </h2>
-      <div className='flex justify-end'>
-        <button>
-          <Icons id='arrow-left' size={24} color={'text-blue-400'} />
-        </button>
-        <button>
-          <Icons id='arrow-right' size={24} color={'text-gray-200'} />
-        </button>
-      </div>
+      {showPagination && (
+        <div className='flex justify-end'>
+          <button onClick={handlePrevPage} disabled={!canGoPrev}>
+            <Icons
+              id='arrow-left'
+              size={24}
+              color={canGoPrev ? 'text-blue-400' : 'text-gray-200'}
+            />
+          </button>
+          <button onClick={handleNextPage} disabled={!canGoNext}>
+            <Icons
+              id='arrow-right'
+              size={24}
+              color={canGoNext ? 'text-blue-400' : 'text-gray-200'}
+            />
+          </button>
+        </div>
+      )}
       <div className='mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3'>
-        {experts.map((item, idx) => (
+        {visibleExperts.map((item, idx) => (
           <div
             key={idx}
             className='flex flex-col items-center rounded-xl p-4 shadow'

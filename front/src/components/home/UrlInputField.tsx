@@ -4,8 +4,12 @@ import { useState } from 'react';
 import BasicButton from '../common/BasicButton';
 import Icons from '../common/Icons';
 
-const UrlInputField = () => {
-  const [value, setValue] = useState('');
+interface UrlInputFieldProps {
+  defaultUrl?: string;
+}
+
+const UrlInputField = ({ defaultUrl = '' }: UrlInputFieldProps) => {
+  const [value, setValue] = useState(defaultUrl);
 
   return (
     <div className='flex w-full items-center gap-4'>
