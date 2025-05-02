@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { submitQuizAnswers } from '@/api/quiz';
 import BasicDialog from '@/components/common/BasicDialog';
 import { Button } from '@/components/ui/button';
 import { usePreventNavigation } from '@/hooks/usePreventNavigation';
+import { QuizData, QuizSubmitRequest, QuizSubmitResponse } from '@/types/quiz';
 import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
 
@@ -13,24 +15,19 @@ declare global {
   }
 }
 
-interface QuizContent {
-  quizNo: string;
-  question: string;
-  answer: boolean;
-  description: string;
-  timestamp: number;
-}
-
 interface QuizContainerProps {
-  quizContents: QuizContent[];
+  quizContents: QuizData[];
+  contentId: string;
 }
 
-const QuizContainer = ({ quizContents }: QuizContainerProps) => {
+const QuizContainer = ({ quizContents, contentId }: QuizContainerProps) => {
+  const quizData = quizContents;
   // 퀴즈 답안 상태
   const [selected, setSelected] = useState<Array<'O' | 'X' | null>>(() =>
-    new Array(quizContents.length).fill(null),
+    new Array(quizData.length).fill(null),
   );
   const [showAnswer, setShowAnswer] = useState(false);
+  const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(null);
 
   // 정답 선택 처리 함수
   const handleSelect = useCallback((index: number, value: 'O' | 'X') => {
@@ -58,6 +55,27 @@ const QuizContainer = ({ quizContents }: QuizContainerProps) => {
     router,
     originalPushRef,
   } = usePreventNavigation(hasAnswered && !showAnswer);
+
+  // 퀴즈 제출 처리
+  const handleSubmit = async () => {
+    if (!isCompleted) return;
+
+    const request: QuizSubmitRequest = {
+      answers: quizData.map((quiz, index) => ({
+        quizNo: quiz.quizNo,
+        answer: selected[index] === 'O',
+      })),
+    };
+
+    try {
+      const response = await submitQuizAnswers(contentId, request);
+      setQuizResult(response.data);
+      window.scrollTo(0, 0);
+      setShowAnswer(true);
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+    }
+  };
 
   return (
     <div className='relative min-h-screen w-full px-2 md:px-10'>
@@ -95,15 +113,17 @@ const QuizContainer = ({ quizContents }: QuizContainerProps) => {
           확인
         </Button>
       </BasicDialog>
+
       {/* Quiz */}
       <div className='space-y-6 pb-28'>
-        {quizContents.map((quiz, index) =>
+        {quizData.map((quiz, index) =>
           showAnswer ? (
             <QuizAnswer
               key={quiz.quizNo}
               quizNo={quiz.quizNo}
               question={quiz.question}
-              answer={selected[index] === 'O' ? quiz.answer : !quiz.answer}
+              answer={quiz.answer}
+              correct={selected[index] === 'O' ? quiz.answer : !quiz.answer}
               description={quiz.description}
               timestamp={quiz.timestamp}
             />
@@ -118,18 +138,14 @@ const QuizContainer = ({ quizContents }: QuizContainerProps) => {
           ),
         )}
       </div>
+
       {/* 도전하기 버튼 */}
       {!showAnswer && (
         <div className='bottom-0 left-0 w-full bg-white py-4'>
           <Button
             variant={isCompleted ? 'default' : 'disabled'}
             className={`w-full py-6 text-lg font-semibold ${isCompleted ? 'bg-blue-400 hover:bg-blue-400' : ''} text-white`}
-            onClick={() => {
-              if (isCompleted) {
-                window.scrollTo(0, 0);
-                setShowAnswer(true);
-              }
-            }}
+            onClick={handleSubmit}
           >
             도전하기
           </Button>
