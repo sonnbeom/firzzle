@@ -57,6 +57,7 @@ dependencies {
     // 테스트 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
 
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
