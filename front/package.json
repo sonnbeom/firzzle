@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "mock": "npx tsx watch ./src/mocks/server.ts"
+    "mock": "npx tsx watch ./src/__mocks__/server.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.11",
@@ -19,6 +19,7 @@
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.488.0",
     "next": "^15.3.0",
     "react": "^19.1.0",

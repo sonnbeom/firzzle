@@ -1,5 +1,6 @@
-import { api } from './common/apiInstance';
+import { ApiResponseWithData } from '@/types/common/apiResponse';
 import { SummaryData } from '@/types/summary';
+import { externalApi } from './common/apiInstance';
 
 // 임시 응답 타입
 interface SummaryResponse {
@@ -9,5 +10,7 @@ interface SummaryResponse {
 
 // 요약 조회
 export const getSummary = (contentId: string) => {
-  return api.get<SummaryResponse>(`/contents/${contentId}/summary`);
+  return externalApi.get(`/contents/${contentId}/summary`) as Promise<
+    ApiResponseWithData<SummaryResponse>
+  >;
 };

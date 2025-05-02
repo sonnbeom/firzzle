@@ -77,8 +77,6 @@ export class FetchClient {
       }
     }
 
-    console.log('Fetching URL:', apiUrl);
-
     // fetch 요청 응답
     const response = await fetch(apiUrl, {
       ...restOptions,
@@ -107,9 +105,9 @@ export class FetchClient {
     return this.request<TResponse>(url, { method: 'POST', ...options });
   }
 
-  // PUT 요청
-  public put<TResponse, TBody>(url: string, options?: FetchOptions<TBody>) {
-    return this.request<TResponse>(url, { method: 'PUT', ...options });
+  // PATCH 요청
+  public patch<TResponse, TBody>(url: string, options?: FetchOptions<TBody>) {
+    return this.request<TResponse>(url, { method: 'PATCH', ...options });
   }
 
   // DELETE 요청

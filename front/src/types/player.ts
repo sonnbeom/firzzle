@@ -1,3 +1,9 @@
+// 플레이어 정보 타입
+export interface PlayerInfo {
+  playerId: string;
+  title: string;
+}
+
 // YouTube 플레이어 타입
 export interface YouTubePlayer {
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;

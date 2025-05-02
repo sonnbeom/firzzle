@@ -1,14 +1,15 @@
-export interface ApiResponse {
-  status: string;
+interface ApiResponse {
+  status: 'OK' | 'FAIL';
+  cause: string;
   message: string;
+  prevUrl: string;
+  redirectUrl: string;
 }
 
-// 에러 응답
-export type ApiResponseError = ApiResponse & {
-  message: string;
-};
-
-// 데이터 응답
 export type ApiResponseWithData<T> = ApiResponse & {
   data: T;
+};
+
+export type ApiResponseError = ApiResponse & {
+  data: null;
 };

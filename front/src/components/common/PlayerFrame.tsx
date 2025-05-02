@@ -13,15 +13,24 @@ const PlayerFrame = ({ playerId }: PlayerFrameProps) => {
   const { setPlayerRef } = usePlayerStore();
 
   useEffect(() => {
-    // YouTube IFrame Player API 스크립트 로드를 위한 태그 생성
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
+    // YouTube IFrame Player API 스크립트가 이미 로드되었는지 확인
+    if (!window.YT) {
+      // YouTube IFrame Player API 스크립트 로드
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
 
-    // 스크립트 태그를 쿤서의 첫 번째 스크립트 태그 앞에 삽입
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+      // 스크립트 태그를 첫 번째 스크립트 태그 앞에 삽입
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+    }
 
-    window.onYouTubeIframeAPIReady = () => {
+    // 플레이어 초기화 함수
+    const initializePlayer = () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+
       const player = new window.YT.Player('youtube-player', {
         videoId: playerId,
         playerVars: {
@@ -29,7 +38,6 @@ const PlayerFrame = ({ playerId }: PlayerFrameProps) => {
           controls: 1, // 컨트롤 버튼 표시
         },
         events: {
-          // 플레이어 준비 완료 시 실행
           onReady: (event) => {
             if (playerRef) {
               playerRef.current = event.target;
@@ -40,9 +48,16 @@ const PlayerFrame = ({ playerId }: PlayerFrameProps) => {
       });
     };
 
+    // API가 이미 로드된 경우 바로 초기화
+    if (window.YT) {
+      initializePlayer();
+    } else {
+      // API가 로드되기를 기다림
+      window.onYouTubeIframeAPIReady = initializePlayer;
+    }
+
     return () => {
-      // 컴포넌트 언마운트 시 플레이어 제거, playerRef 초기화
-      if (playerRef?.current) {
+      if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
       }

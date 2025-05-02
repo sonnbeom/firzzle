@@ -1,45 +1,29 @@
-'use client';
+import { getPlayer } from '@/api/player';
+import PlayerContent from '@/components/player/PlayerContent';
+import { PlayerInfo } from '@/types/player';
 
-import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import PlayerFrame from '@/components/common/PlayerFrame';
-import UrlInputField from '@/components/home/UrlInputField';
+const ContentPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ url?: string }>;
+}) => {
+  const { url } = await searchParams;
+  let initialPlayerInfo: PlayerInfo | null = null;
 
-const ContentPage = () => {
-  const searchParams = useSearchParams();
-  const urlParam = searchParams.get('url');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const playerId = 'dQw4w9WgXcQ';
+  if (url) {
+    try {
+      const { data } = await getPlayer(url);
+      initialPlayerInfo = data;
+    } catch (error) {
+      console.error('플레이어 조회 실패:', error);
+    }
+  }
 
   return (
-    <div className='flex w-full flex-col items-center gap-10'>
-      {!isSubmitted ? (
-        <div className='flex flex-col items-center gap-2'>
-          <p className='text-4xl font-semibold text-gray-900'>
-            오늘은 어떤 영상을 학습할까요?
-          </p>
-          <p className='text-lg font-medium text-gray-900'>
-            YouTube, Vimeo 등 다양한 플랫폼의 영상 링크를 입력하세요.
-          </p>
-        </div>
-      ) : (
-        <p className='line-clamp-2 w-[800px] text-center text-2xl font-semibold text-gray-900'>
-          AI 딥러닝, 머신러닝 초간단 인공지능 개념정리
-        </p>
-      )}
-
-      <div className='flex w-[800px] flex-col items-center gap-10'>
-        <PlayerFrame playerId={playerId} />
-        {!isSubmitted ? (
-          <UrlInputField defaultUrl={urlParam || ''} />
-        ) : (
-          <div className='flex flex-col items-center text-lg font-medium text-gray-900'>
-            <p>입력하신 영상을 학습 자료로 분석 중이에요</p>
-            <p>약 10분 정도 소요될 수 있어요</p>
-          </div>
-        )}
-      </div>
-    </div>
+    <PlayerContent
+      initialPlayerInfo={initialPlayerInfo}
+      initialUrl={url || ''}
+    />
   );
 };
 
