@@ -1,5 +1,9 @@
 import { quizHandlers } from './quizHandlers';
-import { summaryHandlers } from './summaryHandlers';
 import { recommendHandlers } from './recommendHandlers';
+import { summaryHandlers } from './summaryHandlers';
 
-export const handlers = [...summaryHandlers, ...quizHandlers, ... recommendHandlers];
+export const handlers = [
+  ...summaryHandlers,
+  ...quizHandlers,
+  ...recommendHandlers,
+];
