@@ -50,6 +50,12 @@ const expertList = [
     thumbnail: '/assets/images/AI Playground.png',
     url: 'https://kr.linkedin.com/',
   },
+  {
+    name: '이교수',
+    description: 'AI 분석 전문가',
+    thumbnail: '/assets/images/AI Playground.png',
+    url: 'https://kr.linkedin.com/',
+  },
 ];
 
 async function RecommendPage() {
