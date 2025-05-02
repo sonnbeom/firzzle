@@ -1,44 +1,42 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { debounce } from 'lodash';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { getPlayer } from '@/api/player';
+import { PlayerInfo } from '@/types/player';
 import BasicButton from '../common/BasicButton';
 import Icons from '../common/Icons';
 
 interface UrlInputFieldProps {
   defaultUrl?: string;
-  onSubmit: (url: string) => void;
-  onConfirm: () => void;
-  onClear: () => void;
+  setIsSubmitted: (isSubmitted: boolean) => void;
+  setPlayerInfo: (playerInfo: PlayerInfo) => void;
 }
 
 const UrlInputField = ({
   defaultUrl = '',
-  onSubmit,
-  onConfirm,
-  onClear,
+  setIsSubmitted,
+  setPlayerInfo,
 }: UrlInputFieldProps) => {
   const [value, setValue] = useState(defaultUrl);
-  const [debouncedValue, setDebouncedValue] = useState(defaultUrl);
-  const previousValueRef = useRef(defaultUrl);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, 500);
+  useEffect(
+    debounce(() => {
+      const handleUrlSubmit = async (url: string) => {
+        const { data } = await getPlayer(url);
+        setPlayerInfo(data);
+      };
 
-    return () => clearTimeout(timer);
-  }, [value]);
-
-  useEffect(() => {
-    if (debouncedValue !== previousValueRef.current) {
-      if (debouncedValue) {
-        onSubmit(debouncedValue);
-      } else {
-        onClear();
+      if (value.trim().length > 0) {
+        handleUrlSubmit(value);
       }
-      previousValueRef.current = debouncedValue;
-    }
-  }, [debouncedValue, onSubmit, onClear]);
+    }, 500),
+    [value],
+  );
+
+  const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+  };
 
   return (
     <div className='flex w-full items-center gap-4'>
@@ -46,15 +44,17 @@ const UrlInputField = ({
         <Icons id='search' />
         <input
           value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-          }}
+          onChange={handleUrlChange}
           placeholder='학습할 영상의 링크를 입력하세요.'
           className='w-full text-lg focus:outline-none'
         />
       </div>
 
-      <BasicButton isDisabled={value === ''} title='확인' onClick={onConfirm} />
+      <BasicButton
+        isDisabled={value === ''}
+        title='확인'
+        onClick={() => setIsSubmitted(true)}
+      />
     </div>
   );
 };

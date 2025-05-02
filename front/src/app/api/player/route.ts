@@ -4,42 +4,38 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
 
-  if (!url) {
-    return NextResponse.json({ error: 'URL is required' }, { status: 400 });
-  }
-
   try {
-    // Extract video ID from YouTube URL
-    const videoId = url.match(
+    // YouTube id 추출
+    const playerId = url.match(
       /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/,
     )?.[1];
 
-    if (!videoId) {
+    if (!playerId) {
       return NextResponse.json(
         { error: 'Invalid YouTube URL' },
         { status: 400 },
       );
     }
 
-    // Use YouTube oEmbed API
+    // YouTube oEmbed API 호출
     const response = await fetch(
-      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${playerId}&format=json`,
     );
 
     if (!response.ok) {
-      throw new Error('Failed to fetch video information');
+      throw new Error('YouTube oEmbed API 응답 에러');
     }
 
     const data = await response.json();
 
     return NextResponse.json({
-      videoId,
+      playerId,
       title: data.title,
     });
   } catch (error) {
-    console.error('Error in player route:', error);
+    console.error('YouTube API oEmbed 조회 실패:', error);
     return NextResponse.json(
-      { error: 'Failed to process YouTube URL' },
+      { error: 'YouTube API oEmbed 조회 실패' },
       { status: 500 },
     );
   }
