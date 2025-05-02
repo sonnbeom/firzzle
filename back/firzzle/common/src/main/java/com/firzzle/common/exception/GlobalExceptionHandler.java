@@ -1,5 +1,6 @@
 package com.firzzle.common.exception;
 
+import com.firzzle.common.library.RenderMessageManager;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import jakarta.validation.ConstraintViolationException;
@@ -358,7 +359,7 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Response.<Void>builder()
                         .status(Status.FAIL)
-                        .message("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
+                        .message(RenderMessageManager.getMessage("MSG_0000000618"))//MSG_0000000618::처리과정 도중 오류가 발생하였습니다.
                         .build()
                 );
     }
@@ -379,7 +380,9 @@ public class GlobalExceptionHandler {
 
         // 국제화된 메시지 가져오기
         String message = e.getLocalizedMessage(messageSource);
-
+        
+        // 퍼브 이식성 고려
+//        String message = RenderMessageManager.getMessage("MSG_0000000618"));//MSG_0000000618::처리과정 도중 오류가 발생하였습니다.
         return ResponseEntity
                 .status(status)
                 .body(Response.<Void>builder()

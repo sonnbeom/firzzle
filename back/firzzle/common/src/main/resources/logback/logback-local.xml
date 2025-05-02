@@ -82,4 +82,10 @@
         <appender-ref ref="CONSOLE" />
     </logger>
 
+    <!-- Kafka 로거 설정 추가 -->
+    <logger name="org.apache.kafka" level="WARN" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILELOG" />
+    </logger>
+
 </configuration>

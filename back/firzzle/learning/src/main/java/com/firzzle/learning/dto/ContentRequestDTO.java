@@ -28,7 +28,6 @@ public class ContentRequestDTO {
     @Schema(description = "YouTube 동영상 URL", required = true, example = "https://www.youtube.com/watch?v=xxxxxxxxxxx")
     private String youtubeUrl;
 
-    @NotBlank(message = "제목은 필수 입력값입니다.")
     @Size(max = 255, message = "제목은 최대 255자까지 입력 가능합니다.")
     @Schema(description = "콘텐츠 제목", required = true, example = "영어 회화 학습 - 기초 1편")
     private String title;

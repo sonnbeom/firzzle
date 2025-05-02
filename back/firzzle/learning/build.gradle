@@ -46,9 +46,38 @@ dependencies {
 	// OpenAPI/Swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 
+	//jasypt
+	implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+	implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
+
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
+}
+
+// learning 모듈의 build.gradle
+processResources {
+	// common 모듈의 리소스를 현재 모듈의 리소스로 복사
+
+	// messages
+	from project(':common').sourceSets.main.resources.matching {
+		include 'messages/**'  // messages 디렉토리 아래의 모든 파일을 복사
+	}
+
+	// logback
+	from project(':common').sourceSets.main.resources.matching {
+		include 'logback/**'  // logback 디렉토리 아래의 모든 파일을 복사
+	}
+
+	// mapper/common
+	from project(':common').sourceSets.main.resources.matching {
+		include 'mapper/common/**'  // mapper/common 디렉토리 아래의 모든 파일을 복사
+	}
+
+	// banner.txt
+	from project(':common').sourceSets.main.resources.matching {
+		include 'banner.txt'  // banner.txt 파일을 복사
+	}
 }
 
 tasks.named('test') {

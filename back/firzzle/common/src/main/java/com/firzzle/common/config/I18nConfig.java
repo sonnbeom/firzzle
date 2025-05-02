@@ -1,8 +1,10 @@
 package com.firzzle.common.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -19,6 +21,9 @@ import java.util.Locale;
 @Configuration
 public class I18nConfig implements WebMvcConfigurer {
 
+    @Value("${SPRING_PROFILES_LANGUAGE:ko}")
+    String defaultLangType;
+
     /**
      * 메시지 소스 빈 정의
      * 기존의 messages와 국제화된 코드 메시지를 통합합니다.
@@ -27,8 +32,10 @@ public class I18nConfig implements WebMvcConfigurer {
     @Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames("messages");
+        messageSource.setBasenames("messages/message");
         messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setCacheSeconds(3);
+        messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
     }
 
@@ -40,9 +47,12 @@ public class I18nConfig implements WebMvcConfigurer {
      */
     @Bean
     public LocaleResolver localeResolver() {
-        CookieLocaleResolver resolver = new CookieLocaleResolver("locale");
-        resolver.setDefaultLocale(Locale.KOREAN); // 기본 언어를 한국어로 설정
-        resolver.setCookieMaxAge(60 * 60 * 24 * 365); // 쿠키 유효기간 1년
+        CookieLocaleResolver resolver = new CookieLocaleResolver("langType");
+
+        Locale defaultLocale = new Locale(defaultLangType);
+        LocaleContextHolder.setDefaultLocale(defaultLocale);
+
+        resolver.setDefaultLocale(defaultLocale); // 기본 언어를 한국어로 설정
         return resolver;
     }
 
@@ -55,7 +65,7 @@ public class I18nConfig implements WebMvcConfigurer {
     @Bean
     public LocaleChangeInterceptor localeChangeInterceptor() {
         LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
-        interceptor.setParamName("lang"); // 예: ?lang=ko
+        interceptor.setParamName("langType"); // 예: ?lang=ko
         return interceptor;
     }
 

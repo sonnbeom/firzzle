@@ -9,8 +9,10 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     jdbc-url: jdbc:mysql://localhost:3306/firzzle_ai_playground?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+#    username: root
+#    password: asd
     username: root
-    password: asd
+    password: pple250106
     maximum-pool-size: 10  # 이 설정 추가: 최소 1 이상
 
   # 파일 업로드 설정
@@ -55,13 +57,17 @@ mybatis:
     - alias: RequestBox
       type: com.firzzle.common.library.RequestBox
 
-# 로깅 설정
+## 로깅 설정
+#logging:
+#  level:
+#    com.firzzle.learning: DEBUG
+#    org.springframework.web: INFO
+#    org.springframework.security: INFO
+#    org.springframework.cloud: INFO
+
+# 로컬 환경 로깅 설정
 logging:
-  level:
-    com.firzzle.learning: DEBUG
-    org.springframework.web: INFO
-    org.springframework.security: INFO
-    org.springframework.cloud: INFO
+  config: classpath:logback/logback-local.xml
 
 # 애플리케이션 설정
 app:
@@ -83,3 +89,9 @@ springdoc:
     tags-sorter: alpha
     operations-sorter: alpha
   packages-to-scan: com.firzzle.learning.controller
+
+#Jasypt 설정
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+  secrete-key: ${JASYPT_SECRET_KEY}

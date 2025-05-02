@@ -148,14 +148,15 @@ public class RequestManager {
     public static RequestBox getBox(HttpServletRequest request) throws Exception {
         RequestBox box = new RequestBox("requestbox");
 
-
         //파라미터 정보 담기
         String key = "";
         String[] values = null;
         Enumeration<?> enumeration = request.getParameterNames();
         while (enumeration.hasMoreElements()) {
             key = (String) enumeration.nextElement();
-            System.out.println(key);
+            // 들어오는 key 로깅
+            logger.debug("들어오는 key: {}", key);
+
             values = request.getParameterValues(key);
             if(values != null){
 
@@ -167,6 +168,8 @@ public class RequestManager {
 //						values[index] = XssEscapeFilter.getInstance().doFilter(request.getRequestURI(), key, values[index]);
 //					}
 //				}
+
+                logger.debug("key: {}, values: {}", key, Arrays.toString(values));
 
                 values = XssUtils.cleanXss(key, "https" + "://" + request.getServerName(), values);
                 values = EmojiUtils.removeEmoji(values);
