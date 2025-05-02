@@ -92,7 +92,7 @@ export class FetchClient {
       throw responseData as ApiResponseError;
     }
 
-    return responseData as Promise<ApiResponseWithData<TResponse>>;
+    return responseData as ApiResponseWithData<TResponse>;
   }
 
   // GET 요청
@@ -107,7 +107,7 @@ export class FetchClient {
 
   // PATCH 요청
   public patch<TResponse, TBody>(url: string, options?: FetchOptions<TBody>) {
-    return this.request<TResponse>(url, { method: 'PUT', ...options });
+    return this.request<TResponse>(url, { method: 'PATCH', ...options });
   }
 
   // DELETE 요청
