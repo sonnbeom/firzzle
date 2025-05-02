@@ -1,4 +1,4 @@
-import PlayerFrame from '@/components/common/PlayerFrame';
+import PlayerFrame from '@/components/player/PlayerFrame';
 import DetailHeader from '@/components/common/TabHeader';
 import LearningChatContent from '@/components/learningChat/LearningChatContent';
 
