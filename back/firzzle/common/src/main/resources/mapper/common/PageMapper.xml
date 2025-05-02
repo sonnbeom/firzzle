@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="PageMapper">
+
+	<sql id="spage">
+		SELECT PAGELIST.*
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+					<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+						#{p_pagesize} AS PAGESIZE,
+						</when>
+						<otherwise>
+						FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+					 	10 AS PAGESIZE,
+						</otherwise>
+					</choose>
+					ORG_QUERY.*
+				FROM (
+	</sql>
+	
+	<sql id="sorder">
+		ROW_NUMBER() OVER (
+	</sql>
+	
+	<sql id="eorder">
+		) AS RNUM,
+		COUNT(*) OVER() AS TOTALPAGE,
+	</sql>
+	
+	<sql id="epage">
+			) ORG_QUERY
+		) PAGELIST
+		<choose>
+			<when test="p_pageno != null and p_pageno != ''">
+			WHERE PAGELIST.PAGENO = COALESCE(#{p_pageno}, 1)
+			</when>
+			<otherwise>
+			WHERE PAGELIST.PAGENO = 1
+			</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="commonPaging1">
+		AND T1.RNUM BETWEEN (((COALESCE(CAST(#{p_pageno} AS DECIMAL), 1) - 1) * COALESCE(CAST(#{p_pagesize} AS DECIMAL), 10)) + 1)
+		AND (COALESCE(CAST(#{p_pageno} AS DECIMAL), 1) * COALESCE(CAST(#{p_pagesize} AS DECIMAL), 10))
+	</sql>
+
+	<!-- <sql id="epage">
+		ORDER BY RNUM ASC
+		<choose>
+			<when test="p_pageno != null and p_pageno != ''">
+				OFFSET 
+				<choose>
+					<when test="p_pagesize != null and p_pagesize != ''">
+						((CONVERT(INT, #{p_pagesize}) * CONVERT(INT, #{p_pageno})) - CONVERT(INT, #{p_pagesize}))
+					</when>
+					<otherwise>
+						((10 * CONVERT(INT, #{p_pageno})) - 10)
+					</otherwise>
+				</choose>
+				ROWS
+			</when>
+			<otherwise>
+				OFFSET 0 ROWS
+			</otherwise>
+		</choose>
+		<choose>
+			<when test="p_pagesize != null and p_pagesize != ''">
+				FETCH NEXT CONVERT(INT, #{p_pagesize}) ROWS ONLY
+			</when>
+			<otherwise>
+				FETCH NEXT 10 ROWS ONLY
+			</otherwise>
+		</choose>
+		) ORG_QUERY 
+		) PAGELIST
+	</sql> -->
+	
+	
+	
+	
+
+	
+	<sql id="spageForMemberList">
+		SELECT 
+			PAGELIST.TNUM,
+			PAGELIST.PAGENO,
+			PAGELIST.PAGESIZE,
+			PAGELIST.TOTALPAGE,
+			PAGELIST.USERID,
+			PAGELIST.USER_TYPE,
+			PAGELIST.LOGIN_ID,
+			PAGELIST.MEMBER_NO,
+			PAGELIST.COMP,
+			PAGELIST.COMPNM,
+			PAGELIST.DEPT,
+			PAGELIST.DEPTNM,
+			PAGELIST.POS,
+			PAGELIST.POSNM,
+			PAGELIST.JIK,
+			PAGELIST.JIKNM,
+			PAGELIST.DUT,
+			PAGELIST.DUTNM,
+			PAGELIST.STATUS,
+			PAGELIST.STATUS_TYPE,
+			PAGELIST.STATUS_TYPENM,
+			PAGELIST.JOIN_STATE,
+			PAGELIST.INDATE,
+			PAGELIST.TERMS_ENCOURAGE,
+			PAGELIST.NAME,
+			PAGELIST.STATUSNM,
+			PAGELIST.EMAIL,
+			PAGELIST.PHONE,
+			PAGELIST.HANDPHONE,
+			PAGELIST.RRN,
+			PAGELIST.GRCODE,
+			PAGELIST.GRCODENM,
+			PAGELIST.PERIOD_TARGET_YN
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+					<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+						#{p_pagesize} AS PAGESIZE,
+						</when>
+						<otherwise>
+						FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+					 	10 AS PAGESIZE,
+						</otherwise>
+					</choose>
+					ORG_QUERY.*
+				FROM (
+				
+	</sql>
+
+	
+	<sql id="spage_member">
+		SELECT 
+			PAGELIST.TNUM,
+			PAGELIST.PAGENO,
+			PAGELIST.PAGESIZE,
+			PAGELIST.TOTALPAGE,
+			PAGELIST.USERID,
+			PAGELIST.USER_TYPE,
+			PAGELIST.LOGIN_ID,
+			PAGELIST.MEMBER_NO,
+			PAGELIST.COMP,
+			PAGELIST.COMPNM,
+			PAGELIST.DEPT,
+			PAGELIST.DEPTNM,
+			PAGELIST.POS,
+			PAGELIST.POSNM,
+			PAGELIST.JIK,
+			PAGELIST.JIKNM,
+			PAGELIST.DUT,
+			PAGELIST.DUTNM,
+			PAGELIST.LOC,
+			PAGELIST.STATUS_TYPE,
+			PAGELIST.STATUS,
+			PAGELIST.HIRE_DATE,
+			PAGELIST.CLOSE_DATE,
+			PAGELIST.MOD_DATE,
+			PAGELIST.TERMS_PRIVACY,
+			PAGELIST.LOGIN_FAIL_CNT,
+			PAGELIST.LOGIN_YN,
+			PAGELIST.TERMS_SERVICE,
+			PAGELIST.TERMS_LOCATION,
+			PAGELIST.NAME,
+			PAGELIST.NAME_ENG,
+			PAGELIST.RRN,
+			PAGELIST.CI,
+			PAGELIST.BIRTHDAY,
+			PAGELIST.GENDER,
+			PAGELIST.EMAIL,
+			PAGELIST.PHONE,
+			PAGELIST.HANDPHONE,
+			PAGELIST.WPHONE,
+			PAGELIST.POST,
+			PAGELIST.ADDR1,
+			PAGELIST.ADDR2,
+			PAGELIST.COUNTRY,
+			PAGELIST.NATIONALITY,
+			PAGELIST.IMG_SAVEFILE,
+			PAGELIST.IMG_REALFILE,
+			GET_CODENM_LANG('0088', PAGELIST.STATUS, #{langType}) AS STATUSNM,
+			PAGELIST.LUSERID,
+			PAGELIST.LDATE
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+					<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+						#{p_pagesize} AS PAGESIZE,
+						</when>
+						<otherwise>
+						FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+					 	10 AS PAGESIZE,
+						</otherwise>
+					</choose>
+					ORG_QUERY.*
+				FROM (
+	</sql>
+	
+	
+	<sql id="spage_study">
+		<![CDATA[
+		SELECT 
+			PAGELIST.*,
+			(CASE
+				WHEN 'FL' = PAGELIST.SUBJ_TYPE THEN
+			  	(CASE
+			      WHEN (PAGELIST.BEFORESTUDY_EDU_START IS NOT NULL AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') > PAGELIST.BEFORESTUDY_EDU_START AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') < PAGELIST.BEFORESTUDY_EDU_END) THEN 'PRE'
+			      WHEN ((PAGELIST.EDU_START IS NOT NULL AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') > PAGELIST.EDU_START AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') < PAGELIST.EDU_END)
+			        OR (PAGELIST.BEFORESTUDY_EDU_END IS NOT NULL AND PAGELIST.EDU_START IS NOT NULL AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') > PAGELIST.BEFORESTUDY_EDU_END AND PAGELIST.EDU_START > DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S'))) THEN 'NOW'
+			      WHEN ((PAGELIST.AFTERSTUDY_EDU_START IS NOT NULL AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') > PAGELIST.AFTERSTUDY_EDU_START AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') < PAGELIST.AFTERSTUDY_EDU_END)
+			        OR (PAGELIST.EDU_END IS NOT NULL AND PAGELIST.AFTERSTUDY_EDU_START IS NOT NULL AND DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S') > PAGELIST.EDU_END AND PAGELIST.AFTERSTUDY_EDU_START > DATE_FORMAT(CURRENT_TIMESTAMP, '%Y%m%d%H%i%S'))) THEN 'POS'
+			      ELSE 'N'
+			      END
+			    )
+			  ELSE ''
+			  END
+			) AS STUDYDATE_GUBUN,
+			(CASE WHEN COALESCE(PAGELIST.BEFORESTUDY_EDU_END , '') = '' THEN '' ELSE TIMESTAMPDIFF(DAY, CONVERT(LEFT(PAGELIST.BEFORESTUDY_EDU_END, 8), DATE), CAST(CURRENT_TIMESTAMP AS DATE)) END) AS REMAINING_PREDAYS,
+			(CASE WHEN COALESCE(PAGELIST.REAL_EDU_END,'') = '' THEN '' ELSE TIMESTAMPDIFF(DAY, CAST(CURRENT_TIMESTAMP AS DATE), CONVERT(LEFT(PAGELIST.REAL_EDU_END, 8), DATE)) END) AS REMAINING_NOWDAYS,
+			(CASE WHEN COALESCE(PAGELIST.AFTERSTUDY_EDU_END,'') = '' THEN '' ELSE TIMESTAMPDIFF(DAY, CONVERT(LEFT(PAGELIST.AFTERSTUDY_EDU_END, 8), DATE), CAST(CURRENT_TIMESTAMP AS DATE)) END) AS REMAINING_POSDAYS,
+			GET_ROOTSUBJCLASSNM_LANG(PAGELIST.GRCODE, PAGELIST.SUBJCLASS, #{langType}) AS ROOT_SUBJCLASSNM,
+			GET_CODENM_LANG('0001', PAGELIST.SUBJ_TYPE, #{langType}) AS SUBJ_TYPENM
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+		]]>
+					<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						<![CDATA[
+							FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+							#{p_pagesize} AS PAGESIZE,
+						]]>
+						</when>
+						<otherwise>
+						<![CDATA[
+							FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+						 	10 AS PAGESIZE,
+						 ]]>
+						</otherwise>
+					</choose>
+		<![CDATA[
+					ORG_QUERY.*
+				FROM (
+		]]>
+	</sql>
+	
+	
+	<sql id="spage_explore">
+		<![CDATA[
+		SELECT 
+			PAGELIST.*,
+			-- TO_CHAR(TO_DATE(PAGELIST.INDATE, 'YYYYMMDDHH24MISS'), 'YY.MM.DD') AS INDATE_FORMAT2,
+			DATE_FORMAT(CONVERT(LEFT(PAGELIST.INDATE, 8), DATETIME), '%y.%m.%d') AS INDATE_FORMAT,
+			
+			GET_SUBJCLASSNM_LANG(#{s_grcode}, PAGELIST.SUBJATT, #{langType}) AS SUBJATTNM,
+			(CASE WHEN PAGELIST.GUBUN = 'CONTENTPOOL' THEN GET_CODENM_LANG('0136', PAGELIST.TYPE_ORG, #{langType})
+			ELSE GET_CODENM_LANG('0001', PAGELIST.TYPE_ORG, #{langType}) END) AS TYPE,
+			VIEWCNT,
+			
+			(CASE
+				WHEN PAGELIST.GUBUN = 'CONTENTPOOL' THEN (SELECT COUNT(*) FROM FB_CONTENTPOOL_REVIEW WHERE SEQ = PAGELIST.CODE AND VIEW_YN = 'Y')
+				ELSE (SELECT COUNT(*) FROM FB_SUBJ_REPLY WHERE SUBJ = PAGELIST.CODE)
+				END
+			) AS REPLYCNT,
+			(CASE
+				WHEN PAGELIST.GUBUN = 'CONTENTPOOL' THEN (SELECT SAVEFILENAME FROM FB_REPOSITORY_FILE WHERE MASTERSEQ = CONCAT('CONTENT_POOL','-',PAGELIST.SEQ) AND SEQ = PAGELIST.SEQ AND FILESEQ = '1')
+				ELSE (SELECT SAVEFILENAME FROM FB_REPOSITORY_FILE WHERE MASTERSEQ = 'SUBJ-THUMBNAIL' AND SEQ = PAGELIST.SEQ AND FILESEQ = '1')
+				END 
+			) AS CDN_PATH,
+			
+			(CASE
+				WHEN PAGELIST.USERGUBUN = 'SME' THEN (SELECT TITLE FROM FB_SME_INFO WHERE USERID = PAGELIST.INUSERID)
+				WHEN PAGELIST.USERGUBUN = 'GE' THEN (SELECT TITLE FROM FB_GE_INFO WHERE USERID = PAGELIST.INUSERID AND ODD_NUM = (SELECT ODD_NUM FROM FB_GE_CONTENT WHERE SEQ = PAGELIST.CODE))
+				ELSE ''
+				END
+			) AS CHANNELNM,
+			
+			(CASE
+				WHEN PAGELIST.USERGUBUN = 'SME' THEN (SELECT SAVEFILENAME FROM FB_REPOSITORY_FILE WHERE SEQ = PAGELIST.INUSERID AND MASTERSEQ = 'SME' AND SUMMARY = 'PROFILE') 
+				WHEN PAGELIST.USERGUBUN = 'GE' THEN (SELECT SAVEFILENAME FROM FB_REPOSITORY_FILE WHERE SEQ = PAGELIST.INUSERID AND MASTERSEQ = CONCAT('GE',(SELECT ODD_NUM FROM FB_GE_CONTENT WHERE SEQ = PAGELIST.CODE)) AND SUMMARY = 'PROFILE')
+				ELSE ''
+				END 
+			) AS CHN_CDN_PATH,
+			(CASE WHEN PAGELIST.USERGUBUN = 'GE' THEN (SELECT ODD_NUM FROM FB_GE_CONTENT WHERE SEQ = PAGELIST.CODE) ELSE 0 END) AS GE_ODD_NUM,
+			(CASE
+				WHEN PAGELIST.GUBUN = 'CONTENTPOOL' THEN NVL((SELECT LIKES FROM FB_LIKES_CONTENTPOOL WHERE SEQ = PAGELIST.CODE AND USERID = #{u_userid}), 'N')
+				WHEN PAGELIST.GUBUN = 'SUBJ' THEN NVL((SELECT OPENYN FROM FB_SUBJ_LIKE WHERE SUBJ = PAGELIST.CODE AND USERID = #{u_userid}), 'N')
+				ELSE ''
+				END
+			) AS LIKES ,
+			(CASE
+				WHEN GUBUN = 'CONTENTPOOL' THEN (SELECT COUNT(LIKES) FROM FB_LIKES_CONTENTPOOL WHERE SEQ = CODE AND LIKES = 'Y')
+				WHEN GUBUN = 'SUBJ' THEN (SELECT COUNT(OPENYN) FROM FB_SUBJ_LIKE WHERE SUBJ = CODE AND OPENYN = 'Y')
+				ELSE 0
+				END
+			) AS LIKES_COUNT
+			
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+		]]>
+					<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						<![CDATA[
+							FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+							#{p_pagesize} AS PAGESIZE,
+						]]>
+						</when>
+						<otherwise>
+						<![CDATA[
+							FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+						 	10 AS PAGESIZE,
+						 ]]>
+						</otherwise>
+					</choose>
+		<![CDATA[
+					ORG_QUERY.*
+				FROM (
+		]]>
+	</sql>
+	
+	
+	
+	<sql id="spage_subjclass">
+		SELECT
+			PAGELIST.*,
+			(SELECT DEPTH FROM FB_SUBJATT WHERE GRCODE = PAGELIST.GRCODE AND SUBJCLASS = PAGELIST.SUBJCLASS) AS DEPTH,
+			GET_NAME(PAGELIST.INUSERID) AS NAME,
+			GET_CODENM_LANG('0001', PAGELIST.SUBJ_TYPE, #{langType}) AS SUBJ_TYPENM,
+			GET_GRCODENM(PAGELIST.GRCODE) AS GRCODENM,
+			GET_SUBJCLASSFULLNM_LANG(PAGELIST.GRCODE, PAGELIST.SUBJCLASS, #{langType}) AS SUBJCLASSNM
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+					<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+						#{p_pagesize} AS PAGESIZE,
+						</when>
+						<otherwise>
+						FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+					 	10 AS PAGESIZE,
+						</otherwise>
+					</choose>
+					ORG_QUERY.*
+				FROM (
+	</sql>
+	
+	
+	<sql id="spage_contentSubjclass">
+		SELECT
+			PAGELIST.*,
+			(SELECT DEPTH FROM FB_SUBJATT WHERE GRCODE = PAGELIST.GRCODE AND SUBJCLASS = PAGELIST.SUBJCLASS) AS DEPTH,
+			GET_NAME(PAGELIST.INUSERID) AS NAME,
+			GET_CODENM_LANG('0136', PAGELIST.CONTENT_TYPE, #{langType}) AS CONTENT_TYPENM,
+			GET_GRCODENM(PAGELIST.GRCODE) AS GRCODENM,
+			GET_SUBJCLASSFULLNM_LANG(PAGELIST.GRCODE, PAGELIST.SUBJCLASS, #{langType}) AS SUBJCLASSNM
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+					<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+						#{p_pagesize} AS PAGESIZE,
+						</when>
+						<otherwise>
+						FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+					 	10 AS PAGESIZE,
+						</otherwise>
+					</choose>
+					ORG_QUERY.*
+				FROM (
+	</sql>
+	
+	<sql id="spage_grseqSubjclass">
+		WITH RECURSIVE TREE_SUBJCLASS AS (
+			SELECT
+		    	FSA.SUBJCLASS,
+		    	COALESCE(LANG.MSG, FSA.CLASSNAME) AS CLASSNAME
+			FROM FB_SUBJATT FSA
+			LEFT JOIN (SELECT FL.MSG, FL.LANGKEY FROM FB_LANGUAGE FL WHERE FL.LANG = 'ko') LANG
+				ON FSA.LANGKEY = LANG.LANGKEY
+			WHERE
+				USE_YN = 'Y'
+				AND GRCODE = #{p_grcode}
+				<if test = "s_subjclasslevel != null and s_subjclasslevel != ''.toString()">
+				AND SUBJCLASS = #{s_subjclasslevel}
+				</if>
+				
+			UNION ALL
+			SELECT
+		    	TREE_SUB1.SUBJCLASS,
+		    	COALESCE(LANG.MSG, TREE_SUB1.CLASSNAME) AS CLASSNAME
+			FROM
+				FB_SUBJATT TREE_SUB1 INNER JOIN TREE_SUBJCLASS TREE_SUB2
+				ON TREE_SUB1.PARENT_SUBJCLASS = TREE_SUB2.SUBJCLASS
+				LEFT JOIN (SELECT FL.MSG, FL.LANGKEY FROM FB_LANGUAGE FL WHERE FL.LANG = 'ko') LANG
+					ON TREE_SUB1.LANGKEY = LANG.LANGKEY
+			WHERE
+				TREE_SUB1.USE_YN = 'Y'
+				AND TREE_SUB1.GRCODE = #{p_grcode}
+		)
+		
+			SELECT PAGELIST.*
+		FROM (SELECT
+					((ORG_QUERY.TOTALPAGE+1) - ORG_QUERY.RNUM) AS TNUM,
+					 
+						<choose>
+						<when test="p_pagesize != null and p_pagesize != ''">
+						FLOOR((ORG_QUERY.RNUM - 1) / #{p_pagesize} + 1) AS PAGENO,
+						#{p_pagesize} AS PAGESIZE,
+						</when>
+						<otherwise>
+						FLOOR((ORG_QUERY.RNUM - 1) / 10 + 1) AS PAGENO,
+					 	10 AS PAGESIZE,
+						</otherwise>
+					</choose>
+						 
+					ORG_QUERY.*
+				FROM (
+	</sql>
+	
+</mapper>
+
