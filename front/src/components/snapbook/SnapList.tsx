@@ -1,30 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import { DateGroup } from '@/types/snapReview';
 import { useInfiniteScroll } from 'hooks/useInfiniteScroll';
 import { ITEMS_PER_PAGE } from 'utils/const';
 import SnapCard from './SnapCard';
 
-interface SnapItem {
-  id: string;
-  title: string;
-  thumbnail: string;
-  date: string;
-  length: number;
-}
-
-interface DateGroup {
-  date: string;
-  items: SnapItem[];
-}
-
 interface SnapListProps {
-  snapLists: DateGroup[];
+  snapLists: { data: DateGroup[] };
 }
 
 function SnapList({ snapLists }: SnapListProps) {
   const { visibleData: visibleGroups, observerTarget } = useInfiniteScroll({
-    initialData: snapLists,
+    initialData: snapLists.data || [],
     itemsPerPage: ITEMS_PER_PAGE,
   });
 
