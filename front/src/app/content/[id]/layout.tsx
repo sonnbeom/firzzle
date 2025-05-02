@@ -1,8 +1,15 @@
-import PlayerFrame from '@/components/player/PlayerFrame';
+import { ReactNode } from 'react';
 import DetailHeader from '@/components/common/TabHeader';
 import LearningChatContent from '@/components/learningChat/LearningChatContent';
+import PlayerFrame from '@/components/player/PlayerFrame';
 
-const DetailLayout = ({ children }: { children: React.ReactNode }) => {
+interface PageProps {
+  params: Promise<{ id: string }>;
+  children: ReactNode;
+}
+
+const DetailLayout = async ({ params, children }: PageProps) => {
+  const { id } = await params;
   const playerId = 'dQw4w9WgXcQ';
 
   return (
@@ -12,7 +19,7 @@ const DetailLayout = ({ children }: { children: React.ReactNode }) => {
         {/* 영상 */}
         <PlayerFrame playerId={playerId} />
         {/* 러닝챗 */}
-        <LearningChatContent />
+        <LearningChatContent contentId={id} />
       </div>
       <div className='flex flex-7 flex-col items-center gap-4 overflow-hidden'>
         <DetailHeader />
