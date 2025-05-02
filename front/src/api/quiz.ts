@@ -1,4 +1,4 @@
-import { ApiResponseWithData } from '@/types/common/apiResponse';
+import { ApiResponseWithData } from '@/types/common';
 import { QuizData, QuizSubmitRequest, QuizSubmitResponse } from '@/types/quiz';
 import { externalApi } from './common/apiInstance';
 

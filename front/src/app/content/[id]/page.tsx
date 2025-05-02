@@ -16,6 +16,7 @@ const Summary = async ({ params, searchParams }: PageProps) => {
   const tabParams = await searchParams;
   const tab = tabParams.tab || 'Easy';
   const { data } = await getSummary(id);
+  console.log(data);
 
   return (
     <div className='flex w-full flex-col gap-7'>

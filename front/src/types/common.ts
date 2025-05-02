@@ -1,3 +1,4 @@
+// 공통 응답 타입
 interface ApiResponse {
   status: 'OK' | 'FAIL';
   cause: string;

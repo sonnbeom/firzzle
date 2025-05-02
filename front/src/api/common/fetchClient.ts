@@ -1,7 +1,4 @@
-import {
-  ApiResponseError,
-  ApiResponseWithData,
-} from '@/types/common/apiResponse';
+import { ApiResponseError, ApiResponseWithData } from '@/types/common';
 
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
@@ -89,6 +86,11 @@ export class FetchClient {
 
     // 응답 데이터가 에러일 경우 예외처리
     if (!response.ok) {
+      throw responseData as ApiResponseError;
+    }
+
+    // 응답 상태코드가 400, 500일 경우 예외처리
+    if (responseData.status === 'FAIL') {
       throw responseData as ApiResponseError;
     }
 
