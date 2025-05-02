@@ -1,18 +1,12 @@
-import React from 'react';
 import TimeStamp from '../common/TimeStamp';
+import { QuizSubmitResponse } from '@/types/quiz';
 
-interface QuizAnswerProps {
-  quizNo: string;
-  question: string;
-  answer: boolean;
-  description: string;
-  timestamp?: number;
-}
+type QuizAnswerProps = QuizSubmitResponse['results'][0];
 
 const QuizAnswer = ({
   quizNo,
   question,
-  answer,
+  correct,
   description,
   timestamp,
 }: QuizAnswerProps) => {
@@ -34,9 +28,9 @@ const QuizAnswer = ({
       {/* 정답 여부 + 해설 */}
       <div className='rounded-xl border border-gray-50 bg-white px-6 py-3 shadow-sm transition-all md:py-[16px]'>
         <div
-          className={`mb-2 text-center text-lg font-bold md:mb-[18px] md:text-xl ${answer ? 'text-blue-400' : 'text-red-500'}`}
+          className={`mb-2 text-center text-lg font-bold md:mb-[18px] md:text-xl ${correct ? 'text-blue-400' : 'text-red-500'}`}
         >
-          {answer ? '정답이에요!' : '오답이에요!'}
+          {correct ? '정답이에요!' : '오답이에요!'}
         </div>
         <p className='text-md mb-4 leading-relaxed text-gray-900 md:text-lg'>
           {description}
