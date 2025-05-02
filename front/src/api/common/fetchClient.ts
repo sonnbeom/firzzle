@@ -92,6 +92,11 @@ export class FetchClient {
       throw responseData as ApiResponseError;
     }
 
+    // 응답 상태코드가 400, 500일 경우 예외처리
+    if (responseData.status === 'FAIL') {
+      throw responseData as ApiResponseError;
+    }
+
     return responseData as ApiResponseWithData<TResponse>;
   }
 

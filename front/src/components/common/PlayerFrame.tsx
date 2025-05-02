@@ -18,7 +18,6 @@ const PlayerFrame = ({ playerId }: PlayerFrameProps) => {
       // YouTube IFrame Player API 스크립트 로드
       const tag = document.createElement('script');
       tag.src = 'https://www.youtube.com/iframe_api';
-
       // 스크립트 태그를 첫 번째 스크립트 태그 앞에 삽입
       const firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);

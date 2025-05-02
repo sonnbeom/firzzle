@@ -1,11 +1,10 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import UrlInputField from '@/components/home/UrlInputField';
 import PlayerFetcher from '@/components/player/PlayerFetcher';
 import ProgressBar from '@/components/player/ProgressBar';
 import { PlayerInfo } from '@/types/player';
-import { Skeleton } from '../ui/skeleton';
 
 interface PlayerContentProps {
   initialPlayerInfo: PlayerInfo | null;
@@ -33,12 +32,10 @@ const PlayerContent = ({
           </p>
         </div>
       ) : (
-        <Suspense fallback={<Skeleton className='h-[500px] w-[800px]' />}>
-          <PlayerFetcher
-            playerId={playerInfo.playerId}
-            title={playerInfo.title}
-          />
-        </Suspense>
+        <PlayerFetcher
+          playerId={playerInfo.playerId}
+          title={playerInfo.title}
+        />
       )}
 
       <div className='flex w-[800px] flex-col items-center gap-10'>

@@ -1,4 +1,8 @@
-import { NextResponse } from 'next/server';
+import {
+  ApiResponseWithData,
+  ApiResponseError,
+} from '@/types/common/apiResponse';
+import { PlayerInfo } from '@/types/player';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,10 +15,14 @@ export async function GET(request: Request) {
     )?.[1];
 
     if (!playerId) {
-      return NextResponse.json(
-        { error: 'Invalid YouTube URL' },
-        { status: 400 },
-      );
+      return Response.json({
+        status: 'FAIL',
+        cause: 'INVALID_URL',
+        message: 'YouTube URL이 유효하지 않습니다.',
+        prevUrl: request.url,
+        redirectUrl: '',
+        data: null,
+      } as ApiResponseError);
     }
 
     // YouTube oEmbed API 호출
@@ -23,20 +31,32 @@ export async function GET(request: Request) {
     );
 
     if (!response.ok) {
-      throw new Error('YouTube oEmbed API 응답 에러');
+      throw new Error(`YouTube API 에러: ${response.status}`);
     }
 
-    const data = await response.json();
+    const oembedData = await response.json();
 
-    return NextResponse.json({
-      playerId,
-      title: data.title,
-    });
+    return Response.json({
+      status: 'OK',
+      cause: '',
+      message: 'YouTube API oEmbed 조회를 성공했습니다.',
+      prevUrl: request.url,
+      redirectUrl: '',
+      data: {
+        playerId,
+        title: oembedData.title,
+      } as PlayerInfo,
+    } as ApiResponseWithData<PlayerInfo>);
   } catch (error) {
-    console.error('YouTube API oEmbed 조회 실패:', error);
-    return NextResponse.json(
-      { error: 'YouTube API oEmbed 조회 실패' },
-      { status: 500 },
-    );
+    console.log('YouTube API oEmbed 조회 실패: ', error);
+
+    return Response.json({
+      status: 'FAIL',
+      cause: 'API_ERROR',
+      message: '서버 오류가 발생했습니다.',
+      prevUrl: request.url,
+      redirectUrl: '',
+      data: null,
+    } as ApiResponseError);
   }
 }
