@@ -2,21 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
 import { usePagination } from '@/hooks/usePagination';
+import { ExpertRecommend } from '@/types/recommend';
 import Icons from '../common/Icons';
 
 interface ExpertProps {
-  experts: Array<{
-    name: string;
-    description: string;
-    thumbnail: string;
-    url: string;
-  }>;
-  keyword: string;
+  experts: ExpertRecommend[];
 }
 
-const Expert = ({ experts, keyword }: ExpertProps) => {
+const Expert = ({ experts }: ExpertProps) => {
   const {
     visibleItems: visibleExperts,
     showPagination,
@@ -32,8 +26,10 @@ const Expert = ({ experts, keyword }: ExpertProps) => {
   return (
     <div>
       <h2 className='text-center text-lg font-medium text-gray-900 sm:text-xl'>
-        <span className='font-semibold text-blue-400'>{keyword}</span> 전문가와
-        대화해보세요
+        <span className='font-semibold text-blue-400'>
+          {experts[0]?.keyword}
+        </span>{' '}
+        전문가와 대화해보세요
       </h2>
       {showPagination && (
         <div className='flex justify-end'>
