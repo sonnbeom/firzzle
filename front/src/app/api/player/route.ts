@@ -1,7 +1,4 @@
-import {
-  ApiResponseWithData,
-  ApiResponseError,
-} from '@/types/common/apiResponse';
+import { ApiResponseWithData, ApiResponseError } from '@/types/common';
 import { PlayerInfo } from '@/types/player';
 
 // 플레이어 정보 조회

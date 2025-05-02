@@ -8,9 +8,8 @@ interface SummaryResponse {
 }
 
 // 요약 조회
-export const getSummary = (contentId: string) => {
-  const response = externalApi.get<SummaryResponse>(
+export const getSummary = async (contentId: string) => {
+  return await externalApi.get<SummaryResponse>(
     `/contents/${contentId}/summary`,
   );
-  return response;
 };

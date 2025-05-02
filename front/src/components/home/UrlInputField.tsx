@@ -1,7 +1,8 @@
 'use client';
 
 import { debounce } from 'lodash';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { postContents } from '@/api/contents';
 import { getPlayer } from '@/api/player';
 import { PlayerInfo } from '@/types/player';
 import BasicButton from '../common/BasicButton';
@@ -34,8 +35,13 @@ const UrlInputField = ({
     [value],
   );
 
-  const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
+  const handleUrlConfirm = async () => {
+    setIsSubmitted(true);
+    try {
+      await postContents();
+    } catch (error) {
+      console.error('컨텐츠 등록 실패:', error);
+    }
   };
 
   return (
@@ -44,7 +50,9 @@ const UrlInputField = ({
         <Icons id='search' />
         <input
           value={value}
-          onChange={handleUrlChange}
+          onChange={(e) => {
+            setValue(e.target.value);
+          }}
           placeholder='학습할 영상의 링크를 입력하세요.'
           className='w-full text-lg focus:outline-none'
         />
@@ -53,7 +61,7 @@ const UrlInputField = ({
       <BasicButton
         isDisabled={value === ''}
         title='확인'
-        onClick={() => setIsSubmitted(true)}
+        onClick={handleUrlConfirm}
       />
     </div>
   );

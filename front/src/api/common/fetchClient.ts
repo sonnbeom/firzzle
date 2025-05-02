@@ -1,7 +1,4 @@
-import {
-  ApiResponseError,
-  ApiResponseWithData,
-} from '@/types/common/apiResponse';
+import { ApiResponseError, ApiResponseWithData } from '@/types/common';
 
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
