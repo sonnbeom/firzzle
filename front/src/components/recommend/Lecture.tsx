@@ -2,20 +2,15 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 import { usePagination } from '@/hooks/usePagination';
+import { RecommendLecture } from '@/types/recommend';
 import Icons from '../common/Icons';
 
 interface LectureProps {
-  lectures: Array<{
-    title: string;
-    thumbnail: string;
-    url: string;
-  }>;
-  keyword: string;
+  lectures: RecommendLecture[];
 }
 
-const Lecture = ({ lectures, keyword }: LectureProps) => {
+const Lecture = ({ lectures }: LectureProps) => {
   const router = useRouter();
   const {
     visibleItems: visibleLectures,
@@ -32,8 +27,10 @@ const Lecture = ({ lectures, keyword }: LectureProps) => {
   return (
     <div>
       <h2 className='text-center text-lg font-medium text-gray-900 sm:text-xl'>
-        <span className='font-semibold text-blue-400'>{keyword}</span>에 관련된
-        강의를 추천해드릴게요
+        <span className='font-semibold text-blue-400'>
+          {lectures[0]?.keyword}
+        </span>
+        에 관련된 강의를 추천해드릴게요
       </h2>
       {showPagination && (
         <div className='flex justify-end'>
