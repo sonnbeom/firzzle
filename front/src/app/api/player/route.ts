@@ -4,6 +4,7 @@ import {
 } from '@/types/common/apiResponse';
 import { PlayerInfo } from '@/types/player';
 
+// 플레이어 정보 조회
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');

@@ -1,4 +1,3 @@
-import { ApiResponseWithData } from '@/types/common/apiResponse';
 import { SummaryData } from '@/types/summary';
 import { externalApi } from './common/apiInstance';
 
@@ -10,7 +9,8 @@ interface SummaryResponse {
 
 // 요약 조회
 export const getSummary = (contentId: string) => {
-  return externalApi.get(`/contents/${contentId}/summary`) as Promise<
-    ApiResponseWithData<SummaryResponse>
-  >;
+  const response = externalApi.get<SummaryResponse>(
+    `/contents/${contentId}/summary`,
+  );
+  return response;
 };
