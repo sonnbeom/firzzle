@@ -1,18 +1,44 @@
 server:
-  port: 0
+  port: 8082
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: llm-server
 
+  ai:
+    openai: 
+      api-key: ${OPENAI_API_KEY}     
+      base-url: https://api.openai.com/v1
+      timeline:
+        model: gpt-4o-mini
+      summary:
+        model: gpt-4o-mini
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: ${KAFKA_GROUP_ID}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
 eureka:
   client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-  #      defaultZone: http://eureka-server:8761/eureka/
-  instance:
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    enabled: false
 
-
+qdrant:
+  host: ${QDRANT_HOST}
+  api-key: ${QDRANT_API_KEY}

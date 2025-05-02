@@ -10,6 +10,8 @@ import com.firzzle.stt.executor.WhisperExecutor;
 import com.firzzle.stt.service.YoutubeAudioService;
 import com.firzzle.stt.util.*;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.nio.charset.StandardCharsets;
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,11 +22,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class SttService {
 	
-//    @Autowired
-//    private SttConvertedProducer sttConvertedProducer;
+    @Autowired
+    private SttConvertedProducer sttConvertedProducer;
 
     @Value("${whisper.working.dir}")
     private String whisperDir;
@@ -70,6 +73,7 @@ public class SttService {
         String scripts = printDownloadedFiles(uuid);
         
         if(scripts != null) {
+        	sttConvertedProducer.sendSttResult(scripts); 
         	return scripts;
         }else {
             Path wavPath = youtubeAudioService.downloadAndConvertToWav(url, uuid);
@@ -88,10 +92,10 @@ public class SttService {
         Path infoJsonPath = workingDir.resolve(uuid + ".info.json");
         if (Files.exists(infoJsonPath)) {
             String infoJson = Files.readString(infoJsonPath, StandardCharsets.UTF_8);
-            System.out.println("✅ [info.json] 메타데이터:");
-            System.out.println(infoJson);
+            log.info("✅ [info.json] 메타데이터:");
+            log.info(infoJson);
         } else {
-            System.out.println("❗ info.json 파일이 없습니다.");
+            log.info("❗ info.json 파일이 없습니다.");
         }
 
         // 2. srt 자막 파일 읽기
@@ -101,7 +105,7 @@ public class SttService {
         	String srtText = SubtitleUtil.cleanSrtToText(srtPath);
         	return srtText;
         } else {
-            System.out.println("❗ ko.srt 자막 파일이 없습니다.");
+            log.info("❗ ko.srt 자막 파일이 없습니다.");
             return null;
         }
     }
@@ -111,7 +115,7 @@ public class SttService {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                System.out.println("[process] " + line);
+                log.info("[process] " + line);
             }
         }
         int exitCode = process.waitFor();
