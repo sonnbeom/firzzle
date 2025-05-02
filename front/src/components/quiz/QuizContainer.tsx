@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import { submitQuizAnswers } from '@/api/quiz';
 import BasicDialog from '@/components/common/BasicDialog';
 import { Button } from '@/components/ui/button';
 import { usePreventNavigation } from '@/hooks/usePreventNavigation';
+import { QuizData, QuizSubmitRequest, QuizSubmitResponse } from '@/types/quiz';
 import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
-import { submitQuizAnswers } from '@/api/quiz';
-import { QuizData, QuizSubmitRequest, QuizSubmitResponse } from '@/types/quiz';
 
 declare global {
   interface Window {

@@ -1,5 +1,5 @@
-import TimeStamp from '../common/TimeStamp';
 import { QuizSubmitResponse } from '@/types/quiz';
+import TimeStamp from '../common/TimeStamp';
 
 type QuizAnswerProps = QuizSubmitResponse['results'][0];
 

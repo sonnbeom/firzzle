@@ -1,5 +1,5 @@
-import QuizContainer from '@/components/quiz/QuizContainer';
 import { getQuiz } from '@/api/quiz';
+import QuizContainer from '@/components/quiz/QuizContainer';
 
 interface PageProps {
   params: Promise<{
