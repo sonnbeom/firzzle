@@ -14,7 +14,10 @@ export const submitQuizAnswers = (
   contentId: string,
   request: QuizSubmitRequest,
 ) => {
-  return externalApi.post(`/contents/${contentId}/quiz/submit`, {
-    body: request,
-  }) as Promise<ApiResponseWithData<QuizSubmitResponse>>;
+  return externalApi.post<QuizSubmitResponse, QuizSubmitRequest>(
+    `/contents/${contentId}/quiz/submit`,
+    {
+      body: request,
+    },
+  );
 };
