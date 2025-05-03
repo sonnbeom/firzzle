@@ -1,10 +1,17 @@
 'use client';
 
 import { ChangeEvent, KeyboardEvent, useState } from 'react';
+import { postExamChat, postLearningChat } from '@/api/learningChat';
+import { Mode } from '@/types/learningChat';
 import { MAX_LEARNING_CHAT_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
 
-const ChatTextAreaField = () => {
+interface ChatTextAreaFieldProps {
+  mode: Mode;
+  contentId: string;
+}
+
+const ChatTextAreaField = ({ mode, contentId }: ChatTextAreaFieldProps) => {
   const [value, setValue] = useState('');
 
   const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -23,9 +30,18 @@ const ChatTextAreaField = () => {
   };
 
   // 채팅 입력
-  const handleSubmit = () => {
-    console.log(value);
-    setValue('');
+  const handleSubmit = async () => {
+    try {
+      if (mode === '학습모드') {
+        await postLearningChat();
+      } else {
+        await postExamChat(contentId);
+      }
+    } catch (error) {
+      console.error('채팅 전송 실패:', error);
+    } finally {
+      setValue('');
+    }
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

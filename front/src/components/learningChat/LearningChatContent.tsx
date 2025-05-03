@@ -7,7 +7,11 @@ import ChatTextAreaField from './ChatTextAreaField';
 import ModeSelector from './ModeSelector';
 import NewChatButton from './NewChatButton';
 
-const LearningChatContent = () => {
+interface LearningChatContentProps {
+  contentId: string;
+}
+
+const LearningChatContent = ({ contentId }: LearningChatContentProps) => {
   const [currentMode, setCurrentMode] = useState<Mode>('학습모드');
 
   return (
@@ -27,7 +31,7 @@ const LearningChatContent = () => {
       </div>
 
       {/* 채팅 입력 필드 */}
-      <ChatTextAreaField />
+      <ChatTextAreaField mode={currentMode} contentId={contentId} />
     </div>
   );
 };

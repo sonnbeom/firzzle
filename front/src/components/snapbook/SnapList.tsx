@@ -23,7 +23,7 @@ interface SnapListProps {
 }
 
 function SnapList({ snapLists }: SnapListProps) {
-  const { visibleData: visibleGroups, observerTarget } = useInfiniteScroll({
+  const { observerTarget } = useInfiniteScroll({
     initialData: snapLists,
     itemsPerPage: ITEMS_PER_PAGE,
   });

@@ -1,6 +1,6 @@
 'use client';
 
-import PlayerFrame from '../common/PlayerFrame';
+import PlayerFrame from './PlayerFrame';
 
 interface PlayerFetcherProps {
   playerId: string;
