@@ -19,10 +19,64 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // DataBox 관련 의존성
+    implementation 'org.jsoup:jsoup:1.17.2'  // HTML 파싱 (deleteHtmlTag 메서드용)
+    implementation 'com.nimbusds:oauth2-oidc-sdk:11.10.1'  // MapUtils 클래스 사용
+
+    //jasypt
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
+
+    // 로그백 의존성 (Spring Boot Starter에 이미 포함되어 있음)
+    implementation 'ch.qos.logback:logback-classic'
+
+    //p6spy
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
+
+    // 공통 라이브러리 및 유틸리티
+    implementation 'org.apache.commons:commons-lang3:3.0'
+    implementation 'commons-io:commons-io:2.18.0'
+
+    //shedlock
+    implementation("net.javacrumbs.shedlock:shedlock-spring:4.42.0")
+    implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:4.42.0")
+
+    // Database
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
+    implementation 'mysql:mysql-connector-java:8.0.33'
+
+    // Hibernate Core만 추가 P6spy formstyle을 위함
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-core'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
+
+    // 테스트 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// 다른 모듈에서 common 모듈의 클래스 접근을 위한 설정
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
 }

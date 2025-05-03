@@ -11,6 +11,7 @@ spring:
           "[/**]":
             allowedOrigins:
               - "http://localhost:3000"
+              - "https://firzzle.site"
             allowedMethods:
               - GET
               - POST
@@ -26,33 +27,61 @@ spring:
           predicates:
             - Path=/api/v1/auth/**
           filters:
-            - RewritePath=/api/v1/auth/(?<segment>.*), /v1/${segment}
+            - RewritePath=/api/v1/auth/(?<segment>.*), /api/v1/${segment}
 
         - id: auth-service-v2
           uri: lb://auth-server
           predicates:
             - Path=/api/v2/auth/**
           filters:
-            - RewritePath=/api/v2/auth/(?<segment>.*), /v2/${segment}
+            - RewritePath=/api/v2/auth/(?<segment>.*), /api/v2/${segment}
 
         - id: learning-service-v1
           uri: lb://learning-server
           predicates:
             - Path=/api/v1/learning/**
           filters:
-            - RewritePath=/api/v1/learning/(?<segment>.*), /v1/${segment}
+            - RewritePath=/api/v1/learning/(?<segment>.*), /api/v1/${segment}
 
         - id: learning-service-v2
           uri: lb://learning-server
           predicates:
             - Path=/api/v2/learning/**
           filters:
-            - RewritePath=/api/v2/learning/(?<segment>.*), /v2/${segment}
+            - RewritePath=/api/v2/learning/(?<segment>.*), /api/v2/${segment}
+
+        - id: main-service-v1
+          uri: lb://main-server
+          predicates:
+            - Path=/api/v1/main/**
+          filters:
+            - RewritePath=/api/v1/main/(?<segment>.*), /api/v1/${segment}
+
+        - id: main-service-v2
+          uri: lb://main-server
+          predicates:
+            - Path=/api/v2/main/**
+          filters:
+            - RewritePath=/api/v2/main/(?<segment>.*), /api/v2/${segment}
+
+        - id: admin-service-v1
+          uri: lb://admin-server
+          predicates:
+            - Path=/api/v1/admin/**
+          filters:
+            - RewritePath=/api/v1/admin/(?<segment>.*), /api/v1/${segment}
+
+        - id: admin-service-v2
+          uri: lb://admin-server
+          predicates:
+            - Path=/api/v2/admin/**
+          filters:
+            - RewritePath=/api/v2/admin/(?<segment>.*), /api/v2/${segment}
 
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka
-      #      defaultZone: http://eureka-server:8761/eureka/
+#      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka-server:8761/eureka/
