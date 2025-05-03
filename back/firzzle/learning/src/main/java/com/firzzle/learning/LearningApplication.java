@@ -1,5 +1,6 @@
 package com.firzzle.learning;
 
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -10,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
 //@EnableFeignClients
-//@EnableEncryptableProperties
+@EnableEncryptableProperties
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @EnableCaching
@@ -18,7 +19,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 		"com.firzzle.learning",  // 현재 모듈의 패키지
 		"com.firzzle.common",  // common 모듈의 설정 패키지
 })
-//@EnableDiscoveryClient
+@EnableDiscoveryClient
 public class LearningApplication {
 
 	public static void main(String[] args) {

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 //@Log4j2
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1")
+@RequestMapping("/api/v1")
 public class LearningTestControllerV1 {
     @GetMapping("/test")
     public String test(){
