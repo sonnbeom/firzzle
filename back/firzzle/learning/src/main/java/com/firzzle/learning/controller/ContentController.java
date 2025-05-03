@@ -55,7 +55,7 @@ public class ContentController {
     /**
      * 콘텐츠 등록
      */
-    @PostMapping
+    @PostMapping(produces = "application/json;charset=UTF-8")
     @Operation(summary = "콘텐츠 등록", description = "새 영상을 등록하고 분석 큐에 등록합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "콘텐츠 등록 성공"),
@@ -104,7 +104,7 @@ public class ContentController {
     /**
      * 콘텐츠 정보 조회
      */
-    @GetMapping("/{contentSeq}")
+    @GetMapping(value = "/{contentSeq}", produces = "application/json;charset=UTF-8")
     @Operation(summary = "콘텐츠 정보 조회", description = "영상 정보와 분석 정보를 일괄 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "콘텐츠 조회 성공"),
@@ -143,7 +143,7 @@ public class ContentController {
     /**
      * 콘텐츠 목록 조회
      */
-    @GetMapping
+    @GetMapping(produces = "application/json;charset=UTF-8")
     @Operation(summary = "콘텐츠 목록 조회", description = "등록된 영상 목록을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "콘텐츠 목록 조회 성공"),
@@ -198,7 +198,7 @@ public class ContentController {
      * 태그별 콘텐츠 목록 조회
      */
     @Deprecated
-    @GetMapping("/tags/{tag}")
+    @GetMapping(value = "/tags/{tag}", produces = "application/json;charset=UTF-8")
     @Operation(summary = "태그별 콘텐츠 목록 조회", description = "특정 태그를 가진 영상 목록을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "태그별 콘텐츠 목록 조회 성공"),
