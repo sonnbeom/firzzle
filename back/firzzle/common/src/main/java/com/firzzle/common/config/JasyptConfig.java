@@ -14,7 +14,7 @@ import java.util.ArrayList;
 @RequiredArgsConstructor
 public class JasyptConfig {
 
-    @Value(value = "${jasypt.secret-key}")
+    @Value(value = "${jasypt.secret-key:}")
     String secretKey;
 
     @Bean("jasyptStringEncryptor")
