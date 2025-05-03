@@ -1,0 +1,5 @@
+#Jasypt 설정
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+  secret-key: ${JASYPT_SECRET_KEY}

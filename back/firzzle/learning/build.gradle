@@ -32,6 +32,12 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
+	// Hibernate Core만 추가 P6spy formstyle을 위함
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	//p6spy
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
+
 	// Web & API
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -74,9 +80,11 @@ processResources {
 		include 'mapper/common/**'  // mapper/common 디렉토리 아래의 모든 파일을 복사
 	}
 
-	// banner.txt
+	// 개별 파일 복사
 	from project(':common').sourceSets.main.resources.matching {
-		include 'banner.txt'  // banner.txt 파일을 복사
+		include 'banner.txt'
+		include 'log4jdbc.log4j2.properties'
+		include 'spy.properties'
 	}
 }
 

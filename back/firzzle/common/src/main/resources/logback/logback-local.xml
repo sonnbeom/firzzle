@@ -45,41 +45,44 @@
         </rollingPolicy>
     </appender>
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILELOG" />
     </root>
 
-    <logger name="p6spy" level="info" additivity="true">
+    <logger name="p6spy" level="info" additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>
 
-    <logger name="org.springframework" level="error" additivity="true">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILELOG" />
+    <logger name="org.springframework" level="error" additivity="false">
+        <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
+        <!-- <appender-ref ref="CONSOLE" /> -->
+        <!-- <appender-ref ref="FILELOG" /> -->
     </logger>
 
-    <logger name="jdbc.audit" level="error" additivity="true">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILELOG" />
+    <logger name="jdbc.audit" level="error" additivity="false">
+        <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
+        <!-- <appender-ref ref="CONSOLE" /> -->
+        <!-- <appender-ref ref="FILELOG" /> -->
     </logger>
 
-    <logger name="jdbc.resultsettable" level="error" additivity="true">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILELOG" />
+    <logger name="jdbc.resultsettable" level="error" additivity="false">
+        <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
+        <!-- <appender-ref ref="CONSOLE" /> -->
+        <!-- <appender-ref ref="FILELOG" /> -->
     </logger>
 
-    <logger name="jdbc.sqltiming" level="error" additivity="true">
+    <logger name="jdbc.sqltiming" level="info" additivity="false">
         <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILELOG" />
     </logger>
 
-    <logger name="com.zaxxer.hikari" level="error" additivity="true">
+    <logger name="com.zaxxer.hikari" level="error" additivity="false">
         <appender-ref ref="DBCP_LOG" />
     </logger>
 
-    <logger name="com.firzzle" level="info" additivity="true">
+    <logger name="com.firzzle" level="debug" additivity="false">
         <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILELOG" />
     </logger>
 
     <!-- Kafka 로거 설정 추가 -->
