@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { DateGroup } from '@/types/snapReview';
+import { DateGroup, Review } from '@/types/snapReview';
 
 const snapBookData: DateGroup[] = [
   {
@@ -34,8 +34,41 @@ const snapBookData: DateGroup[] = [
   },
 ];
 
-export const snapListhandlers = [
+const mockReview: Review = {
+  title: 'AI, 딥러닝, 머신러닝, 초간단 인공지능 개념정리',
+  date: '2025.04.23',
+  images: [
+    {
+      src: '/assets/images/Firzzle.png',
+      description: null,
+      timestamp: 30,
+    },
+    {
+      src: '/assets/images/Firzzle.png',
+      description: null,
+      timestamp: 30,
+    },
+    {
+      src: '/assets/images/Firzzle.png',
+      description: '강화학습의 기본 개념과 피드백 학습 방식을 소개합니다.',
+      timestamp: 30,
+    },
+    {
+      src: '/assets/images/Firzzle.png',
+      description: '강화학습의 기본 개념과 피드백 학습 방식을 소개합니다.',
+      timestamp: 30,
+    },
+  ],
+};
+
+export const handlers = [
+  // 스냅북 목록 조회
   http.get('/snap-reviews', () => {
-    return HttpResponse.json({ data: snapBookData });
+    return HttpResponse.json(snapBookData);
+  }),
+
+  // 개별 스냅 리뷰 조회회
+  http.get('/contents/:contentId/snap-review', () => {
+    return HttpResponse.json(mockReview);
   }),
 ];

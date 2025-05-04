@@ -10,3 +10,15 @@ export interface DateGroup {
   date: string;
   items: SnapItem[];
 }
+
+export interface Frame {
+  src: string;
+  description: string;
+  timestamp: number;
+}
+
+export interface Review {
+  title: string;
+  date: string;
+  images: Frame[];
+}
