@@ -20,6 +20,7 @@ public enum ErrorCode {
     // =========== Auth ===========
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "MSG_0000070101", "인증이 필요합니다"),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "MSG_0000070102", "접근 권한이 없습니다"),
+    UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "MSG_0000070103", "해당 리소스에 접근할 권한이 없습니다"),
 
     // =========== JWT ===========
     JWT_EXPIRED(HttpStatus.UNAUTHORIZED, "MSG_0000070201", "토큰이 만료되었습니다"),
@@ -28,16 +29,25 @@ public enum ErrorCode {
 
     // =========== Business ===========
     INVALID_PAGE_PARAMETERS(HttpStatus.BAD_REQUEST, "MSG_0000070301", "유효하지 않은 페이지 파라미터입니다"),
+    UPDATE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070302", "데이터 업데이트 중 오류가 발생했습니다"),
+    ALREADY_DELETED(HttpStatus.BAD_REQUEST, "MSG_0000070303", "이미 삭제된 리소스입니다"),
 
     // =========== User Module ===========
     // 여기부터 MSG_0000070401 시작
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070401", "사용자를 찾을 수 없습니다"),
 
     // =========== Admin Module ===========
     // 여기부터 MSG_0000070501 시작
 
     // =========== Learning Module ===========
     DUPLICATE_RESOURCE(HttpStatus.CONFLICT, "MSG_0000070601", "이미 존재하는 리소스입니다"),
-    CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070602", "콘텐츠를 찾을 수 없습니다");
+    CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070602", "콘텐츠를 찾을 수 없습니다"),
+    QUIZ_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070603", "퀴즈를 찾을 수 없습니다"),
+    QUESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070604", "문제를 찾을 수 없습니다"),
+    SNAP_REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070605", "스냅리뷰를 찾을 수 없습니다"),
+    FRAME_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070606", "프레임을 찾을 수 없습니다"),
+    SHARE_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070607", "공유 코드를 찾을 수 없습니다"),
+    SHARE_CODE_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "MSG_0000070608", "이미 취소된 공유 코드입니다");
 
     // =========== LLM Module ===========
     // 여기부터 MSG_0000070701 시작

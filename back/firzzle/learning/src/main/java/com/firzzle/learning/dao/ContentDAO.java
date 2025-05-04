@@ -34,6 +34,18 @@ public class ContentDAO extends MyBatisSupport {
     }
 
     /**
+     * 사용자 콘텐츠 매핑 등록
+     *
+     * @param box - 등록할 사용자 콘텐츠 매핑 정보
+     * @return int - 영향받은 행 수
+     */
+    public int insertUserContent(RequestBox box) {
+        logger.debug("사용자 콘텐츠 매핑 등록 DAO - 콘텐츠일련번호: {}, UUID: {}",
+                box.getLong("contentSeq"), box.getString("uuid"));
+        return sqlSession.insert(NAMESPACE + ".insertUserContent", box);
+    }
+
+    /**
      * 콘텐츠 태그 등록
      *
      * @param box - 등록할 태그 정보
@@ -67,6 +79,41 @@ public class ContentDAO extends MyBatisSupport {
     }
 
     /**
+     * 사용자 콘텐츠 정보를 통해 콘텐츠 정보 조회 (DataBox 반환)
+     *
+     * @param box - 요청 정보가 담긴 RequestBox (userContentSeq, uuid 포함)
+     * @return DataBox - 조회된 콘텐츠 정보
+     */
+    public DataBox selectContentByUserContentSeq(RequestBox box) {
+        logger.debug("사용자 콘텐츠 정보로 콘텐츠 정보 DataBox 조회 DAO - 사용자콘텐츠일련번호: {}, UUID: {}",
+                box.get("userContentSeq"), box.getString("uuid"));
+        return sqlSession.selectDataBox(NAMESPACE + ".selectContentByUserContentSeq", box);
+    }
+
+    /**
+     * YouTube ID로 콘텐츠 정보 조회
+     *
+     * @param box - 확인할 YouTube ID 정보가 담긴 RequestBox
+     * @return DataBox - 조회된 콘텐츠 정보
+     */
+    public DataBox selectContentByVideoId(RequestBox box) {
+        logger.debug("YouTube ID로 콘텐츠 정보 조회 DAO - videoId: {}", box.get("videoId"));
+        return sqlSession.selectDataBox(NAMESPACE + ".selectContentByVideoId", box);
+    }
+
+    /**
+     * 사용자-콘텐츠 매핑 개수 조회
+     *
+     * @param box - 확인할 사용자-콘텐츠 정보가 담긴 RequestBox
+     * @return int - 조회된 매핑 개수
+     */
+    public int selectUserContentCount(RequestBox box) {
+        logger.debug("사용자-콘텐츠 매핑 개수 조회 DAO - contentSeq: {}, UUID: {}",
+                box.getLong("contentSeq"), box.getString("uuid"));
+        return (int) sqlSession.selectOne(NAMESPACE + ".selectUserContentCount", box);
+    }
+
+    /**
      * 콘텐츠 목록 조회 (DataBox 반환)
      *
      * @param box - 요청 정보가 담긴 RequestBox
@@ -76,7 +123,7 @@ public class ContentDAO extends MyBatisSupport {
     public List<DataBox> selectContentListDataBox(RequestBox box) {
         logger.debug("콘텐츠 목록 DataBox 조회 DAO - 페이지: {}, 사이즈: {}",
                 box.get("p_pageno"), box.get("p_pagesize"));
-        return sqlSession.selectList(NAMESPACE + ".selectContentListDataBox", box);
+        return sqlSession.selectDataBoxList(NAMESPACE + ".selectContentListDataBox", box);
     }
 
     /**
@@ -155,6 +202,6 @@ public class ContentDAO extends MyBatisSupport {
     @SuppressWarnings("unchecked")
     public List<DataBox> selectContentListByTagDataBox(RequestBox box) {
         logger.debug("태그별 콘텐츠 목록 DataBox 조회 DAO - 태그: {}", box.get("tag"));
-        return sqlSession.selectList(NAMESPACE + ".selectContentListByTagDataBox", box);
+        return sqlSession.selectDataBoxList(NAMESPACE + ".selectContentListByTagDataBox", box);
     }
 }

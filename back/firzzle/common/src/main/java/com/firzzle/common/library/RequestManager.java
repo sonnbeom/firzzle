@@ -148,6 +148,18 @@ public class RequestManager {
     public static RequestBox getBox(HttpServletRequest request) throws Exception {
         RequestBox box = new RequestBox("requestbox");
 
+        // 인증 정보 처리 (HeaderAuthenticationFilter에서 설정한 속성 사용)
+        Object uuid = request.getAttribute("uuid");
+        if (uuid != null) {
+            box.put("uuid", uuid.toString());
+        } else {
+            // 헤더에서 시도
+            String headerUuid = request.getHeader("X-User-UUID");
+            if (headerUuid != null && !headerUuid.isEmpty()) {
+                box.put("uuid", headerUuid);
+            }
+        }
+
         //파라미터 정보 담기
         String key = "";
         String[] values = null;
