@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { getYouTubeVideoId } from '@/app/api/player/youtube';
+import { getYouTubeVideoId } from '@/utils/youtube';
 
 interface SnapItem {
   id: string;
