@@ -9,13 +9,19 @@ interface ReviewData extends ReviewType {
   images: (Frame & { description: string | null })[];
 }
 
-async function getSnapReviewData(contentId: string): Promise<{ data: ReviewData | null }> {
+interface PageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+async function getSnapReviewData(id: string): Promise<{ data: ReviewData | null }> {
   try {
     // TODO: uuid는 실제 로그인된 사용자의 ID로 대체해야 함
     const uuid = 'test-user-id';
     const [reviewResponse, descriptionsResponse] = await Promise.all([
-      getContentSnapReviews(contentId),
-      getFrameDescriptions(uuid, contentId),
+      getContentSnapReviews(id),
+      getFrameDescriptions(uuid, id),
     ]);
 
     const review = reviewResponse.data;
@@ -44,8 +50,9 @@ async function getSnapReviewData(contentId: string): Promise<{ data: ReviewData 
   }
 }
 
-const SnapBookDetailPage = async ({ params }: { params: { id: string } }) => {
-  const { data: snapData } = await getSnapReviewData(params.id);
+const SnapBookDetailPage = async ({ params }: PageProps) => {
+  const { id } = await params;
+  const { data: snapData } = await getSnapReviewData(id);
 
   if (!snapData) {
     return <div>No data found</div>;

@@ -1,13 +1,8 @@
 import Image from 'next/image';
-import React from 'react';
-
-interface ReviewImage {
-  src: string;
-  description: string;
-}
+import { Frame } from '@/types/snapReview';
 
 interface ReviewProps {
-  images: ReviewImage[];
+  images: (Frame & { description: string | null })[];
   title: string;
   date: string;
 }

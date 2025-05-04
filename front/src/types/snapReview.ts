@@ -20,14 +20,14 @@ export interface Review {
   images: Frame[];
 }
 
-// 리뷰별 개별 프레임 정보보
+// 리뷰별 개별 프레임 정보
 export interface Frame {
   id: string;
   src: string;
   timestamp: number;
 }
 
-// 전체 프레임 정보보
+// 전체 프레임 정보
 export interface FrameDescriptions {
   notes: FrameDescription[];
 }

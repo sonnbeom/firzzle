@@ -85,16 +85,25 @@ const mockFrameDescriptions: FrameDescriptions = {
 export const snapListhandlers = [
   // 스냅북 목록 조회
   http.get('/snap-reviews', () => {
-    return HttpResponse.json({ data: snapBookData });
+    const response = {
+      data: snapBookData,
+    };
+    return HttpResponse.json(response);
   }),
 
   // 개별 스냅 리뷰 조회
   http.get('/contents/:contentId/snap-review', () => {
-    return HttpResponse.json(mockReview);
+    const response = {
+      data: mockReview,
+    };
+    return HttpResponse.json(response);
   }),
 
   // 프레임 설명 조회
   http.get('/users/:uuid/contents/:contentId/snap-review/notes', () => {
-    return HttpResponse.json(mockFrameDescriptions);
+    const response = {
+      data: mockFrameDescriptions,
+    };
+    return HttpResponse.json(response);
   }),
 ];
