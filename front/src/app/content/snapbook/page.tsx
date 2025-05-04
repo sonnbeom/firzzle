@@ -2,20 +2,21 @@ import { getSnapReviews } from '@/api/snap';
 import SnapList from '@/components/snapbook/SnapList';
 import { DateGroup } from '@/types/snapReview';
 
-async function getSnapBookData(): Promise<{ data: DateGroup[] }> {
+async function getSnapBookData(): Promise<DateGroup[]> {
   try {
     const response = await getSnapReviews();
-    return response;
+    return response.data;
   } catch (error) {
     console.error('Error fetching snap reviews:', error);
-    return { data: [] };
+    return [];
   }
 }
 
 const SnapBook = async () => {
-  const snapBookData = await getSnapBookData();
+  const data = await getSnapBookData();
+  console.log(data);
 
-  return <SnapList snapLists={snapBookData} />;
+  return <SnapList snapLists={{ data }} />;
 };
 
 export default SnapBook;
