@@ -6,9 +6,13 @@ import { useState } from 'react';
 import { Button } from '../ui/button';
 
 const Header = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const pathname = usePathname();
+  const [isLogin, setIsLogin] = useState(true);
   const isAdminPage = pathname?.includes('/admin');
+
+  if (pathname?.startsWith('/share')) {
+    return null;
+  }
 
   return isAdminPage ? (
     <></>
