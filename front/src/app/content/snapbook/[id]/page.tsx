@@ -1,46 +1,56 @@
 import Link from 'next/link';
+import { getContentSnapReviews, getFrameDescriptions } from '@/api/snap';
 import Icons from '@/components/common/Icons';
 import Review from '@/components/snapbook/Review';
 import ShareButton from '@/components/snapbook/ShareButton';
+import { Frame, Review as ReviewType } from '@/types/snapReview';
 
-interface ReviewImage {
-  src: string;
-  description: string;
+interface ReviewData extends ReviewType {
+  images: (Frame & { description: string | null })[];
 }
 
-interface SnapItem {
-  title: string;
-  date: string;
-  images: ReviewImage[];
+async function getSnapReviewData(contentId: string): Promise<{ data: ReviewData | null }> {
+  try {
+    // TODO: uuid는 실제 로그인된 사용자의 ID로 대체해야 함
+    const uuid = 'test-user-id';
+    const [reviewResponse, descriptionsResponse] = await Promise.all([
+      getContentSnapReviews(contentId),
+      getFrameDescriptions(uuid, contentId),
+    ]);
+
+    const review = reviewResponse.data;
+    const descriptions = descriptionsResponse.data;
+
+    // 프레임 설명을 프레임 정보에 매핑
+    const imagesWithDescriptions = review.images.map((image) => {
+      const description = descriptions.notes.find(
+        (note) => note.frameId === image.id,
+      );
+      return {
+        ...image,
+        description: description?.description || null,
+      };
+    });
+
+    return {
+      data: {
+        ...review,
+        images: imagesWithDescriptions,
+      },
+    };
+  } catch (error) {
+    console.error('Error fetching snap review:', error);
+    return { data: null };
+  }
 }
 
-// API 연결 이후 변경
-const getMockData = async (id: string): Promise<SnapItem> => ({
-  title: 'AI, 딥러닝, 머신러닝, 초간단 인공지능 개념정리',
-  date: '2025.04.23',
-  images: [
-    {
-      src: '/assets/images/Firzzle.png',
-      description: '인공지능의 세부 분야와 차이점을 알아봅시다.',
-    },
-    {
-      src: '/assets/images/Firzzle.png',
-      description: '비지도 학습의 특징과 클러스터링에 대해 알아봅시다.',
-    },
-    {
-      src: '/assets/images/Firzzle.png',
-      description: '강화학습의 기본 개념과 피드백 학습 방식을 소개합니다.',
-    },
-    {
-      src: '/assets/images/Firzzle.png',
-      description: '강화학습의 기본 개념과 피드백 학습 방식을 소개합니다.',
-    },
-  ],
-});
+const SnapBookDetailPage = async ({ params }: { params: { id: string } }) => {
+  const { data: snapData } = await getSnapReviewData(params.id);
 
-async function SnapBookDetailPage(props: { params: Promise<{ id: string }> }) {
-  const { id } = await props.params;
-  const snapData = await getMockData(id);
+  if (!snapData) {
+    return <div>No data found</div>;
+  }
+
   return (
     <div className='container mx-auto px-4'>
       <div className='space-y-6'>

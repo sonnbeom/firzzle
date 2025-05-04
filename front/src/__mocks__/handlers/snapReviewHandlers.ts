@@ -82,10 +82,10 @@ const mockFrameDescriptions: FrameDescriptions = {
   ],
 };
 
-export const handlers = [
+export const snapListhandlers = [
   // 스냅북 목록 조회
   http.get('/snap-reviews', () => {
-    return HttpResponse.json(snapBookData);
+    return HttpResponse.json({ data: snapBookData });
   }),
 
   // 개별 스냅 리뷰 조회
