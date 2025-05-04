@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -62,6 +63,7 @@ public class ContentController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('content:write')")
     public ResponseEntity<Response<ContentResponseDTO>> registerContent(
             @Parameter(description = "콘텐츠 등록 정보", required = true)  @Valid @RequestBody ContentRequestDTO contentRequestDTO,
             HttpServletRequest request
@@ -111,16 +113,17 @@ public class ContentController {
             @ApiResponse(responseCode = "404", description = "콘텐츠를 찾을 수 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('content:read')")
     public ResponseEntity<Response<ContentResponseDTO>> getContentInfo(
-            @Parameter(description = "조회할 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long contentSeq,
+            @Parameter(description = "조회할 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
             HttpServletRequest request) {
 
-        logger.info("콘텐츠 정보 조회 요청 - 콘텐츠 일련번호: {}", contentSeq);
+        logger.info("콘텐츠 정보 조회 요청 - 콘텐츠 일련번호: {}", userContentSeq);
 
         try {
             // PathVariable => Content-Type 관계 없이 넣어줘야 함
             RequestBox box = RequestManager.getBox(request);
-            box.put("contentSeq", contentSeq);
+            box.put("userContentSeq", userContentSeq);
 
             DataBox dataBox = contentService.selectContent(box);
             ContentResponseDTO contentResponseDTO = convertToContentResponseDTO(dataBox);
@@ -149,6 +152,7 @@ public class ContentController {
             @ApiResponse(responseCode = "200", description = "콘텐츠 목록 조회 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('content:read')")
     public ResponseEntity<Response<PageResponseDTO<ContentResponseDTO>>> getContentList(
             @Parameter(description = "검색 및 페이지 요청 정보") ContentSearchDTO searchDTO,
             HttpServletRequest request) {
@@ -214,14 +218,14 @@ public class ContentController {
 
         try {
             RequestBox box = RequestManager.getBox(request);
-            box.put("p_pageno", searchDTO.getP_pageno());
-            box.put("p_pagesize", searchDTO.getP_pagesize());
-            box.put("p_order", searchDTO.getP_order());
-            box.put("p_sortorder", searchDTO.getP_sortorder());
-            box.put("keyword", searchDTO.getKeyword());
-            box.put("category", searchDTO.getCategory());
-            box.put("status", searchDTO.getStatus());
-            box.put("tag", tag);
+//            box.put("p_pageno", searchDTO.getP_pageno());
+//            box.put("p_pagesize", searchDTO.getP_pagesize());
+//            box.put("p_order", searchDTO.getP_order());
+//            box.put("p_sortorder", searchDTO.getP_sortorder());
+//            box.put("keyword", searchDTO.getKeyword());
+//            box.put("category", searchDTO.getCategory());
+//            box.put("status", searchDTO.getStatus());
+//            box.put("tag", tag);
 
             List<DataBox> contentListDataBox = contentService.selectContentListByTag(box);
             int totalCount = contentService.selectContentCountByTag(box);
@@ -258,50 +262,25 @@ public class ContentController {
             return null;
         }
 
-        // content_seq 키가 있는지 확인 (목록 조회)
-        boolean hasPrefixD = dataBox.keySet().stream()
-                .anyMatch(key -> key.toString().startsWith("d_"));
-
         try {
-            if (hasPrefixD) {
-                // 개별 조회 - d_ 접두어 사용
-                return ContentResponseDTO.builder()
-                        .contentSeq(dataBox.getLong2("d_content_seq"))
-                        .title(dataBox.getString("d_title"))
-                        .description(dataBox.getString("d_description"))
-                        .contentType(dataBox.getString("d_category"))
-                        .videoId(dataBox.getString("d_video_id"))
-                        .url(dataBox.getString("d_url"))
-                        .thumbnailUrl(dataBox.getString("d_thumbnail_url"))
-                        .duration(dataBox.getInt2("d_duration"))
-                        .processStatus(dataBox.getString("d_process_status"))
-                        .tags(dataBox.getString("d_tags"))
-                        .analysisData(dataBox.getString("d_analysis_data"))
-                        .transcript(dataBox.getString("d_transcript"))
-                        .indate(parseDateTime(dataBox.getString("d_indate")))
-                        .completedAt(parseDateTime(dataBox.getString("d_completed_at")))
-                        .deleteYn(dataBox.getString("d_delete_yn"))
-                        .build();
-            } else {
-                // 목록 조회 - 접두어 없음
-                return ContentResponseDTO.builder()
-                        .contentSeq(dataBox.getLong2("content_seq"))
-                        .title(dataBox.getString("title"))
-                        .description(dataBox.getString("description"))
-                        .contentType(dataBox.getString("category"))
-                        .videoId(dataBox.getString("video_id"))
-                        .url(dataBox.getString("url"))
-                        .thumbnailUrl(dataBox.getString("thumbnail_url"))
-                        .duration(dataBox.getInt2("duration"))
-                        .processStatus(dataBox.getString("process_status"))
-                        .tags(dataBox.getString("tags"))
-                        .analysisData(dataBox.getString("analysis_data"))
-                        .transcript(dataBox.getString("transcript"))
-                        .indate(parseDateTime(dataBox.getString("indate")))
-                        .completedAt(parseDateTime(dataBox.getString("completed_at")))
-                        .deleteYn(dataBox.getString("delete_yn"))
-                        .build();
-            }
+            return ContentResponseDTO.builder()
+                    .contentSeq(dataBox.getLong2("d_content_seq"))
+                    .title(dataBox.getString("d_title"))
+                    .description(dataBox.getString("d_description"))
+                    .contentType(dataBox.getString("d_category"))
+                    .videoId(dataBox.getString("d_video_id"))
+                    .url(dataBox.getString("d_url"))
+                    .thumbnailUrl(dataBox.getString("d_thumbnail_url"))
+                    .duration(dataBox.getInt2("d_duration"))
+                    .processStatus(dataBox.getString("d_process_status"))
+                    .tags(dataBox.getString("d_tags"))
+                    .analysisData(dataBox.getString("d_analysis_data"))
+                    .transcript(dataBox.getString("d_transcript"))
+                    .indate(parseDateTime(dataBox.getString("d_indate")))
+                    .completedAt(parseDateTime(dataBox.getString("d_completed_at")))
+                    .deleteYn(dataBox.getString("d_delete_yn"))
+                    .build();
+
         } catch (Exception e) {
             logger.error("ContentResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
             return new ContentResponseDTO();
