@@ -14,7 +14,6 @@ async function getSnapBookData(): Promise<DateGroup[]> {
 
 const SnapBook = async () => {
   const data = await getSnapBookData();
-  console.log(data);
 
   return <SnapList snapLists={{ data }} />;
 };
