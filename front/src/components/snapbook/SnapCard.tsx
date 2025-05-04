@@ -1,10 +1,10 @@
 import Image from 'next/image';
-import React from 'react';
+import { getYouTubeVideoId } from '@/app/api/player/youtube';
 
 interface SnapItem {
   id: string;
   title: string;
-  thumbnail: string;
+  youtubeUrl: string;
   date: string;
   length: number;
 }
@@ -18,7 +18,7 @@ const SnapCard = ({ data }: SnapCardProps) => {
     <div className='group mx-auto max-w-[240px] overflow-hidden rounded-lg bg-white shadow-md transition-all'>
       <div className='relative aspect-video w-full bg-white'>
         <Image
-          src={data.thumbnail}
+          src={`https://img.youtube.com/vi/${getYouTubeVideoId(data.youtubeUrl)}/maxresdefault.jpg`}
           alt={data.title}
           fill
           sizes='240px'

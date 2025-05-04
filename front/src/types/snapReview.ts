@@ -1,7 +1,7 @@
 export interface SnapItem {
   id: string;
   title: string;
-  thumbnail: string;
+  youtubeUrl: string;  // YouTube video URL
   date: string;
   length: number;
 }

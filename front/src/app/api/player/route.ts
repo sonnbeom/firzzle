@@ -1,5 +1,6 @@
 import { ApiResponseWithData, ApiResponseError } from '@/types/common';
 import { PlayerInfo } from '@/types/player';
+import { getYouTubeVideoId } from '@/utils/youtube';
 
 // 플레이어 정보 조회
 export async function GET(request: Request) {
@@ -8,9 +9,7 @@ export async function GET(request: Request) {
 
   try {
     // YouTube id 추출
-    const playerId = url.match(
-      /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/,
-    )?.[1];
+    const playerId = getYouTubeVideoId(url);
 
     if (!playerId) {
       return Response.json({
