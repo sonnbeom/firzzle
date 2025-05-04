@@ -106,4 +106,13 @@ export const snapListhandlers = [
     };
     return HttpResponse.json(response);
   }),
+
+  // 프레임 설명 수정
+  http.patch('/contents/:contentId/snap-review/frames', async ({ request }) => {
+    const updatedDescriptions = (await request.json()) as FrameDescriptions;
+    const response = {
+      data: updatedDescriptions,
+    };
+    return HttpResponse.json(response);
+  }),
 ];
