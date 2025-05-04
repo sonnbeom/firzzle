@@ -3,3 +3,9 @@ jasypt:
   encryptor:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
+
+# JWT 설정
+jwt:
+  secret: your-secret-key-should-be-at-least-32-bytes-long
+  access-token-validity-seconds: 3600
+  refresh-token-validity-seconds: 604800

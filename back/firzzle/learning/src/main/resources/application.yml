@@ -28,6 +28,10 @@ jasypt:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
 
+# JWT 설정
+jwt:
+  secret: your-secret-key-should-be-at-least-32-bytes-long
+
 ---
 # 로컬 환경 설정
 spring:
@@ -37,8 +41,8 @@ spring:
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
 #    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
-    jdbc-url: ENC(ygXVhsF9CysFggaflxcQWINq4Xeo7e2Kgzk09fKfaMb57mq+mFLlBz740u3YK++f2A79SpBdqnh7JL22sHA5IXljAN81Yaza8iVTrk8uuSnFdki8RMldcRDzlTX9xsS0UH7GrhugvwQ2LpvuEDo6fO8j5DCEw1LUwxGqqG2PLdw=)
-    username: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
+    jdbc-url: ENC(OvwLQr1WRx28Jf8teIXvvLXBlxMgNu0eP1KixLtefm5/bf0S7dHl1O5ETSNxw/7va+UrhvZjnt8yZOEi8jYIIQQNvZTXC2W7fJO9gm5jAQGbekBgF604D9FPOZUwxH/5wT79h4i8mJW+P867NgOM965KCxSTMx+nFCLQVmXyceyIQKHiaYJK1c1+jbpHCS0b)
+    username: ENC(hBx/Lg1wrZOWClc1mRhebrJJHsbvkjaOxE8PtezwA1E=)
     password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
     maximum-pool-size: 10
   # Kafka 설정
@@ -92,6 +96,8 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
+  url:
+    base: ENC(7sOLzFedm3q4VS1FLRsa7YPZ7tB3IHHC7mNKqIB+Bbagkmux2AG+lUjUo0HNyd0U)
 
 ---
 # 개발 환경 설정
@@ -156,6 +162,8 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
+  url:
+    base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
 
 ---
 # 프로덕션 환경 설정
@@ -220,3 +228,5 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
+  url:
+    base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)

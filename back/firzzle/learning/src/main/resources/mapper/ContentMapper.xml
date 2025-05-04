@@ -44,6 +44,23 @@
                  )
     </insert>
 
+    <!-- 사용자-콘텐츠 매핑 등록 -->
+    <insert id="insertUserContent" parameterType="RequestBox">
+        INSERT INTO fb_ai_user_contents (
+            user_seq,
+            content_seq,
+            progress,
+            indate,
+            last_accessed_at
+        ) VALUES (
+                     get_user_seq_by_uuid(#{uuid}),
+                     #{contentSeq},
+                     0,
+                     #{indate},
+                     #{indate}
+                 )
+    </insert>
+
     <!-- 콘텐츠 태그 등록 -->
     <insert id="insertContentTags" parameterType="RequestBox">
         INSERT INTO fb_ai_content_tags (
@@ -64,6 +81,47 @@
         WHERE
         C.content_seq = #{contentSeq}
         AND C.delete_yn = 'N'
+    </select>
+
+    <!-- 사용자 콘텐츠 정보를 통해 콘텐츠 정보 조회 (DataBox 반환) -->
+    <select id="selectContentByUserContentSeq" resultType="DataBox" parameterType="RequestBox">
+        SELECT
+        <include refid="contentColumns" />,
+        UC.progress as d_progress,
+        UC.last_accessed_at as d_last_accessed_at
+        FROM
+        fb_ai_user_contents UC
+        JOIN
+        fb_ai_contents C ON UC.content_seq = C.content_seq
+        WHERE
+        UC.user_content_seq = #{userContentSeq}
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
+        AND C.delete_yn = 'N'
+    </select>
+
+    <!-- YouTube ID로 콘텐츠 정보 조회 -->
+    <select id="selectContentByVideoId" resultType="DataBox" parameterType="RequestBox">
+        SELECT
+        <include refid="contentColumns" />
+        FROM
+        fb_ai_contents
+        WHERE
+        video_id = #{videoId}
+        AND delete_yn = 'N'
+    </select>
+
+    <!-- 사용자-콘텐츠 매핑 개수 조회 -->
+    <select id="selectUserContentCount" resultType="int" parameterType="RequestBox">
+        SELECT
+            COUNT(*)
+        FROM
+            fb_ai_user_contents UC
+                JOIN
+            fb_ai_users U ON UC.user_seq = U.user_seq
+        WHERE
+            UC.content_seq = #{contentSeq}
+          AND U.uuid = #{uuid}
+          AND U.delete_yn = 'N'
     </select>
 
     <!-- 콘텐츠 목록 조회 (DataBox 반환) - PageMapper 활용 -->
@@ -90,8 +148,11 @@
         <include refid="contentColumns" />
         FROM
         fb_ai_contents C
+        JOIN
+        fb_ai_user_contents UC ON C.content_seq = UC.content_seq
         WHERE
         C.delete_yn = 'N'
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
         <if test="keyword != null and keyword != ''">
             AND (
             C.title LIKE CONCAT('%', #{keyword}, '%')
@@ -118,8 +179,11 @@
         COUNT(*)
         FROM
         fb_ai_contents C
+        JOIN
+        fb_ai_user_contents UC ON C.content_seq = UC.content_seq
         WHERE
         C.delete_yn = 'N'
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
         <if test="keyword != null and keyword != ''">
             AND (
             C.title LIKE CONCAT('%', #{keyword}, '%')
@@ -165,7 +229,6 @@
         SET
         process_status = #{status}
         <if test="status == 'C'">, completed_at = #{completedAt}</if>
-        <if test="analysisData != null and analysisData != ''">, analysis_data = #{analysisData}</if>
         WHERE
         content_seq = #{contentSeq}
     </update>
