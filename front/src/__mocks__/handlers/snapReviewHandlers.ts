@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { DateGroup, Review } from '@/types/snapReview';
+import { DateGroup, Review, FrameDescriptions } from '@/types/snapReview';
 
 const snapBookData: DateGroup[] = [
   {
@@ -39,24 +39,45 @@ const mockReview: Review = {
   date: '2025.04.23',
   images: [
     {
+      id: 'frame1',
       src: '/assets/images/Firzzle.png',
+      timestamp: 30,
+    },
+    {
+      id: 'frame2',
+      src: '/assets/images/Firzzle.png',
+      timestamp: 30,
+    },
+    {
+      id: 'frame3',
+      src: '/assets/images/Firzzle.png',
+      timestamp: 30,
+    },
+    {
+      id: 'frame4',
+      src: '/assets/images/Firzzle.png',
+      timestamp: 30,
+    },
+  ],
+};
+
+const mockFrameDescriptions: FrameDescriptions = {
+  notes: [
+    {
+      frameId: 'frame1',
       description: null,
-      timestamp: 30,
     },
     {
-      src: '/assets/images/Firzzle.png',
+      frameId: 'frame2',
       description: null,
-      timestamp: 30,
     },
     {
-      src: '/assets/images/Firzzle.png',
+      frameId: 'frame3',
       description: '강화학습의 기본 개념과 피드백 학습 방식을 소개합니다.',
-      timestamp: 30,
     },
     {
-      src: '/assets/images/Firzzle.png',
+      frameId: 'frame4',
       description: '강화학습의 기본 개념과 피드백 학습 방식을 소개합니다.',
-      timestamp: 30,
     },
   ],
 };
@@ -67,8 +88,13 @@ export const handlers = [
     return HttpResponse.json(snapBookData);
   }),
 
-  // 개별 스냅 리뷰 조회회
+  // 개별 스냅 리뷰 조회
   http.get('/contents/:contentId/snap-review', () => {
     return HttpResponse.json(mockReview);
+  }),
+
+  // 프레임 설명 조회
+  http.get('/users/:uuid/contents/:contentId/snap-review/notes', () => {
+    return HttpResponse.json(mockFrameDescriptions);
   }),
 ];
