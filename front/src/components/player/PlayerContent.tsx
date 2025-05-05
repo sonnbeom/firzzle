@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import UrlInputField from '@/components/home/UrlInputField';
 import PlayerFetcher from '@/components/player/PlayerFetcher';
 import ProgressBar from '@/components/player/ProgressBar';
 import { PlayerInfo } from '@/types/player';
+import UrlInputField from './UrlInputField';
 
 interface PlayerContentProps {
   initialPlayerInfo: PlayerInfo | null;

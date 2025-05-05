@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { DateGroup } from '@/types/snapReview';
-import { useInfiniteScroll } from 'hooks/useInfiniteScroll';
-import { ITEMS_PER_PAGE } from 'utils/const';
 import SnapCard from './SnapCard';
 
 interface SnapListProps {
@@ -11,10 +9,13 @@ interface SnapListProps {
 }
 
 function SnapList({ snapLists }: SnapListProps) {
-  const { visibleData: visibleGroups, observerTarget } = useInfiniteScroll({
-    initialData: snapLists.data || [],
-    itemsPerPage: ITEMS_PER_PAGE,
-  });
+  // 무한스크롤에 Tanstack Query 적용해서 잠시 주석 처리
+  // const { visibleData: visibleGroups, observerTarget } = useInfiniteScroll({
+  //   initialData: snapLists.data || [],
+  //   itemsPerPage: ITEMS_PER_PAGE,
+  // });
+
+  const visibleGroups = snapLists.data;
 
   return (
     <div className='MB container mx-auto px-4'>
@@ -36,7 +37,7 @@ function SnapList({ snapLists }: SnapListProps) {
           </div>
         </div>
       ))}
-      <div ref={observerTarget} />
+      {/* <div ref={observerTarget} /> */}
     </div>
   );
 }
