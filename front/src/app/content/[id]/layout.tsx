@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { getContent } from '@/api/content';
 import DetailHeader from '@/components/common/TabHeader';
 import LearningChatContent from '@/components/learningChat/LearningChatContent';
 import PlayerFrame from '@/components/player/PlayerFrame';
@@ -10,14 +11,14 @@ interface PageProps {
 
 const DetailLayout = async ({ params, children }: PageProps) => {
   const { id } = await params;
-  const playerId = 'dQw4w9WgXcQ';
+  const data = await getContent(id);
 
   return (
     <div className='flex h-full w-full gap-5 overflow-hidden'>
       <div className='flex flex-3 flex-col gap-6 overflow-hidden'>
         {/* <SideMenu /> */}
         {/* 영상 */}
-        <PlayerFrame playerId={playerId} />
+        <PlayerFrame playerId={data.videoId} />
         {/* 러닝챗 */}
         <LearningChatContent contentId={id} />
       </div>

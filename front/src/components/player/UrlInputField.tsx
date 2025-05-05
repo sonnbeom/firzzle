@@ -2,7 +2,7 @@
 
 import { debounce } from 'lodash';
 import { useEffect, useState } from 'react';
-import { postContents } from '@/api/contents';
+import { postContent } from '@/api/content';
 import { getPlayer } from '@/api/player';
 import { PlayerInfo } from '@/types/player';
 import BasicButton from '../common/BasicButton';
@@ -38,7 +38,7 @@ const UrlInputField = ({
   const handleUrlConfirm = async () => {
     setIsSubmitted(true);
     try {
-      await postContents();
+      await postContent();
     } catch (error) {
       console.error('컨텐츠 등록 실패:', error);
     }
