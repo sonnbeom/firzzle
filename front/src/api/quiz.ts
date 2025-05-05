@@ -10,13 +10,13 @@ export const getQuiz = async (contentSeq: string) => {
 };
 
 // 퀴즈 정답 제출
-export const submitQuizAnswers = async (  
+export const submitQuizAnswers = async (
   contentSeq: string,
   request: QuizSubmitRequest,
 ) => {
-  const { data } = await externalApi.post<QuizSubmitResponse, QuizSubmitRequest>(
-    `/learning/contents/${contentSeq}/quiz`,
-    { body: request, withAuth: true }
-  );
+  const { data } = await externalApi.post<
+    QuizSubmitResponse,
+    QuizSubmitRequest
+  >(`/learning/contents/${contentSeq}/quiz`, { body: request, withAuth: true });
   return data;
 };
