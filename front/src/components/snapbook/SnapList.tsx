@@ -1,32 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { useInfiniteScroll } from 'hooks/useInfiniteScroll';
-import { ITEMS_PER_PAGE } from 'utils/const';
+import { DateGroup } from '@/types/snapReview';
 import SnapCard from './SnapCard';
 
-interface SnapItem {
-  id: string;
-  title: string;
-  thumbnail: string;
-  date: string;
-  length: number;
-}
-
-interface DateGroup {
-  date: string;
-  items: SnapItem[];
-}
-
 interface SnapListProps {
-  snapLists: DateGroup[];
+  snapLists: { data: DateGroup[] };
 }
 
 function SnapList({ snapLists }: SnapListProps) {
-  const { observerTarget } = useInfiniteScroll({
-    initialData: snapLists,
-    itemsPerPage: ITEMS_PER_PAGE,
-  });
+  // 무한스크롤에 Tanstack Query 적용해서 잠시 주석 처리
+  // const { visibleData: visibleGroups, observerTarget } = useInfiniteScroll({
+  //   initialData: snapLists.data || [],
+  //   itemsPerPage: ITEMS_PER_PAGE,
+  // });
+
+  const visibleGroups = snapLists.data;
 
   return (
     <div className='MB container mx-auto px-4'>
@@ -48,7 +37,7 @@ function SnapList({ snapLists }: SnapListProps) {
           </div>
         </div>
       ))}
-      <div ref={observerTarget} />
+      {/* <div ref={observerTarget} /> */}
     </div>
   );
 }

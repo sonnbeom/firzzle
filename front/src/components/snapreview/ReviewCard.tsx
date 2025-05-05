@@ -1,23 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { updateFrameDescriptions } from '@/api/snap';
+import { Frame, FrameDescriptions } from '@/types/snapReview';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
 import TimeStamp from '../common/TimeStamp';
 
-// interface
-interface Review {
-  id: string;
+// Frame 타입을 확장하여 description 필드 추가
+interface ReviewFrame extends Frame {
   description: string | null;
-  thumbnail: string;
-  timestamp: number;
 }
 
 interface ReviewCardProps {
-  reviews: Review[];
+  contentId: string;
+  reviews: (Omit<ReviewFrame, 'src'> & { thumbnail: string })[];
 }
 
-const ReviewCard = ({ reviews }: ReviewCardProps) => {
+const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [localReviews, setLocalReviews] = useState(reviews);
 
@@ -27,7 +27,17 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
 
   const handleSaveClick = async (id: string, description: string) => {
     try {
-      // 나중에 여기에 내용 수정 API 호출 추가
+      // 전체 프레임 설명 객체 생성
+      const frameDescriptions: FrameDescriptions = {
+        notes: localReviews.map((review) => ({
+          frameId: review.id,
+          description: review.id === id ? description : review.description,
+        })),
+      };
+
+      await updateFrameDescriptions(contentId, frameDescriptions);
+
+      // 로컬 상태 업데이트
       setLocalReviews((prev) =>
         prev.map((review) =>
           review.id === id ? { ...review, description } : review,
@@ -51,13 +61,6 @@ const ReviewCard = ({ reviews }: ReviewCardProps) => {
           : review,
       ),
     );
-  };
-
-  // 임시 alert, api 연결 이후 youtube api로 영상 재생
-  const handleImageClick = (timestamp?: number) => {
-    if (timestamp !== undefined) {
-      alert(`영상 시간: ${timestamp}초`);
-    }
   };
 
   return (
