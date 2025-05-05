@@ -9,9 +9,9 @@ interface PageProps {
 
 const Quiz = async ({ params }: PageProps) => {
   const { id } = await params;
-  const response = await getQuiz(id);
+  const quizData = await getQuiz(id);
 
-  return <QuizContainer quizContents={response.data} contentId={id} />;
+  return <QuizContainer quizData={quizData} contentSeq={id} />;
 };
 
 export default Quiz;

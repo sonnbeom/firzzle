@@ -5,7 +5,14 @@ import { submitQuizAnswers } from '@/api/quiz';
 import BasicDialog from '@/components/common/BasicDialog';
 import { Button } from '@/components/ui/button';
 import { usePreventNavigation } from '@/hooks/usePreventNavigation';
-import { QuizData, QuizSubmitRequest, QuizSubmitResponse } from '@/types/quiz';
+import {
+  QuizData,
+  QuizSubmitRequest,
+  QuizSubmitResponse,
+  QuizOption,
+  QuizCardProps,
+  QuizAnswerProps,
+} from '@/types/quiz';
 import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
 
@@ -16,24 +23,79 @@ declare global {
 }
 
 interface QuizContainerProps {
-  quizContents: QuizData[];
-  contentId: string;
+  quizData: QuizData;
+  contentSeq: string;
 }
 
-const QuizContainer = ({ quizContents, contentId }: QuizContainerProps) => {
-  const quizData = quizContents;
+const getAnswerProps = (
+  question: QuizData['questions'][0],
+  index: number,
+): QuizAnswerProps => {
+  return {
+    questionSeq: index + 1,
+    text: question.text,
+    correct: question.userAnswer?.isCorrect || false,
+    description: '',
+    timestamp: question.timestamp,
+    selectedOption: question.options.find(
+      (opt): opt is QuizOption =>
+        opt.optionSeq === question.userAnswer?.selectedOptionSeq,
+    ),
+    correctOption: question.userAnswer?.isCorrect
+      ? question.options.find(
+          (opt): opt is QuizOption =>
+            opt.optionSeq === question.userAnswer?.selectedOptionSeq,
+        )
+      : undefined,
+  };
+};
+
+const getCardProps = (
+  question: QuizData['questions'][0],
+  index: number,
+  selected: Array<number | null>,
+  handleSelect: (index: number, optionSeq: number) => void,
+): QuizCardProps => {
+  return {
+    questionSeq: index + 1,
+    text: question.text,
+    options: question.options,
+    selected: selected[index],
+    onSelect: (optionSeq) => handleSelect(index, optionSeq),
+  };
+};
+
+const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
+  // 이미 푼 문제인지 확인
+  const isAlreadySubmitted = useMemo(() => {
+    return quizData.submission !== null;
+  }, [quizData.submission]);
+
+  // 초기 선택 상태 설정
+  const initialSelected = useMemo(() => {
+    if (isAlreadySubmitted) {
+      // 이미 푼 문제라면 userAnswer에서 선택했던 답을 가져옴
+      return quizData.questions.map(q => {
+        if (!q.userAnswer) return null;
+        // options 배열에서 선택했던 optionSeq의 인덱스를 찾음
+        return q.options.findIndex(opt => opt.optionSeq === q.userAnswer?.selectedOptionSeq);
+      });
+    }
+    return new Array(quizData.questions.length).fill(null);
+  }, [quizData.questions, isAlreadySubmitted]);
+
   // 퀴즈 답안 상태
-  const [selected, setSelected] = useState<Array<'O' | 'X' | null>>(() =>
-    new Array(quizData.length).fill(null),
+  const [selected, setSelected] = useState<Array<number | null>>(initialSelected);
+  const [showAnswer, setShowAnswer] = useState(isAlreadySubmitted);
+  const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(
+    isAlreadySubmitted ? quizData.submission : null
   );
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(null);
 
   // 정답 선택 처리 함수
-  const handleSelect = useCallback((index: number, value: 'O' | 'X') => {
+  const handleSelect = useCallback((index: number, optionSeq: number) => {
     setSelected((prev) => {
       const newSelected = [...prev];
-      newSelected[index] = value;
+      newSelected[index] = optionSeq;
       return newSelected;
     });
   }, []);
@@ -61,15 +123,18 @@ const QuizContainer = ({ quizContents, contentId }: QuizContainerProps) => {
     if (!isCompleted) return;
 
     const request: QuizSubmitRequest = {
-      answers: quizData.map((quiz, index) => ({
-        quizNo: quiz.quizNo,
-        answer: selected[index] === 'O',
-      })),
+      answers: quizData.questions.map((question, index) => {
+        const selectedOption = question.options[selected[index] || 0];
+        return {
+          questionSeq: question.questionSeq,
+          selectedAnswer: (selectedOption?.optionSeq || 0).toString(),
+        };
+      }),
     };
 
     try {
-      const response = await submitQuizAnswers(contentId, request);
-      setQuizResult(response.data);
+      const response = await submitQuizAnswers(contentSeq, request);
+      setQuizResult(response);
       window.scrollTo(0, 0);
       setShowAnswer(true);
     } catch (error) {
@@ -116,27 +181,22 @@ const QuizContainer = ({ quizContents, contentId }: QuizContainerProps) => {
 
       {/* Quiz */}
       <div className='space-y-6 pb-28'>
-        {quizData.map((quiz, index) =>
-          showAnswer ? (
-            <QuizAnswer
-              key={quiz.quizNo}
-              quizNo={quiz.quizNo}
-              question={quiz.question}
-              answer={quiz.answer}
-              correct={selected[index] === 'O' ? quiz.answer : !quiz.answer}
-              description={quiz.description}
-              timestamp={quiz.timestamp}
-            />
-          ) : (
+        {quizData.questions.map((question, index) => {
+          if (showAnswer) {
+            return (
+              <QuizAnswer
+                key={question.questionSeq}
+                {...getAnswerProps(question, index)}
+              />
+            );
+          }
+          return (
             <QuizCard
-              key={quiz.quizNo}
-              quizNo={quiz.quizNo}
-              question={quiz.question}
-              selected={selected[index]}
-              onSelect={(value) => handleSelect(index, value)}
+              key={question.questionSeq}
+              {...getCardProps(question, index, selected, handleSelect)}
             />
-          ),
-        )}
+          );
+        })}
       </div>
 
       {/* 도전하기 버튼 */}

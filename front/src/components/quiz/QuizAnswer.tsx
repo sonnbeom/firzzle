@@ -1,14 +1,14 @@
-import { QuizSubmitResponse } from '@/types/quiz';
+import { QuizAnswerProps } from '@/types/quiz';
 import TimeStamp from '../common/TimeStamp';
 
-type QuizAnswerProps = QuizSubmitResponse['results'][0];
-
 const QuizAnswer = ({
-  quizNo,
-  question,
+  questionSeq,
+  text,
   correct,
   description,
   timestamp,
+  selectedOption,
+  correctOption,
 }: QuizAnswerProps) => {
   return (
     <div className='space-y-6 py-4 md:py-6'>
@@ -16,13 +16,11 @@ const QuizAnswer = ({
       <div className='flex items-start gap-4'>
         {/* 번호 */}
         <div className='text-[24px] font-bold text-gray-900 md:text-[30px]'>
-          {quizNo.padStart(2, '0')}
+          {questionSeq.toString().padStart(2, '0')}
         </div>
 
         {/* 질문 */}
-        <p className='text-md font-medium text-gray-900 md:text-lg'>
-          {question}
-        </p>
+        <p className='text-md font-medium text-gray-900 md:text-lg'>{text}</p>
       </div>
 
       {/* 정답 여부 + 해설 */}
