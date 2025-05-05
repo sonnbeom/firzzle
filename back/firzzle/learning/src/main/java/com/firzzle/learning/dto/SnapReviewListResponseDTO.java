@@ -34,11 +34,8 @@ public class SnapReviewListResponseDTO {
     @Schema(description = "대표 프레임 이미지 URL")
     private String representativeImageUrl;
 
-    @Schema(description = "생성 일시")
+    @Schema(description = "생성 일시 (YYYY-MM-DD HH:MM:SS)")
     private String indate;
-
-    @Schema(description = "포맷된 생성 일시 (YYYY-MM-DD)")
-    private String formattedIndate;
 
     @Schema(description = "프레임 수")
     private Integer frameCount;

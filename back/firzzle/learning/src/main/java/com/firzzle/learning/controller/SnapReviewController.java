@@ -26,8 +26,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Class Name : SnapReviewController.java
@@ -181,63 +181,83 @@ public class SnapReviewController {
     }
 
     /**
-     * 내 스냅리뷰 사진첩 목록 조회
-     * 사용자의 스냅리뷰 사진첩 목록을 조회합니다.
+     * 내 스냅리뷰 사진첩 목록 일별 그룹 조회
+     * 사용자의 스냅리뷰 사진첩 목록을 일별로 그룹화하여 조회합니다.
      *
      * @param searchDTO 검색 및 페이징 요청 정보
      * @param request HTTP 요청 객체
-     * @return 스냅리뷰 사진첩 목록
+     * @return 일별 그룹화된 스냅리뷰 사진첩 목록
      */
     @GetMapping(value = "/snap-reviews", produces = "application/json;charset=UTF-8")
-    @Operation(summary = "내 스냅리뷰 사진첩 목록 조회", description = "사용자의 스냅리뷰 사진첩 목록을 조회합니다.")
+    @Operation(summary = "내 스냅리뷰 사진첩 목록 일별 그룹 조회", description = "사용자의 스냅리뷰 사진첩 목록을 일별로 그룹화하여 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "스냅리뷰 사진첩 목록 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "일별 그룹화된 스냅리뷰 사진첩 목록 조회 성공"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('content:read')")
-    public ResponseEntity<Response<PageResponseDTO<SnapReviewListResponseDTO>>> getMySnapReviews(
+    public ResponseEntity<Response<PageResponseDTO<SnapReviewDailyGroupResponseDTO>>> getMySnapReviewsByDaily(
             @Parameter(description = "페이지 요청 정보") SnapReviewSearchDTO searchDTO,
             HttpServletRequest request) {
 
         try {
             RequestBox box = RequestManager.getBox(request);
-            logger.info("내 스냅리뷰 사진첩 목록 조회 요청 - 페이지: {}, 사이즈: {}, UUID: {}",
+            logger.info("내 스냅리뷰 사진첩 목록 일별 그룹 조회 요청 - 페이지: {}, 사이즈: {}, UUID: {}",
                     searchDTO.getP_pageno(), searchDTO.getP_pagesize(), box.getString("uuid"));
 
             logger.debug("box.toString() : {}", box.toString());
 
-            // 검색 조건 설정
-//            box.put("p_pageno", searchDTO.getP_pageno());
-//            box.put("p_pagesize", searchDTO.getP_pagesize());
-//            box.put("p_order", searchDTO.getP_order());
-//            box.put("p_sortorder", searchDTO.getP_sortorder());
-//            box.put("keyword", searchDTO.getKeyword());
-//            box.put("category", searchDTO.getCategory());
-
+            // 기존 서비스 메서드를 사용하여 데이터 조회
             List<DataBox> snapReviewListDataBox = snapReviewService.selectContentListWithFrames(box);
             int totalCount = snapReviewService.selectContentWithFramesCount(box);
 
+            // 스냅리뷰 목록을 DTO로 변환 (날짜 포맷 변환 포함)
             List<SnapReviewListResponseDTO> snapReviewList = convertToSnapReviewListResponseDTO(snapReviewListDataBox);
 
-            PageResponseDTO<SnapReviewListResponseDTO> pageResponse = PageResponseDTO.<SnapReviewListResponseDTO>builder()
-                    .content(snapReviewList)
+            // 일별로 그룹화
+            Map<String, List<SnapReviewListResponseDTO>> dailySnapReviews =
+                    snapReviewList.stream()
+                            .collect(Collectors.groupingBy(
+                                    review -> {
+                                        // substring 전에 문자열 길이 확인
+                                        String date = review.getIndate();
+                                        if (date != null && date.length() >= 10) {
+                                            return date.substring(0, 10);  // YYYY-MM-DD 형식으로 그룹화
+                                        } else {
+                                            logger.warn("날짜 형식이 올바르지 않습니다: {}", date);
+                                            return "날짜 없음";  // 날짜 형식이 올바르지 않은 경우 기본값 사용
+                                        }
+                                    },
+                                    LinkedHashMap::new,  // 삽입 순서 유지를 위한 LinkedHashMap 사용
+                                    Collectors.toList()
+                            ));
+
+            // 일별 그룹 DTO 생성
+            SnapReviewDailyGroupResponseDTO dailyGroupResponse = SnapReviewDailyGroupResponseDTO.builder()
+                    .dailySnapReviews(dailySnapReviews)
+                    .totalDays(dailySnapReviews.size())
+                    .build();
+
+            // 페이지 응답 DTO 생성
+            List<SnapReviewDailyGroupResponseDTO> contentList = Collections.singletonList(dailyGroupResponse);
+            PageResponseDTO<SnapReviewDailyGroupResponseDTO> pageResponse = PageResponseDTO.<SnapReviewDailyGroupResponseDTO>builder()
+                    .content(contentList)
                     .p_pageno(searchDTO.getP_pageno())
                     .p_pagesize(searchDTO.getP_pagesize())
                     .totalElements(totalCount)
                     .build();
 
-            Response<PageResponseDTO<SnapReviewListResponseDTO>> response = Response.<PageResponseDTO<SnapReviewListResponseDTO>>builder()
+            Response<PageResponseDTO<SnapReviewDailyGroupResponseDTO>> response = Response.<PageResponseDTO<SnapReviewDailyGroupResponseDTO>>builder()
                     .status(Status.OK)
                     .data(pageResponse)
                     .build();
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
-            logger.error("내 스냅리뷰 사진첩 목록 조회 중 비즈니스 예외 발생: {}", e.getMessage());
+            logger.error("내 스냅리뷰 사진첩 목록 일별 그룹 조회 중 비즈니스 예외 발생: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("내 스냅리뷰 사진첩 목록 조회 중 예외 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "내 스냅리뷰 사진첩 목록 조회 중 오류가 발생했습니다.");
+            logger.error("내 스냅리뷰 사진첩 목록 일별 그룹 조회 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "내 스냅리뷰 사진첩 목록 일별 그룹 조회 중 오류가 발생했습니다.");
         }
     }
 
@@ -426,34 +446,34 @@ public class SnapReviewController {
     }
 
     /**
-     * DataBox 리스트를 SnapReviewListResponseDTO 리스트로 변환
+     * DataBox 형태의 스냅리뷰 목록을 DTO로 변환합니다.
      *
-     * @param dataBoxList 스냅리뷰 목록 데이터
-     * @return List<SnapReviewListResponseDTO> 변환된 DTO 목록
+     * @param snapReviewListDataBox 데이터박스 형태의 스냅리뷰 목록
+     * @return DTO 형태의 스냅리뷰 목록
      */
-    private List<SnapReviewListResponseDTO> convertToSnapReviewListResponseDTO(List<DataBox> dataBoxList) {
-        if (dataBoxList == null) {
-            return new ArrayList<>();
-        }
+    private List<SnapReviewListResponseDTO> convertToSnapReviewListResponseDTO(List<DataBox> snapReviewListDataBox) {
+        return snapReviewListDataBox.stream().map(dataBox -> {
+            String originalIndate = dataBox.getString("d_indate");
+            String formattedDate = originalIndate; // 기본값으로 원본 날짜 사용
 
-        List<SnapReviewListResponseDTO> result = new ArrayList<>();
-
-        for (DataBox dataBox : dataBoxList) {
-            SnapReviewListResponseDTO dto = SnapReviewListResponseDTO.builder()
+            try {
+                // FormatDate 클래스를 사용하여 날짜 포맷 변환 (20250510130000 -> 2025-05-10 13:00:00)
+                formattedDate = FormatDate.getFormatDate(originalIndate, "yyyy-MM-dd HH:mm:ss");
+            } catch (Exception e) {
+                logger.error("날짜 포맷 변환 중 오류 발생: {}", e.getMessage(), e);
+                // 예외 발생 시 원본값 사용 (이미 기본값으로 설정됨)
+            }
+            logger.debug(dataBox.toString());
+            return SnapReviewListResponseDTO.builder()
                     .contentSeq(dataBox.getLong2("d_content_seq"))
                     .contentTitle(dataBox.getString("d_content_title"))
                     .category(dataBox.getString("d_category"))
                     .thumbnailUrl(dataBox.getString("d_thumbnail_url"))
                     .representativeImageUrl(dataBox.getString("d_representative_image_url"))
-                    .indate(dataBox.getString("d_indate"))
-                    .formattedIndate(parseDateTime(dataBox.getString("d_indate")))
+                    .indate(formattedDate) // FormatDate로 변환된 날짜 사용
                     .frameCount(dataBox.getInt2("d_frame_count"))
                     .build();
-
-            result.add(dto);
-        }
-
-        return result;
+        }).collect(Collectors.toList());
     }
 
     /**
