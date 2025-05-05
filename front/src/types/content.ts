@@ -1,3 +1,5 @@
+import { InfiniteScrollResponse } from './common';
+
 interface Content {
   contentSeq: string;
   title: string;
@@ -18,4 +20,8 @@ interface Content {
   processStatusText: string; // 영상 분석 처리 단계 텍스트
 }
 
+// 학습 컨텐츠 조회 응답 타입
 export type ContentResponse = Content;
+
+// 학습 컨텐츠 목록 조회 응답 타입
+export type ContentListResponse = InfiniteScrollResponse<Content>;

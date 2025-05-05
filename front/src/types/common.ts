@@ -14,3 +14,14 @@ export type ApiResponseWithData<T> = ApiResponse & {
 export type ApiResponseError = ApiResponse & {
   data: null;
 };
+
+// 무한스크롤 응답 타입
+export interface InfiniteScrollResponse<T> {
+  content: T[];
+  p_pageno: number;
+  p_pagesize: number;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  hasNext: boolean;
+}

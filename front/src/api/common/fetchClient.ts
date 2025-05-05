@@ -64,13 +64,13 @@ export class FetchClient {
     let apiUrl = `${this.baseUrl}${url}`;
 
     if (params && Object.keys(params).length > 0) {
-      const queryString = new URLSearchParams(
-        Object.entries(params)
-          .filter(([_, value]) => value != null)
-          .map(([key, value]) => [key, String(value)]),
-      ).toString();
-      if (queryString) {
-        apiUrl += `?${queryString}`;
+      const queryParams = Object.entries(params)
+        .filter(([_, value]) => value != null)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('&');
+
+      if (queryParams) {
+        apiUrl += `?${queryParams}`;
       }
     }
 
