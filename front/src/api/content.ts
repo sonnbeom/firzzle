@@ -7,13 +7,9 @@ export const postContent = async () => {
 
 // 학습 컨텐츠 정보 조회
 export const getContent = async (contentSeq: string) => {
-  const response = await externalApi.get<ContentResponse>(
+  const { data } = await externalApi.get<ContentResponse>(
     `/learning/contents/${contentSeq}`,
   );
 
-  if (response.status === 'FAIL') {
-    throw new Error(response.message);
-  }
-
-  return response.data;
+  return data;
 };

@@ -89,7 +89,14 @@ export class FetchClient {
       throw responseData as ApiResponseError;
     }
 
-    return responseData as ApiResponseWithData<TResponse>;
+    const dataResponse = responseData as ApiResponseWithData<TResponse>;
+
+    // 응답 데이터의 status가 FAIL인 경우 예외처리
+    if (dataResponse.status === 'FAIL') {
+      throw new Error(dataResponse.message);
+    }
+
+    return dataResponse;
   }
 
   // GET 요청
