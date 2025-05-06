@@ -8,12 +8,12 @@ export const getSnapReviews = () => {
 
 // 콘텐츠별 스냅리뷰 조회
 export const getContentSnapReview = (contentSeq: number) => {
-  return externalApi.get<{ data: SnapReview }>(`/learning/contents/${contentSeq}/snap-review`);
+  return externalApi.get<SnapReview>(`/learning/contents/${contentSeq}/snap-review`);
 };
 
 // 프레임 설명 수정
 export const updateFrameComments = (contentSeq: number, request: UpdateFrameCommentsRequest) => {
-  return externalApi.patch<{ data: UpdateFrameCommentsResponse[] }, UpdateFrameCommentsRequest>(
+  return externalApi.patch<UpdateFrameCommentsResponse[], UpdateFrameCommentsRequest>(
     `/learning/contents/${contentSeq}/snap-review`,
     { body: request }
   );
