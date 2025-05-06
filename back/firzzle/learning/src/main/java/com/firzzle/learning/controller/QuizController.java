@@ -199,9 +199,9 @@ public class QuizController {
                     case "M5":
                         mappedType = "M5";//multiple_choice5
                         break;
-//                    case "S":
-//                        mappedType = "short_answer";
-//                        break;
+//                case "S":
+//                    mappedType = "short_answer";
+//                    break;
                     case "OX":
                         mappedType = "OX";
                         break;
@@ -240,9 +240,16 @@ public class QuizController {
                                 }
                             }
 
+                            // 푼 문제의 경우, 해설 정보 추가
+                            String explanation = null;
+                            if (isCorrect || !isCorrect) { // 정답이든 오답이든 푼 문제인 경우
+                                explanation = questionDataBox.getString("d_explanation");
+                            }
+
                             userAnswer = QuizResponseDTO.UserAnswerDTO.builder()
                                     .selectedOptionSeq(selectedOptionSeq)
                                     .isCorrect(isCorrect)
+                                    .explanation(explanation)
                                     .build();
                             break;
                         }
