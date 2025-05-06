@@ -128,6 +128,11 @@ public class QuizResponseDTO {
          * 정답 여부
          */
         private Boolean isCorrect;
+
+        /**
+         * 문제 해설
+         */
+        private String explanation;
     }
 
     /**
