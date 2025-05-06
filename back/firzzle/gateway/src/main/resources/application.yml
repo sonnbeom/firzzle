@@ -1,3 +1,4 @@
+# 공통 설정 (common)
 server:
   port: 8080
 
@@ -6,21 +7,6 @@ spring:
     name: gateway-server
   cloud:
     gateway:
-      globalcors:
-        corsConfigurations:
-          "[/**]":
-            allowedOrigins:
-              - "http://localhost:3000"
-              - "https://firzzle.site"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - PATCH
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
       routes:
         - id: auth-service-v1
           uri: lb://auth-server
@@ -78,16 +64,144 @@ spring:
           filters:
             - RewritePath=/api/v2/admin/(?<segment>.*), /api/v2/${segment}
 
+# JWT 설정
+jwt:
+  secret: your-secret-key-should-be-at-least-32-bytes-long
+  access-token-validity-seconds: 3600
+  refresh-token-validity-seconds: 604800
+
+---
+# 로컬 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins:
+              - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)"
+              - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)"
+              - "ENC(Xfl3MDQKHLlZc//V9ypP/nYRO9U1MLq5e8LYoOwxz3DLgHZsT2CrCnGqlZHoYIFF)"
+              - "ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            exposedHeaders:
+              - "Authorization"
+              - "Access-Control-Allow-Origin"
+              - "Access-Control-Allow-Credentials"
+            allowCredentials: true
+            maxAge: 3600
+
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka
-#      defaultZone: http://eureka-server:8761/eureka/
+#      defaultZone: ENC(gwXQw1ns6DV2Br4OkeUbr1f0vBn5FAaf7HWlRFogDejLcTUM7At5Y51uIo+GDsogipX5eIWEHgRmYEFcjyPYYg==)
 
+# 애플리케이션 설정
+app:
+  url:
+    base: ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)
 
-jwt:
-  secret: your-secret-key-should-be-at-least-32-bytes-long
-  access-token-validity-seconds: 3600
-  refresh-token-validity-seconds: 604800
+---
+# 개발 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins:
+              - "ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)"
+              - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)" # 개발 끝나면 삭제
+              - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)" # 개발 끝나면 삭제
+              - "ENC(Xfl3MDQKHLlZc//V9ypP/nYRO9U1MLq5e8LYoOwxz3DLgHZsT2CrCnGqlZHoYIFF)" # 개발 끝나면 삭제
+              - "ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)" # 개발 끝나면 삭제
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            exposedHeaders:
+              - "Authorization"
+              - "Access-Control-Allow-Origin"
+              - "Access-Control-Allow-Credentials"
+            allowCredentials: true
+            maxAge: 3600
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(gwXQw1ns6DV2Br4OkeUbr1f0vBn5FAaf7HWlRFogDejLcTUM7At5Y51uIo+GDsogipX5eIWEHgRmYEFcjyPYYg==)
+
+#Jasypt 설정
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+  secret-key: ${JASYPT_SECRET_KEY}
+
+app:
+  url:
+    base: ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)
+
+---
+# 프로덕션 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: production
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins:
+              - "ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)"
+              - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)" # 개발 끝나면 삭제
+              - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)" # 개발 끝나면 삭제
+              - "ENC(Xfl3MDQKHLlZc//V9ypP/nYRO9U1MLq5e8LYoOwxz3DLgHZsT2CrCnGqlZHoYIFF)" # 개발 끝나면 삭제
+              - "ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)" # 개발 끝나면 삭제
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            exposedHeaders:
+              - "Authorization"
+              - "Access-Control-Allow-Origin"
+              - "Access-Control-Allow-Credentials"
+            allowCredentials: true
+            maxAge: 3600
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(gwXQw1ns6DV2Br4OkeUbr1f0vBn5FAaf7HWlRFogDejLcTUM7At5Y51uIo+GDsogipX5eIWEHgRmYEFcjyPYYg==)
+
+app:
+  url:
+    base: ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)

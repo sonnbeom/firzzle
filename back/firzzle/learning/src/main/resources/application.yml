@@ -40,8 +40,8 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-#    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
-    jdbc-url: ENC(OvwLQr1WRx28Jf8teIXvvLXBlxMgNu0eP1KixLtefm5/bf0S7dHl1O5ETSNxw/7va+UrhvZjnt8yZOEi8jYIIQQNvZTXC2W7fJO9gm5jAQGbekBgF604D9FPOZUwxH/5wT79h4i8mJW+P867NgOM965KCxSTMx+nFCLQVmXyceyIQKHiaYJK1c1+jbpHCS0b)
+#    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
+    jdbc-url: ENC(zVLG89eoXtRlVYx+98YsHPOO+fjfP66OJ2Z+l5qHzqmD93GNuXYqYcu768cTTQvnkgUaJKC6n34kxlMez6FekblbQ9by64zvEKj+P9F8F9SWIo3A3Kom4qtr0Ntiug9jZ74HN/OSvXoqlXs+16TumXzT8rhzyK5kTxUorvWiDYQ1msHIigkGXbEaqapDltO6eX9tLx+945Di5OJr8OXtBT1+j9geIpJsgM8TwThkmWU=)
     username: ENC(hBx/Lg1wrZOWClc1mRhebrJJHsbvkjaOxE8PtezwA1E=)
     password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
     maximum-pool-size: 10

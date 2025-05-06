@@ -9,6 +9,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * @Class Name : SecurityConfig.java
+ * @Description : 보안 설정 클래스
+ * @author Firzzle
+ * @since 2025. 5. 6.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

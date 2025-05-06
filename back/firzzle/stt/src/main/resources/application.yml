@@ -36,7 +36,7 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    #    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
+    #    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
     jdbc-url: ENC(ygXVhsF9CysFggaflxcQWINq4Xeo7e2Kgzk09fKfaMb57mq+mFLlBz740u3YK++f2A79SpBdqnh7JL22sHA5IXljAN81Yaza8iVTrk8uuSnFdki8RMldcRDzlTX9xsS0UH7GrhugvwQ2LpvuEDo6fO8j5DCEw1LUwxGqqG2PLdw=)
     username: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
     password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
