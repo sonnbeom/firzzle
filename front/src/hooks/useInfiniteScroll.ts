@@ -12,6 +12,7 @@ interface UseInfiniteScrollProps<T> {
   }>;
   enabled?: boolean;
   pageSize?: number;
+  initialData?: T[];
 }
 
 export function useInfiniteScroll<T>({
@@ -19,6 +20,7 @@ export function useInfiniteScroll<T>({
   queryFn,
   enabled = true,
   pageSize = 20,
+  initialData,
 }: UseInfiniteScrollProps<T>) {
   // Intersection Observer의 타겟 요소에 대한 ref
   const observerTarget = useRef<HTMLDivElement>(null);
@@ -32,6 +34,17 @@ export function useInfiniteScroll<T>({
         lastPage.hasNextPage ? pages.length + 1 : undefined,
       initialPageParam: 1,
       enabled,
+      initialData: initialData
+        ? {
+            pages: [
+              {
+                data: initialData,
+                hasNextPage: initialData.length === pageSize,
+              },
+            ],
+            pageParams: [1],
+          }
+        : undefined,
     });
 
   // 모든 아이템 데이터
