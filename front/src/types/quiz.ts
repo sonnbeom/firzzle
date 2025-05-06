@@ -38,11 +38,22 @@ export interface QuizSubmitRequest {
 
 // 퀴즈 제출 응답 타입
 export interface QuizSubmitResponse {
-  submissionSeq: number;
-  correctAnswers: number;
-  totalQuestions: number;
-  scorePercentage: number;
-  indate: string;
+  submission: {
+    seq: number;
+    contentSeq: number;
+    correctAnswers: number;
+    totalQuestions: number;
+    scorePercentage: number;
+    indate: string;
+  };
+  questionResults: {
+    questionSeq: number;
+    question: string;
+    selectedAnswer: string;
+    correctAnswer: string;
+    isCorrect: boolean;
+    explanation: string;
+  }[];
 }
 
 // 퀴즈 카드 Props 타입

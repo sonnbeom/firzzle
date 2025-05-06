@@ -68,27 +68,53 @@ const getCardProps = (
 const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
   // 이미 푼 문제인지 확인
   const isAlreadySubmitted = useMemo(() => {
-    return quizData.submission !== null;
-  }, [quizData.submission]);
+    // submission이 있고, 모든 문제에 userAnswer가 있는 경우에만 true
+    return (
+      quizData.submission !== null &&
+      quizData.questions.every(
+        (q) => q.userAnswer !== null && q.userAnswer !== undefined,
+      )
+    );
+  }, [quizData.submission, quizData.questions]);
 
   // 초기 선택 상태 설정
   const initialSelected = useMemo(() => {
     if (isAlreadySubmitted) {
       // 이미 푼 문제라면 userAnswer에서 선택했던 답을 가져옴
-      return quizData.questions.map(q => {
+      return quizData.questions.map((q) => {
         if (!q.userAnswer) return null;
         // options 배열에서 선택했던 optionSeq의 인덱스를 찾음
-        return q.options.findIndex(opt => opt.optionSeq === q.userAnswer?.selectedOptionSeq);
+        return q.options.findIndex(
+          (opt) => opt.optionSeq === q.userAnswer?.selectedOptionSeq,
+        );
       });
     }
     return new Array(quizData.questions.length).fill(null);
   }, [quizData.questions, isAlreadySubmitted]);
 
   // 퀴즈 답안 상태
-  const [selected, setSelected] = useState<Array<number | null>>(initialSelected);
+  const [selected, setSelected] =
+    useState<Array<number | null>>(initialSelected);
   const [showAnswer, setShowAnswer] = useState(isAlreadySubmitted);
   const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(
-    isAlreadySubmitted ? quizData.submission : null
+    isAlreadySubmitted && quizData.submission ? {
+      submission: {
+        seq: quizData.submission.submissionSeq,
+        contentSeq: quizData.contentSeq,
+        correctAnswers: quizData.submission.correctAnswers,
+        totalQuestions: quizData.submission.totalQuestions,
+        scorePercentage: quizData.submission.scorePercentage,
+        indate: quizData.submission.indate
+      },
+      questionResults: quizData.questions.map(q => ({
+        questionSeq: q.questionSeq,
+        question: q.text,
+        selectedAnswer: q.userAnswer ? q.userAnswer.selectedOptionSeq.toString() : '',
+        correctAnswer: q.userAnswer?.isCorrect ? q.userAnswer.selectedOptionSeq.toString() : '',
+        isCorrect: q.userAnswer?.isCorrect || false,
+        explanation: ''
+      }))
+    } : null
   );
 
   // 정답 선택 처리 함수
@@ -134,7 +160,19 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
 
     try {
       const response = await submitQuizAnswers(contentSeq, request);
+      // API 응답을 통해 문제별 결과 및 설명 업데이트
       setQuizResult(response);
+      // 문제별 userAnswer 업데이트
+      quizData.questions = quizData.questions.map(q => {
+        const result = response.questionResults.find(r => r.questionSeq === q.questionSeq);
+        if (result) {
+          q.userAnswer = {
+            selectedOptionSeq: parseInt(result.selectedAnswer),
+            isCorrect: result.isCorrect
+          };
+        }
+        return q;
+      });
       window.scrollTo(0, 0);
       setShowAnswer(true);
     } catch (error) {
