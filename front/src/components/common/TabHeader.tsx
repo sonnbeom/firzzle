@@ -6,13 +6,12 @@ import TabButton from './TabButton';
 const TabHeader = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const id = 1;
+
+  // pathname에서 contentSeq 추출
+  const contentSeq = pathname.split('/').filter(Boolean)[1];
 
   const isActive = (path: string) => {
     const lastPath = pathname.split('/').pop();
-    if (typeof path === 'number') {
-      return true;
-    }
     return lastPath === path;
   };
 
@@ -20,23 +19,23 @@ const TabHeader = () => {
     <div className='flex w-full justify-between gap-4'>
       <TabButton
         title='요약 노트'
-        isActive={isActive(`${id}`)}
-        onClick={() => router.push(`/content/${id}`)}
+        isActive={isActive(contentSeq)}
+        onClick={() => router.push(`/content/${contentSeq}`)}
       />
       <TabButton
         title='AI 퀴즈'
         isActive={isActive('quiz')}
-        onClick={() => router.push(`/content/${id}/quiz`)}
+        onClick={() => router.push(`/content/${contentSeq}/quiz`)}
       />
       <TabButton
         title='스냅 리뷰'
         isActive={isActive('snapreview')}
-        onClick={() => router.push(`/content/${id}/snapreview`)}
+        onClick={() => router.push(`/content/${contentSeq}/snapreview`)}
       />
       <TabButton
         title='추천'
         isActive={isActive('recommend')}
-        onClick={() => router.push(`/content/${id}/recommend`)}
+        onClick={() => router.push(`/content/${contentSeq}/recommend`)}
       />
     </div>
   );
