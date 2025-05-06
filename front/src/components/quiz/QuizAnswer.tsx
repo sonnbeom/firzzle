@@ -5,7 +5,7 @@ const QuizAnswer = ({
   questionSeq,
   text,
   correct,
-  description,
+  explanation,
   timestamp,
   selectedOption,
   correctOption,
@@ -31,7 +31,7 @@ const QuizAnswer = ({
           {correct ? '정답이에요!' : '오답이에요!'}
         </div>
         <p className='text-md mb-4 leading-relaxed text-gray-900 md:text-lg'>
-          {description}
+          {explanation}
         </p>
         <div className='flex justify-end'>
           <TimeStamp time={timestamp} type='review' />

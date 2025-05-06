@@ -70,7 +70,7 @@ export interface QuizAnswerProps {
   questionSeq: number;
   text: string;
   correct: boolean;
-  description: string;
+  explanation: string;
   timestamp: number;
   selectedOption?: QuizOption;
   correctOption?: QuizOption;

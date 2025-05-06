@@ -30,12 +30,18 @@ interface QuizContainerProps {
 const getAnswerProps = (
   question: QuizData['questions'][0],
   index: number,
+  questionResults?: QuizSubmitResponse['questionResults'],
 ): QuizAnswerProps => {
+  // API 응답의 explanation 찾기
+  const explanation = questionResults?.find(
+    (result) => result.questionSeq === question.questionSeq
+  )?.explanation || '';
+
   return {
     questionSeq: index + 1,
     text: question.text,
     correct: question.userAnswer?.isCorrect || false,
-    description: '',
+    explanation: explanation,  // API의 explanation 사용
     timestamp: question.timestamp,
     selectedOption: question.options.find(
       (opt): opt is QuizOption =>
@@ -224,7 +230,7 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
             return (
               <QuizAnswer
                 key={question.questionSeq}
-                {...getAnswerProps(question, index)}
+                {...getAnswerProps(question, index, quizResult?.questionResults)}
               />
             );
           }
