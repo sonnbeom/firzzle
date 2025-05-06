@@ -1,16 +1,8 @@
 import Image from 'next/image';
-import { getYouTubeVideoId } from '@/utils/youtube';
-
-interface SnapItem {
-  id: string;
-  title: string;
-  youtubeUrl: string;
-  date: string;
-  length: number;
-}
+import { SnapReview } from '@/types/snapReview';
 
 interface SnapCardProps {
-  data: SnapItem;
+  data: SnapReview;
 }
 
 const SnapCard = ({ data }: SnapCardProps) => {
@@ -18,8 +10,8 @@ const SnapCard = ({ data }: SnapCardProps) => {
     <div className='group mx-auto max-w-[240px] overflow-hidden rounded-lg bg-white shadow-md transition-all'>
       <div className='relative aspect-video w-full bg-white'>
         <Image
-          src={`https://img.youtube.com/vi/${getYouTubeVideoId(data.youtubeUrl)}/maxresdefault.jpg`}
-          alt={data.title}
+          src={data.thumbnailUrl}
+          alt={data.contentTitle}
           fill
           sizes='240px'
           className='object-contain'
@@ -27,10 +19,10 @@ const SnapCard = ({ data }: SnapCardProps) => {
       </div>
 
       <div className='p-4'>
-        <span className='text-md font-semibold text-gray-950 md:text-xl'>
-          스냅 {data.length}컷
-        </span>
-        <h3 className='mb-2 line-clamp-2 text-lg'>{data.title}</h3>
+          <span className='text-md font-semibold text-gray-950 md:text-xl'>
+            스냅 {data.frameCount || 0}컷
+          </span>
+        <h3 className='mb-2 line-clamp-2 text-lg'>{data.contentTitle}</h3>
       </div>
     </div>
   );
