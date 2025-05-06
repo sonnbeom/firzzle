@@ -1,19 +1,18 @@
-import { Button } from '../ui/button';
+import Link from 'next/link';
 import Icons from './Icons';
 
 interface TabButtonProps {
   title: string;
   isActive: boolean;
-  onClick: () => void;
+  route: string;
   iconId?: 'snapbook' | 'content';
 }
 
-const TabButton = ({ title, isActive, onClick, iconId }: TabButtonProps) => {
+const TabButton = ({ title, isActive, route, iconId }: TabButtonProps) => {
   return (
-    <div className='flex flex-col items-center gap-1'>
-      <Button
-        variant={isActive ? 'tabactive' : 'tabinactive'}
-        onClick={onClick}
+    <Link href={route} className='flex flex-col items-center gap-1'>
+      <button
+        className={`${isActive ? 'font-semibold text-blue-400' : 'font-medium text-gray-700 hover:bg-gray-50'} text-xl`}
       >
         {iconId && (
           <Icons
@@ -22,14 +21,14 @@ const TabButton = ({ title, isActive, onClick, iconId }: TabButtonProps) => {
           />
         )}
         {title}
-      </Button>
+      </button>
 
       {!iconId && (
         <hr
           className={`${isActive ? 'border-blue-400' : 'border-none'} w-full border`}
         />
       )}
-    </div>
+    </Link>
   );
 };
 

@@ -1,41 +1,32 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { useIsActiveTab } from '@/hooks/useIsActiveTab';
 import TabButton from './TabButton';
 
 const TabHeader = () => {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  // pathname에서 contentSeq 추출
-  const contentSeq = pathname.split('/').filter(Boolean)[1];
-
-  const isActive = (path: string) => {
-    const lastPath = pathname.split('/').pop();
-    return lastPath === path;
-  };
+  const { contentSeq, isActive } = useIsActiveTab();
 
   return (
     <div className='flex w-full justify-between gap-4'>
       <TabButton
         title='요약 노트'
         isActive={isActive(contentSeq)}
-        onClick={() => router.push(`/content/${contentSeq}`)}
+        route={`/content/${contentSeq}`}
       />
       <TabButton
         title='AI 퀴즈'
         isActive={isActive('quiz')}
-        onClick={() => router.push(`/content/${contentSeq}/quiz`)}
+        route={`/content/${contentSeq}/quiz`}
       />
       <TabButton
         title='스냅 리뷰'
         isActive={isActive('snapreview')}
-        onClick={() => router.push(`/content/${contentSeq}/snapreview`)}
+        route={`/content/${contentSeq}/snapreview`}
       />
       <TabButton
         title='추천'
         isActive={isActive('recommend')}
-        onClick={() => router.push(`/content/${contentSeq}/recommend`)}
+        route={`/content/${contentSeq}/recommend`}
       />
     </div>
   );
