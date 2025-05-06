@@ -17,6 +17,7 @@ export interface QuizData {
     userAnswer: {
       selectedOptionSeq: number; // 선택 답변
       isCorrect: boolean; // 정답 유무
+      explanation: string; // 답변 설명
     } | null;
   }[];
   submission: {

@@ -15,11 +15,7 @@ const getAnswerProps = (
   index: number,
   questionResults?: QuizSubmitResponse['questionResults'],
 ): QuizAnswerProps => {
-  // API 응답의 explanation 찾기
-  const explanation =
-    questionResults?.find(
-      (result) => result.questionSeq === question.questionSeq,
-    )?.explanation || '';
+  const explanation = question.userAnswer?.explanation || '';
 
   return {
     questionSeq: index + 1,
@@ -104,7 +100,7 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
               ? q.userAnswer.selectedOptionSeq.toString()
               : '',
             isCorrect: q.userAnswer?.isCorrect || false,
-            explanation: '',
+            explanation: q.userAnswer?.explanation || '',
           })),
         }
       : null,
@@ -151,6 +147,7 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
           q.userAnswer = {
             selectedOptionSeq: parseInt(result.selectedAnswer),
             isCorrect: result.isCorrect,
+            explanation: result.explanation,
           };
         }
         return q;
