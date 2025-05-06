@@ -1,81 +1,42 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { submitQuizAnswers } from '@/api/quiz';
+import { useState } from 'react';
 import BasicDialog from '@/components/common/BasicDialog';
 import { Button } from '@/components/ui/button';
 import { usePreventNavigation } from '@/hooks/usePreventNavigation';
-import { QuizData, QuizSubmitRequest, QuizSubmitResponse } from '@/types/quiz';
+import { useQuiz } from '@/hooks/useQuiz';
+import { QuizData } from '@/types/quiz';
 import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
 
-declare global {
-  interface Window {
-    __reloadRequested: boolean;
-  }
-}
-
 interface QuizContainerProps {
-  quizContents: QuizData[];
-  contentId: string;
+  quizData: QuizData;
+  contentSeq: string;
 }
 
-const QuizContainer = ({ quizContents, contentId }: QuizContainerProps) => {
-  const quizData = quizContents;
-  // 퀴즈 답안 상태
-  const [selected, setSelected] = useState<Array<'O' | 'X' | null>>(() =>
-    new Array(quizData.length).fill(null),
-  );
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(null);
+const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
+  const [showDialog, setShowDialog] = useState(false);
 
-  // 정답 선택 처리 함수
-  const handleSelect = useCallback((index: number, value: 'O' | 'X') => {
-    setSelected((prev) => {
-      const newSelected = [...prev];
-      newSelected[index] = value;
-      return newSelected;
-    });
-  }, []);
-
-  // 모든 문제에 답안을 선택했는지 여부
-  const isCompleted = useMemo(
-    () => selected.every((value) => value !== null),
-    [selected],
-  );
-
-  // 페이지 이탈 방지 로직
-  const hasAnswered = selected.some((value) => value !== null);
+  // useQuiz 훅으로 퀴즈 관련 로직 분리
   const {
-    showDialog,
-    setShowDialog,
-    pendingNavigation,
+    selected,
+    showAnswer,
+    quizResult,
+    isCompleted,
+    hasAnswered,
+    handleSelect,
+    handleSubmit,
+    getAnswerProps,
+    getCardProps,
+  } = useQuiz(quizData, contentSeq);
+
+  // usePreventNavigation 훅 사용
+  const {
     setPendingNavigation,
     blockUnload,
-    router,
+
     originalPushRef,
   } = usePreventNavigation(hasAnswered && !showAnswer);
-
-  // 퀴즈 제출 처리
-  const handleSubmit = async () => {
-    if (!isCompleted) return;
-
-    const request: QuizSubmitRequest = {
-      answers: quizData.map((quiz, index) => ({
-        quizNo: quiz.quizNo,
-        answer: selected[index] === 'O',
-      })),
-    };
-
-    try {
-      const response = await submitQuizAnswers(contentId, request);
-      setQuizResult(response.data);
-      window.scrollTo(0, 0);
-      setShowAnswer(true);
-    } catch (error) {
-      console.error('Error submitting quiz:', error);
-    }
-  };
 
   return (
     <div className='relative min-h-screen w-full px-2 md:px-10'>
@@ -116,27 +77,26 @@ const QuizContainer = ({ quizContents, contentId }: QuizContainerProps) => {
 
       {/* Quiz */}
       <div className='space-y-6 pb-28'>
-        {quizData.map((quiz, index) =>
-          showAnswer ? (
-            <QuizAnswer
-              key={quiz.quizNo}
-              quizNo={quiz.quizNo}
-              question={quiz.question}
-              answer={quiz.answer}
-              correct={selected[index] === 'O' ? quiz.answer : !quiz.answer}
-              description={quiz.description}
-              timestamp={quiz.timestamp}
-            />
-          ) : (
+        {quizData.questions.map((question, index) => {
+          if (showAnswer) {
+            return (
+              <QuizAnswer
+                key={question.questionSeq}
+                {...getAnswerProps(
+                  question,
+                  index,
+                  quizResult?.questionResults,
+                )}
+              />
+            );
+          }
+          return (
             <QuizCard
-              key={quiz.quizNo}
-              quizNo={quiz.quizNo}
-              question={quiz.question}
-              selected={selected[index]}
-              onSelect={(value) => handleSelect(index, value)}
+              key={question.questionSeq}
+              {...getCardProps(question, index, selected, handleSelect)}
             />
-          ),
-        )}
+          );
+        })}
       </div>
 
       {/* 도전하기 버튼 */}
@@ -146,6 +106,7 @@ const QuizContainer = ({ quizContents, contentId }: QuizContainerProps) => {
             variant={isCompleted ? 'default' : 'disabled'}
             className={`w-full py-6 text-lg font-semibold ${isCompleted ? 'bg-blue-400 hover:bg-blue-400' : ''} text-white`}
             onClick={handleSubmit}
+            disabled={!isCompleted}
           >
             도전하기
           </Button>
