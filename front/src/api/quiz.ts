@@ -17,6 +17,6 @@ export const submitQuizAnswers = async (
   const { data } = await externalApi.post<
     QuizSubmitResponse,
     QuizSubmitRequest
-  >(`/learning/contents/${contentSeq}/quiz`, { body: request, withAuth: true });
+  >(`/learning/contents/${contentSeq}/quiz`, { body: request });
   return data;
 };
