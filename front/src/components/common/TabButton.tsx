@@ -12,7 +12,7 @@ const TabButton = ({ title, isActive, route, iconId }: TabButtonProps) => {
   return (
     <Link href={route} className='flex flex-col items-center gap-1'>
       <button
-        className={`${isActive ? 'font-semibold text-blue-400' : 'font-medium text-gray-700 hover:bg-gray-50'} text-xl`}
+        className={`${isActive ? 'font-semibold text-blue-400' : 'font-medium text-gray-700 hover:bg-gray-50'} flex items-center gap-2 px-2 text-xl`}
       >
         {iconId && (
           <Icons
@@ -20,7 +20,7 @@ const TabButton = ({ title, isActive, route, iconId }: TabButtonProps) => {
             color={isActive ? 'text-blue-400' : 'text-gray-700'}
           />
         )}
-        {title}
+        <p className='whitespace-nowrap'>{title}</p>
       </button>
 
       {!iconId && (
