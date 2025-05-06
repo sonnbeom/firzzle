@@ -1,25 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { updateFrameDescriptions } from '@/api/snap';
-import { Frame, FrameDescriptions } from '@/types/snapReview';
+import { updateFrameComments } from '@/api/snap';
+import {
+  UpdateFrameCommentsRequest,
+  UpdateFrameCommentsResponse,
+  Frame,
+} from '@/types/snapReview';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
 import TimeStamp from '../common/TimeStamp';
 
-// Frame 타입을 확장하여 description 필드 추가
-interface ReviewFrame extends Frame {
-  description: string | null;
-}
-
 interface ReviewCardProps {
   contentId: string;
-  reviews: (Omit<ReviewFrame, 'src'> & { thumbnail: string })[];
+  reviews: Frame[];
 }
 
 const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [localReviews, setLocalReviews] = useState(reviews);
+  const [localReviews, setLocalReviews] = useState<
+    Frame[] | UpdateFrameCommentsResponse[]
+  >(reviews);
 
   const handleEditClick = (id: string) => {
     setEditingId(id);
@@ -27,22 +28,20 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
 
   const handleSaveClick = async (id: string, description: string) => {
     try {
-      // 전체 프레임 설명 객체 생성
-      const frameDescriptions: FrameDescriptions = {
-        notes: localReviews.map((review) => ({
-          frameId: review.id,
-          description: review.id === id ? description : review.description,
+      const request: UpdateFrameCommentsRequest = {
+        frames: localReviews.map((review) => ({
+          frameSeq: review.frameSeq,
+          comment:
+            review.frameSeq === Number(id)
+              ? description
+              : ('comment' in review ? review.comment : null) || '',
         })),
       };
 
-      await updateFrameDescriptions(contentId, frameDescriptions);
+      const response = await updateFrameComments(Number(contentId), request);
 
-      // 로컬 상태 업데이트
-      setLocalReviews((prev) =>
-        prev.map((review) =>
-          review.id === id ? { ...review, description } : review,
-        ),
-      );
+      // 응답으로 받은 데이터로 상태 업데이트
+      setLocalReviews(response.data);
       setEditingId(null);
     } catch (error) {
       console.error('수정 실패:', error);
@@ -56,8 +55,8 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
     );
     setLocalReviews((prev) =>
       prev.map((review) =>
-        review.id === id
-          ? { ...review, description: truncatedDescription }
+        review.frameSeq === Number(id)
+          ? { ...review, comment: truncatedDescription }
           : review,
       ),
     );
@@ -74,13 +73,13 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
           <div className='space-y-8'>
             {localReviews.map((item) => (
               <div
-                key={`image-${item.id}`}
+                key={`image-${item.frameSeq}`}
                 className='relative h-[180px] w-full bg-white'
               >
                 <TimeStamp
                   time={item.timestamp}
                   type='image'
-                  imageUrl={item.thumbnail}
+                  imageUrl={item.imageUrl}
                   width={600}
                   height={400}
                 />
@@ -93,45 +92,58 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
         <div className='min-w-0 flex-1'>
           <div className='space-y-8'>
             {localReviews.map((item) => (
-              <div key={`text-${item.id}`} className='relative h-[180px] p-4'>
+              <div
+                key={`text-${item.frameSeq}`}
+                className='relative h-[180px] p-4'
+              >
                 <div className='absolute right-0 bottom-[-16px] left-0 border-b border-blue-50'></div>
-                {editingId === item.id ? (
+                {editingId === String(item.frameSeq) ? (
                   <textarea
                     className='md:text-md mt-2 h-[140px] w-full resize-none border border-blue-50 text-sm text-gray-700 focus:border-blue-400'
-                    value={item.description || ''}
+                    value={item.comment || ''}
                     placeholder='내용을 작성해 주세요.'
                     onChange={(e) =>
-                      handleDescriptionChange(item.id, e.target.value)
+                      handleDescriptionChange(
+                        String(item.frameSeq),
+                        e.target.value,
+                      )
                     }
                   />
                 ) : (
                   <div
-                    className={`h-full ${!item.description ? 'flex items-center justify-center' : ''}`}
+                    className={`h-full ${!item.comment ? 'flex items-center justify-center' : ''}`}
                   >
                     <p
-                      className={`md:text-md mt-2 text-sm break-words text-gray-700 ${!item.description ? 'text-center' : ''}`}
+                      className={`md:text-md mt-2 text-sm break-words text-gray-700 ${!item.comment ? 'text-center' : ''}`}
                     >
-                      {item.description || '내용을 작성해 주세요.'}
+                      {item.comment || '내용을 작성해 주세요.'}
                     </p>
                   </div>
                 )}
                 <div
-                  className={`flex items-center justify-end ${editingId === item.id ? '-mt-12 -mr-2' : '-mt-2 -mr-4'}`}
+                  className={`flex items-center justify-end ${editingId === String(item.frameSeq) ? '-mt-12 -mr-2' : '-mt-2 -mr-4'}`}
                 >
                   <span className='text-sm text-gray-500'>
-                    ({item.description?.length || 0}/{MAX_SNAP_REVIEW_LENGTH})
+                    ({item.comment?.length || 0}/{MAX_SNAP_REVIEW_LENGTH})
                   </span>
                   <button
                     className='mr-2 p-2'
                     onClick={() =>
-                      editingId === item.id
-                        ? handleSaveClick(item.id, item.description || '')
-                        : handleEditClick(item.id)
+                      editingId === String(item.frameSeq)
+                        ? handleSaveClick(
+                            String(item.frameSeq),
+                            item.comment || '',
+                          )
+                        : handleEditClick(String(item.frameSeq))
                     }
-                    aria-label={editingId === item.id ? 'Save' : 'Edit'}
+                    aria-label={
+                      editingId === String(item.frameSeq) ? 'Save' : 'Edit'
+                    }
                   >
                     <Icons
-                      id={editingId === item.id ? 'upload' : 'write'}
+                      id={
+                        editingId === String(item.frameSeq) ? 'upload' : 'write'
+                      }
                       size={24}
                       color={'text-gray-900'}
                     />

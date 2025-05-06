@@ -1,6 +1,13 @@
 import { useState, useMemo } from 'react';
-import { QuizData, QuizSubmitRequest, QuizSubmitResponse, QuizAnswerProps, QuizCardProps, QuizOption } from '@/types/quiz';
 import { submitQuizAnswers } from '@/api/quiz';
+import {
+  QuizData,
+  QuizSubmitRequest,
+  QuizSubmitResponse,
+  QuizAnswerProps,
+  QuizCardProps,
+  QuizOption,
+} from '@/types/quiz';
 
 // 퀴즈 답변 props 생성 유틸리티 함수
 const getAnswerProps = (
@@ -8,10 +15,7 @@ const getAnswerProps = (
   index: number,
   questionResults?: QuizSubmitResponse['questionResults'],
 ): QuizAnswerProps => {
-  // API 응답의 explanation 찾기
-  const explanation = questionResults?.find(
-    (result) => result.questionSeq === question.questionSeq
-  )?.explanation || '';
+  const explanation = question.userAnswer?.explanation || '';
 
   return {
     questionSeq: index + 1,
@@ -72,27 +76,34 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
     return new Array(quizData.questions.length).fill(null);
   }, [quizData.questions, isAlreadySubmitted]);
 
-  const [selected, setSelected] = useState<Array<number | null>>(initialSelected);
+  const [selected, setSelected] =
+    useState<Array<number | null>>(initialSelected);
   const [showAnswer, setShowAnswer] = useState(isAlreadySubmitted);
   const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(
-    isAlreadySubmitted && quizData.submission ? {
-      submission: {
-        seq: quizData.submission.submissionSeq,
-        contentSeq: quizData.contentSeq,
-        correctAnswers: quizData.submission.correctAnswers,
-        totalQuestions: quizData.submission.totalQuestions,
-        scorePercentage: quizData.submission.scorePercentage,
-        indate: quizData.submission.indate
-      },
-      questionResults: quizData.questions.map(q => ({
-        questionSeq: q.questionSeq,
-        question: q.text,
-        selectedAnswer: q.userAnswer ? q.userAnswer.selectedOptionSeq.toString() : '',
-        correctAnswer: q.userAnswer?.isCorrect ? q.userAnswer.selectedOptionSeq.toString() : '',
-        isCorrect: q.userAnswer?.isCorrect || false,
-        explanation: ''
-      }))
-    } : null
+    isAlreadySubmitted && quizData.submission
+      ? {
+          submission: {
+            seq: quizData.submission.submissionSeq,
+            contentSeq: quizData.contentSeq,
+            correctAnswers: quizData.submission.correctAnswers,
+            totalQuestions: quizData.submission.totalQuestions,
+            scorePercentage: quizData.submission.scorePercentage,
+            indate: quizData.submission.indate,
+          },
+          questionResults: quizData.questions.map((q) => ({
+            questionSeq: q.questionSeq,
+            question: q.text,
+            selectedAnswer: q.userAnswer
+              ? q.userAnswer.selectedOptionSeq.toString()
+              : '',
+            correctAnswer: q.userAnswer?.isCorrect
+              ? q.userAnswer.selectedOptionSeq.toString()
+              : '',
+            isCorrect: q.userAnswer?.isCorrect || false,
+            explanation: q.userAnswer?.explanation || '',
+          })),
+        }
+      : null,
   );
 
   // 답변이 하나라도 선택되었는지 확인
@@ -104,7 +115,7 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
   // 답변 선택 처리
   const handleSelect = (index: number, optionSeq: number) => {
     if (showAnswer) return;
-    setSelected(prev => {
+    setSelected((prev) => {
       const newSelected = [...prev];
       newSelected[index] = optionSeq;
       return newSelected;
@@ -128,12 +139,15 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
     try {
       const response = await submitQuizAnswers(contentSeq, request);
       setQuizResult(response);
-      quizData.questions = quizData.questions.map(q => {
-        const result = response.questionResults.find(r => r.questionSeq === q.questionSeq);
+      quizData.questions = quizData.questions.map((q) => {
+        const result = response.questionResults.find(
+          (r) => r.questionSeq === q.questionSeq,
+        );
         if (result) {
           q.userAnswer = {
             selectedOptionSeq: parseInt(result.selectedAnswer),
-            isCorrect: result.isCorrect
+            isCorrect: result.isCorrect,
+            explanation: result.explanation,
           };
         }
         return q;

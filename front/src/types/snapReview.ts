@@ -1,39 +1,51 @@
-// 날짜별 목록 리스트
-export interface DateGroup {
-  date: string;
-  items: SnapItem[];
+import { InfiniteScrollResponse } from './common';
+
+// 스냅리뷰 목록 조회 응답
+export interface SnapReviewListResponse extends InfiniteScrollResponse<{
+  dailySnapReviews: {
+    [date: string]: SnapReview[];
+  };
+  totalDays: number;
+}>{}
+
+
+// 스냅리뷰 정보
+export interface SnapReview {
+  contentSeq: number;
+  contentTitle: string;
+  category?: string;
+  thumbnailUrl: string;
+  representativeImageUrl?: string;
+  indate: string;
+  frameCount?: number;
+  frames?: Frame[];
 }
 
-// 개별 스냅 리뷰
-export interface SnapItem {
-  id: string;
-  title: string;
-  youtubeUrl: string;
-  date: string;
-  length: number;
-}
-
-// 리뷰 상세
-export interface Review {
-  title: string;
-  date: string;
-  images: Frame[];
-}
-
-// 리뷰별 개별 프레임 정보
+// 프레임 정보
 export interface Frame {
-  id: string;
-  src: string;
+  frameSeq: number;
+  imageUrl: string;
   timestamp: number;
+  formattedTimestamp: string;
+  comment: string | null;
 }
 
-// 전체 프레임 정보
-export interface FrameDescriptions {
-  notes: FrameDescription[];
+// 프레임 설명 수정 요청
+export interface UpdateFrameCommentsRequest {
+  frames: {
+    frameSeq: number;
+    comment: string;
+  }[];
 }
 
-// 프레임 설명
-export interface FrameDescription {
-  frameId: string;
-  description: string | null;
+// 프레임 설명 수정 응답
+export interface UpdateFrameCommentsResponse {
+  frameSeq: number;
+  contentSeq: number;
+  imageUrl: string;
+  timestamp: number;
+  formattedTimestamp: string;
+  comment: string | null;
+  indate: string;
+  ldate: string;
 }
