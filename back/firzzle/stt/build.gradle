@@ -18,20 +18,32 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'org.springframework.kafka:spring-kafka'
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.4'
+    // === Spring Boot 기본 스타터 ===
+    implementation 'org.springframework.boot:spring-boot-starter'                // 기본 Spring Boot 의존성 (로그, config 등)
+    implementation 'org.springframework.boot:spring-boot-starter-web'            // 웹 애플리케이션용 (Spring MVC 포함)
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'       // 헬스 체크, 메트릭 등 운영 모니터링용
+
+    // === 테스트 관련 ===
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'       // JUnit, Mockito 등 테스트 프레임워크 통합
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                 // JUnit 플랫폼 실행기
+
+    // === Kafka ===
+    implementation 'org.springframework.kafka:spring-kafka'                      // Kafka 연동 (Producer, Consumer)
+
+    // === Eureka Client (서비스 등록) ===
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.4' // Eureka Client
+
+    // Spring Cloud BOM (의존성 버전 관리용)
     implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
 
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // === Swagger / OpenAPI ===
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'     // Swagger UI 및 OpenAPI 문서 자동 생성
 
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
+    // === Lombok (코드 자동 생성용) ===
+    compileOnly 'org.projectlombok:lombok'                                       // 컴파일 시만 필요
+    annotationProcessor 'org.projectlombok:lombok'                               // 롬복 어노테이션 처리기
 }
+
 
 tasks.named('test') {
     useJUnitPlatform()

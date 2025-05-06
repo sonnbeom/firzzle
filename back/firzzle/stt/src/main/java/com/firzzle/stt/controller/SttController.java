@@ -3,6 +3,12 @@ package com.firzzle.stt.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 import com.firzzle.stt.service.SttService;
 
@@ -17,13 +23,16 @@ public class SttController {
 
     private final SttService sttService;
     
-    @PostMapping("/transcribe")
-    public ResponseEntity<?> transcribe(@RequestParam("file") MultipartFile file) throws Exception{
-        return ResponseEntity.ok(sttService.transcribeFromFile(file));
-    }
-
     @PostMapping("/transcribeByUrl")
+    @Operation(summary = "유튜브 영상 스크립트 추출", description = "유튜브 영상에서 스크립트를 추출합니다.")
     public ResponseEntity<?> transcribeByYoutubeUrl(@RequestParam("url") String youtubeUrl) throws Exception{
         return ResponseEntity.ok(sttService.transcribeFromYoutube(youtubeUrl));
     }
+    
+// 파일을 통한 STT 변환 STT 테스트용 API     
+//    @PostMapping("/transcribe")
+//    @Operation(summary = "파일 STT 변환", description = "파일을 등록하여 STT 변환을 실행합니다.")
+//    public ResponseEntity<?> transcribe(@RequestParam("file") MultipartFile file) throws Exception{
+//        return ResponseEntity.ok(sttService.transcribeFromFile(file));
+//    }
 }
