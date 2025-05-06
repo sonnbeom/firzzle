@@ -28,7 +28,7 @@ function SnapList({ snapLists }: SnapListProps) {
             {group.items.map((item, index) => (
               <Link
                 key={`${item.id}-${index}`}
-                href={`/content/snapbook/${item.id}`}
+                href={`/mylearning/snapbook/${item.id}`}
                 className='block'
               >
                 <SnapCard data={item} />
