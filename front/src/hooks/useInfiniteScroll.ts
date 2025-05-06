@@ -34,17 +34,6 @@ export function useInfiniteScroll<T>({
         lastPage.hasNextPage ? pages.length + 1 : undefined,
       initialPageParam: 1,
       enabled,
-      initialData: initialData
-        ? {
-            pages: [
-              {
-                data: initialData,
-                hasNextPage: initialData.length === pageSize,
-              },
-            ],
-            pageParams: [1],
-          }
-        : undefined,
     });
 
   // 모든 아이템 데이터

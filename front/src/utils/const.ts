@@ -1,3 +1,7 @@
+export const BASE_URL =
+  process.env.NODE_ENV === 'production'
+    ? process.env.NEXT_PUBLIC_API_BASE_URL
+    : process.env.NEXT_PUBLIC_API_BASE_URL_DEV;
 // 러닝챗 입력 글자수 제한
 export const MAX_LEARNING_CHAT_LENGTH = 200;
 // 러닝챗봇 아이디

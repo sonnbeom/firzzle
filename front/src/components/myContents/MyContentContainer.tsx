@@ -5,11 +5,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Content } from '@/types/content';
 import MyContentCard from './MyContentCard';
 
-const MyContentContainer = ({
-  initialContents,
-}: {
-  initialContents: Content[];
-}) => {
+const MyContentContainer = () => {
   const {
     data: contents,
     isLoading,
@@ -24,7 +20,6 @@ const MyContentContainer = ({
         hasNextPage: data.hasNext,
       };
     },
-    initialData: initialContents,
     pageSize: 10,
   });
 
