@@ -8,20 +8,21 @@ interface PageProps {
   }>;
 }
 
-async function getSnapReviewData(
-  id: string,
-): Promise<SnapReview | null> {
-  try {
-    const response = await getContentSnapReview(Number(id));
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching snap review:', error);
-    return null;
-  }
-}
-
 const SharedSnapBookPage = async ({ params }: PageProps) => {
   const { id } = await params;
+
+  async function getSnapReviewData(
+    id: string,
+  ): Promise<SnapReview | null> {
+    try {
+      const response = await getContentSnapReview(Number(id));
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching snap review:', error);
+      return null;
+    }
+  }
+
   const snapData = await getSnapReviewData(id);
 
   if (!snapData) {
