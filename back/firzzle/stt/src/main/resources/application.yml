@@ -4,14 +4,12 @@ server:
 spring:
   application:
     name: stt-server
-
-  config:
-    import: optional:file:.env[.properties]  # .env 파일 불러오기
-
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  config:
+    import: optional:file:.env[.properties]
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
@@ -24,6 +22,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+# Whisper 설정
 whisper:
   executable:
     path: ${WHISPER_EXECUTABLE_PATH}
@@ -32,6 +31,31 @@ whisper:
   working:
     dir: ${WHISPER_WORKING_DIR}
 
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+
+# Swagger 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  packages-to-scan: com.firzzle.stt.controller
+
+# Jasypt
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+  secret-key: ${JASYPT_SECRET_KEY}
+
+# Eureka
 eureka:
   client:
     register-with-eureka: true
@@ -40,3 +64,112 @@ eureka:
       defaultZone: http://43.202.107.226:8761/eureka/
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# MyBatis
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.stt.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+# P6Spy
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  config: classpath:logback/logback-local.xml
+
+---
+
+# dev 환경
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 10
+  kafka:
+    bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
+    consumer:
+      group-id: stt-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
+logging:
+  config: classpath:logback/logback-dev.xml
+
+---
+
+# production 환경
+spring:
+  config:
+    activate:
+      on-profile: production
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 20
+  kafka:
+    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
+    consumer:
+      group-id: stt-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
+logging:
+  config: classpath:logback/logback-production.xml

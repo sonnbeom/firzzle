@@ -17,33 +17,76 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
 dependencies {
     // === Spring Boot 기본 스타터 ===
-    implementation 'org.springframework.boot:spring-boot-starter'                // 기본 Spring Boot 의존성 (로그, config 등)
-    implementation 'org.springframework.boot:spring-boot-starter-web'            // 웹 애플리케이션용 (Spring MVC 포함)
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'       // 헬스 체크, 메트릭 등 운영 모니터링용
-
-    // === 테스트 관련 ===
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'       // JUnit, Mockito 등 테스트 프레임워크 통합
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'                 // JUnit 플랫폼 실행기
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
     // === Kafka ===
-    implementation 'org.springframework.kafka:spring-kafka'                      // Kafka 연동 (Producer, Consumer)
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.apache.kafka:kafka-streams'
 
-    // === Eureka Client (서비스 등록) ===
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.4' // Eureka Client
-
-    // Spring Cloud BOM (의존성 버전 관리용)
+    // === Eureka ===
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.4'
     implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
 
     // === Swagger / OpenAPI ===
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'     // Swagger UI 및 OpenAPI 문서 자동 생성
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 
-    // === Lombok (코드 자동 생성용) ===
-    compileOnly 'org.projectlombok:lombok'                                       // 컴파일 시만 필요
-    annotationProcessor 'org.projectlombok:lombok'                               // 롬복 어노테이션 처리기
+    // === MyBatis ===
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
+
+    // === P6Spy ===
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
+
+    // === Jasypt (보안 암호화) ===
+    implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
+
+    // === Lombok ===
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // === 공통 모듈 ===
+    implementation project(':common')
+    // implementation project(':user-domain') // 필요시 주석 해제
+
+    // === 테스트 ===
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+// === 공통 리소스 복사 ===
+processResources {
+    from project(':common').sourceSets.main.resources.matching {
+        include 'messages/**'
+        include 'logback/**'
+        include 'mapper/common/**'
+        include 'banner.txt'
+        include 'log4jdbc.log4j2.properties'
+        include 'spy.properties'
+    }
+}
+
+// === JAR 설정 ===
+bootJar {
+    enabled = true
+}
+
+jar {
+    enabled = false
+}
 
 tasks.named('test') {
     useJUnitPlatform()
