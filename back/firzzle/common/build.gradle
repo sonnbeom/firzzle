@@ -22,7 +22,6 @@ ext['jjwtVersion'] = '0.12.6'
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // DataBox 관련 의존성
     implementation 'org.jsoup:jsoup:1.17.2'  // HTML 파싱 (deleteHtmlTag 메서드용)
