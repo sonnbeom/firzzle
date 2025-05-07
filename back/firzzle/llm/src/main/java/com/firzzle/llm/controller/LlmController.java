@@ -1,5 +1,14 @@
 package com.firzzle.llm.controller;
 
+import com.firzzle.common.exception.BusinessException;
+import com.firzzle.common.exception.ErrorCode;
+import com.firzzle.common.library.DataBox;
+import com.firzzle.common.library.FormatDate;
+import com.firzzle.common.library.RequestBox;
+import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.response.PageResponseDTO;
+import com.firzzle.common.response.Response;
+import com.firzzle.common.response.Status;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.ResponseEntity;
@@ -8,6 +17,12 @@ import org.springframework.web.bind.annotation.*;
 import com.firzzle.llm.domain.*;
 import com.firzzle.llm.service.*;
 
+/**
+ * @Class Name : LlmController.java
+ * @Description : Llm 기능 API 컨트롤러
+ * @author Firzzle
+ * @since 2025. 4. 30.
+ */
 @RestController
 @RequestMapping("/api/llm")
 public class LlmController {

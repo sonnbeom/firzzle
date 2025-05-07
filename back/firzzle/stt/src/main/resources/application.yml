@@ -11,17 +11,6 @@ spring:
   config:
     import: optional:file:.env[.properties]
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-    consumer:
-      group-id: ${KAFKA_GROUP_ID}
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
 # Whisper 설정
 whisper:
   executable:
@@ -55,15 +44,19 @@ jasypt:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
 
-# Eureka
 eureka:
   client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://43.202.107.226:8761/eureka/
-  instance:
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    enabled: false # HEAD 브랜치 설정 우선
+
+# Eureka
+#eureka:
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      defaultZone: http://43.202.107.226:8761/eureka/
+#  instance:
+#    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 # MyBatis
 mybatis:
@@ -82,6 +75,49 @@ decorator:
   datasource:
     p6spy:
       enable-logging: true
+
+logging:
+  config: classpath:logback/logback-local.xml
+---
+
+# local 환경
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    jdbc-url: ENC(+lTxE7Jf6xDUX4EbEmIGZdpIvhpuvh7Onxzom7ocQk7tnaWh7HUUHJKv8D7FJaCodQ16ht90bAOBqaOKYqO0moYTUkmiPN/eDaY+IOXcikOD6KrDjT5g/p42qqSPYx3H45TiqQ4Y7VyU/GAqDElydTq34ZBfLNIqzyM3VnoCSiMng77175W9islbKP6My29Mz+OQjs28f/BSa+xvzjuyng==)
+    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
+    maximum-pool-size: 10
+  kafka:
+    bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
+    consumer:
+      group-id: stt-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+
+#eureka:
+#  client:
+#    register-with-eureka: true
+#    fetch-registry: true
+#    service-url:
+#      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+#  instance:
+#    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
 
 logging:
   config: classpath:logback/logback-local.xml
@@ -173,3 +209,4 @@ decorator:
 
 logging:
   config: classpath:logback/logback-production.xml
+

@@ -20,26 +20,6 @@ spring:
       summary:
         model: gpt-4o-mini
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DB}?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
-    username: ${MYSQL_USER}
-    password: ${MYSQL_PASSWORD}
-
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-    consumer:
-      group-id: ${KAFKA_GROUP_ID}
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 # 공통 설정
 app:
@@ -80,14 +60,14 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    jdbc-url: ENC(ygXVhsF9CysFggaflxcQWINq4Xeo7e2Kgzk09fKfaMb57mq+mFLlBz740u3YK++f2A79SpBdqnh7JL22sHA5IXljAN81Yaza8iVTrk8uuSnFdki8RMldcRDzlTX9xsS0UH7GrhugvwQ2LpvuEDo6fO8j5DCEw1LUwxGqqG2PLdw=)
-    username: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
-    password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
+    jdbc-url: ENC(+lTxE7Jf6xDUX4EbEmIGZdpIvhpuvh7Onxzom7ocQk7tnaWh7HUUHJKv8D7FJaCodQ16ht90bAOBqaOKYqO0moYTUkmiPN/eDaY+IOXcikOD6KrDjT5g/p42qqSPYx3H45TiqQ4Y7VyU/GAqDElydTq34ZBfLNIqzyM3VnoCSiMng77175W9islbKP6My29Mz+OQjs28f/BSa+xvzjuyng==)
+    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
     maximum-pool-size: 10
   kafka:
     bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
     consumer:
-      group-id: llm-group
+      group-id: firzzle
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -96,7 +76,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 server:
-  port: 8080
+  port: 8082
 
 eureka:
   client:

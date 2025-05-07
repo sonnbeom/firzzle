@@ -60,6 +60,8 @@ dependencies {
     // === 공통 모듈 ===
     implementation project(':common')
     // implementation project(':user-domain') // 필요시 주석 해제
+    
+    implementation("io.netty:netty-resolver-dns:4.1.100.Final")
 
     // === 테스트 ===
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

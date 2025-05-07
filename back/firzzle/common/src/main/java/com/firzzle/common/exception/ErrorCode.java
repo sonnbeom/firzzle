@@ -47,13 +47,18 @@ public enum ErrorCode {
     SNAP_REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070605", "스냅리뷰를 찾을 수 없습니다"),
     FRAME_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070606", "프레임을 찾을 수 없습니다"),
     SHARE_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070607", "공유 코드를 찾을 수 없습니다"),
-    SHARE_CODE_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "MSG_0000070608", "이미 취소된 공유 코드입니다");
+    SHARE_CODE_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "MSG_0000070608", "이미 취소된 공유 코드입니다"),
 
     // =========== LLM Module ===========
     // 여기부터 MSG_0000070701 시작
 
-    // =========== STT Module ===========
-    // 여기부터 MSG_0000070801 시작
+
+	// =========== STT Module ===========
+    INVALID_YOUTUBE_URL(HttpStatus.BAD_REQUEST, "MSG_0000070801", "유효하지 않은 YouTube URL입니다"),
+    SCRIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070802", "해당 영상에서 자막을 찾을 수 없습니다"),
+    VIDEO_TOO_SHORT(HttpStatus.BAD_REQUEST, "MSG_0000070803", "영상 길이가 너무 짧습니다"),
+    VIDEO_TOO_LONG(HttpStatus.BAD_REQUEST, "MSG_0000070804", "영상 길이가 너무 깁니다");
+
 
     // =========== Main Module ===========
     // 여기부터 MSG_0000070901 시작
