@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import { checkAndCreateShareCode } from '@/api/share';
 import { getContentSnapReview } from '@/api/snap';
 import Icons from '@/components/common/Icons';
 import Review from '@/components/snapbook/Review';
 import ShareButton from '@/components/snapbook/ShareButton';
-import { SnapReview } from '@/types/snapReview';
+import { ShareCheck } from '@/types/share';
 
 interface PageProps {
   params: Promise<{
@@ -14,17 +15,9 @@ interface PageProps {
 const SnapBookDetailPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
-  async function getSnapReviewData(id: string): Promise<SnapReview | null> {
-    try {
-      const response = await getContentSnapReview(Number(id));
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching snap review:', error);
-      return null;
-    }
-  }
-
-  const snapData = await getSnapReviewData(id);
+  const shareData = await checkAndCreateShareCode(Number(id)) as ShareCheck;
+  const response = await getContentSnapReview(Number(id));
+  const snapData = response.data;
 
   if (!snapData) {
     return <div>No data found</div>;
@@ -40,7 +33,11 @@ const SnapBookDetailPage = async ({ params }: PageProps) => {
               {snapData.contentTitle}
             </h1>
           </Link>
-          <ShareButton />
+          <div className='mt-4'>
+            <ShareButton 
+              shareUrl={shareData.shareUrl}
+            />
+          </div>
         </div>
         <Review {...snapData} />
       </div>

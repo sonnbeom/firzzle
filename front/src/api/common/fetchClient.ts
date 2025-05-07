@@ -85,6 +85,18 @@ export class FetchClient {
         body: body ? JSON.stringify(body) : undefined,
       });
 
+      // 204 No Content 응답 처리
+      if (response.status === 204) {
+        return {
+          status: 'OK',
+          cause: null,
+          message: null,
+          prevUrl: null,
+          redirectUrl: null,
+          data: null,
+        };
+      }
+
       // 응답 데이터 파싱
       const responseData = await response.json();
 

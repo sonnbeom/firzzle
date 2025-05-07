@@ -1,8 +1,10 @@
 import Image from 'next/image';
+import { ShareResponse } from '@/types/share';
 import { SnapReview } from '@/types/snapReview';
 
-const Review = ({ contentTitle, indate, frames = [] }: SnapReview) => {
+type ReviewProps = SnapReview | ShareResponse;
 
+const Review = ({ contentTitle, indate, frames = [] }: ReviewProps) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -28,7 +30,9 @@ const Review = ({ contentTitle, indate, frames = [] }: SnapReview) => {
                   alt='리뷰사진'
                   fill
                   sizes={
-                    frames.length > 1 ? '(max-width: 768px) 100vw, 50vw' : '100vw'
+                    frames.length > 1
+                      ? '(max-width: 768px) 100vw, 50vw'
+                      : '100vw'
                   }
                   className='object-contain transition-transform duration-300 group-hover:scale-110'
                 />
