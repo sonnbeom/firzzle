@@ -2,8 +2,25 @@ import { SnapReview, SnapReviewListResponse, UpdateFrameCommentsRequest, UpdateF
 import { externalApi } from './common/apiInstance';
 
 // 스냅리뷰 목록 조회
-export const getSnapReviews = async () => {
-  return externalApi.get<SnapReviewListResponse>('/learning/snap-reviews');
+export const getSnapReviews = async (
+  p_pageno?: number,
+  p_pagesize?: number,
+  p_order?: string,
+  p_sortorder?: string,
+  keyword?: string,
+  category?: string,
+) => {
+  const { data } = await externalApi.get<SnapReviewListResponse>('/learning/snap-reviews', {
+    params: {
+      p_pageno,
+      p_pagesize,
+      p_order,
+      p_sortorder,
+      keyword,
+      category,
+    },
+  });
+  return data;
 };
 
 // 콘텐츠별 스냅리뷰 조회
