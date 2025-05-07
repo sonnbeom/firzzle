@@ -2,14 +2,21 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* Hide scrollbar for all elements */
-* {
-  -ms-overflow-style: none; /* IE, Edge */
-  scrollbar-width: none; /* Firefox */
+*::-webkit-scrollbar {
+  height: 4px;
+  padding: 2px;
 }
 
-*::-webkit-scrollbar {
-  display: none;
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-gray-950);
+  border-radius: 2px;
+  width: 6px;
+  height: 4px;
+  padding: 2px;
 }
 
 @custom-variant dark (&:is(.dark *));

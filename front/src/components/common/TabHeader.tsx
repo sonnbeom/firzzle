@@ -7,7 +7,13 @@ const TabHeader = () => {
   const { contentSeq, isActive } = useIsActiveTab();
 
   return (
-    <div className='flex w-full justify-around'>
+    <div className='flex w-full justify-around gap-4 overflow-x-auto lg:overflow-x-hidden'>
+      <TabButton
+        title='러닝 채팅'
+        isActive={isActive('learningchat')}
+        route={`/content/${contentSeq}/learningchat`}
+        className='block lg:hidden'
+      />
       <TabButton
         title='요약 노트'
         isActive={isActive(contentSeq)}
@@ -24,7 +30,7 @@ const TabHeader = () => {
         route={`/content/${contentSeq}/snapreview`}
       />
       <TabButton
-        title='추천'
+        title='관련 컨텐츠'
         isActive={isActive('recommend')}
         route={`/content/${contentSeq}/recommend`}
       />
