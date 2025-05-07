@@ -49,7 +49,7 @@ public class OAuthRedirectService {
             logger.info("로컬 환경 감지 - 클라이언트 리다이렉트 URI: {}", redirectUri);
             return redirectUri;
         } else {
-            String redirectUri = clientApiUrl + "/auth/callback";
+            String redirectUri = clientApiUrl + "/redirect";
             logger.info("배포 환경 감지 - 클라이언트 리다이렉트 URI: {}", redirectUri);
             return redirectUri;
         }
