@@ -30,7 +30,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -295,17 +297,17 @@ public class AuthController {
      * 카카오 로그인 콜백 API
      * @param request HTTP 요청 객체
      * @param response HTTP 응답 객체
-     * @return 토큰 응답
+     * @return void
      */
-    @GetMapping(value = "/kakao/callback", produces = "application/json;charset=UTF-8")
+    @GetMapping(value = "/kakao/callback")
     @Operation(summary = "카카오 로그인 콜백", description = "카카오 로그인 후 리다이렉트되는 엔드포인트로, 인증 코드를 처리하여 액세스 토큰과 리프레시 토큰을 발급합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "카카오 로그인 콜백 처리 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TokenResponseDTO.class))),
+            @ApiResponse(responseCode = "200", description = "카카오 로그인 콜백 처리 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 - 인증 코드 누락 또는 유효하지 않은 코드"),
             @ApiResponse(responseCode = "401", description = "인증 실패 - 카카오 인증 실패"),
             @ApiResponse(responseCode = "500", description = "서버 오류 - 카카오 API 연동 실패 또는 내부 서버 오류")
     })
-    public ResponseEntity<Response<TokenResponseDTO>> kakaoCallback(
+    public void kakaoCallback(
             @Parameter(description = "카카오 인증 코드", required = true) @RequestParam("code") String code,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -327,28 +329,40 @@ public class AuthController {
             // 리프레시 토큰을 HTTP-Only 쿠키로 설정
             setRefreshTokenCookie(response, tokenResponseDTO.getRefreshToken());
 
-            // 응답에서 리프레시 토큰 제거 (쿠키로만 전송)
-            TokenResponseDTO responseDto = TokenResponseDTO.builder()
-                    .accessToken(tokenResponseDTO.getAccessToken())
-                    .expiresIn(tokenResponseDTO.getExpiresIn())
-                    .tokenType(tokenResponseDTO.getTokenType())
-                    .issuedAt(tokenResponseDTO.getIssuedAt())
-                    .build();
+            // OAuthRedirectService를 통해 적절한 클라이언트 리다이렉트 URI 결정
+            String clientRedirectUri = oAuthRedirectService.determineClientRedirectUri();
 
-            Response<TokenResponseDTO> apiResponse = Response.<TokenResponseDTO>builder()
-                    .status(Status.OK)
-                    .message("카카오 로그인 성공")
-                    .data(responseDto)
-                    .build();
+            // 프론트엔드로 리다이렉트할 URL 생성 (JWT 토큰을 쿼리 파라미터로 전달)
+            String redirectUrl = UriComponentsBuilder.fromUriString(clientRedirectUri)
+                    .queryParam("token", tokenResponseDTO.getAccessToken())
+                    .build()
+                    .toUriString();
 
-            return ResponseEntity.ok(apiResponse);
+            logger.info("카카오 로그인 성공 - 리다이렉트: {}", redirectUrl);
+
+            // 프론트엔드로 리다이렉트
+            response.sendRedirect(redirectUrl);
 
         } catch (BusinessException e) {
             logger.error("카카오 콜백 처리 중 비즈니스 예외 발생: {}", e.getMessage());
-            throw e;
+            // OAuthRedirectService를 통해 에러 리다이렉트 URI 결정
+            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri() + "/error";
+            try {
+                response.sendRedirect(clientErrorRedirectUri + "?message=" + URLEncoder.encode(e.getMessage(), "UTF-8"));
+            } catch (IOException ex) {
+                logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         } catch (Exception e) {
             logger.error("카카오 콜백 처리 중 예외 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "카카오 콜백 처리 중 오류가 발생했습니다.");
+            // OAuthRedirectService를 통해 에러 리다이렉트 URI 결정
+            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri() + "/error";
+            try {
+                response.sendRedirect(clientErrorRedirectUri + "?message=" + URLEncoder.encode("카카오 콜백 처리 중 오류가 발생했습니다.", "UTF-8"));
+            } catch (IOException ex) {
+                logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
