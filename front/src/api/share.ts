@@ -30,11 +30,14 @@ export const checkAndCreateShareCode = async (contentSeq: number) => {
 };
 
 // 공유 코드로 스냅 리뷰 조회
-export const getShareReview = async (shareCode: string) => {
-  const { data } = await externalApi.get<{ data: ShareResponse }>(
+
+export const getShareReview = async (
+  shareCode: string,
+): Promise<ShareResponse> => {
+  const { data } = await externalApi.get<ShareResponse>(
     `/learning/share/${shareCode}`,
   );
-  return data.data;
+  return data;
 };
 
 // 스냅 리뷰 공유 취소
