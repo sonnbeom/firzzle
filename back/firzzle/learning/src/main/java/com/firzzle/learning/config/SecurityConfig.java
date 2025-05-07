@@ -1,4 +1,4 @@
-package com.firzzle.common.config;
+package com.firzzle.learning.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
