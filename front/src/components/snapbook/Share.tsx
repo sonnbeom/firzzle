@@ -9,7 +9,7 @@ interface ShareProps {
   url?: string;
 }
 
-const Share = ({ isOpen, onClose, url = 'https://firzzleai.photobook.com' }: ShareProps) => {
+const Share = ({ isOpen, onClose, url }: ShareProps) => {
   if (!isOpen) return null;
 
   return (
