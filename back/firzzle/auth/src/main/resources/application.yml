@@ -1,18 +1,247 @@
-server:
-  port: 0
-
+# 공통 설정 (common)
 spring:
   application:
     name: auth-server
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ENC(0+3RaHtu2tNtCBZhxgRZgV/R+Jr2F5UXio7KR7jN15uJyY0yvOhT7e5TQoe82MRWkgDH+DdxHR0GJn+rxY7KKA==)
+#            client-secret: ${KAKAO_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
+            client-name: Kakao
+            scope:
+              - profile_nickname
+              - account_email
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
+# JWT 설정
+jwt:
+  secret: your-secret-key-should-be-at-least-32-bytes-long
+  access-token-validity-seconds: 3600
+  refresh-token-validity-seconds: 604800
+  issuer: firzzle.site
+
+# 애플리케이션 설정
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+
+# Swagger/OpenAPI 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  packages-to-scan: com.firzzle.auth.controller
+
+#Jasypt 설정
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+  secret-key: ${JASYPT_SECRET_KEY}
+
+---
+# 로컬 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: local
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: http://localhost:8083/api/v1/auth/kakao/callback
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    jdbc-url: jdbc:p6spy:mysql://localhost:3306/firzzle_ai_playground?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
+#    jdbc-url: ENC(zVLG89eoXtRlVYx+98YsHPOO+fjfP66OJ2Z+l5qHzqmD93GNuXYqYcu768cTTQvnkgUaJKC6n34kxlMez6FekblbQ9by64zvEKj+P9F8F9SWIo3A3Kom4qtr0Ntiug9jZ74HN/OSvXoqlXs+16TumXzT8rhzyK5kTxUorvWiDYQ1msHIigkGXbEaqapDltO6eX9tLx+945Di5OJr8OXtBT1+j9geIpJsgM8TwThkmWU=)
+#    username: ENC(hBx/Lg1wrZOWClc1mRhebrJJHsbvkjaOxE8PtezwA1E=)
+#    password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
+    username: root
+    password: pple250106
+    maximum-pool-size: 10
+
+# OAuth 리다이렉트 설정 (로컬)
+oauth2:
+  redirect-uri: http://localhost:8080/api/v1/auth/kakao/callback
+
+server:
+  port: 8083
+
+# Eureka 설정
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-#      defaultZone: http://localhost:8761/eureka
-      defaultZone: http://eureka-server:8761/eureka/
+      defaultZone: ENC(gcqgrb530BaHAxfrXv+H99Truf7GbhCtAnVug3PXHz8rD8pTQgy3sMOl7rhKPFpY)
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.auth.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
 
+# P6Spy 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  config: classpath:logback/logback-local.xml
+
+# Kafka 토픽 설정
+app:
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+
+---
+# 개발 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: dev
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: https://firzzle.site/api/v1/auth/kakao/callback
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 10
+
+# OAuth 리다이렉트 설정 (개발)
+oauth2:
+  redirect-uri: https://firzzle.site/api/v1/auth/kakao/callback
+
+server:
+  port: 8080
+
+# Eureka 설정
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.auth.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+# P6Spy 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
+logging:
+  config: classpath:logback/logback-dev.xml
+
+# Kafka 토픽 설정
+app:
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+
+---
+# 프로덕션 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: production
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: https://firzzle.site/api/v1/auth/kakao/callback
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 20
+
+# OAuth 리다이렉트 설정 (프로덕션)
+oauth2:
+  redirect-uri: https://firzzle.site/api/v1/auth/kakao/callback
+
+server:
+  port: 8080
+
+# Eureka 설정
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.auth.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+# P6Spy 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
+logging:
+  config: classpath:logback/logback-production.xml
+
+# Kafka 토픽 설정
+app:
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
