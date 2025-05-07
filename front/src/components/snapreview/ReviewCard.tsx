@@ -74,7 +74,7 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
             {localReviews.map((item) => (
               <div
                 key={`image-${item.frameSeq}`}
-                className='relative h-[180px] w-full bg-white'
+                className='relative h-[180px] w-full'
               >
                 <TimeStamp
                   time={item.timestamp}

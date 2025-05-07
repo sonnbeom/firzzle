@@ -24,7 +24,8 @@ const Header = () => {
           src='/assets/images/Firzzle.png'
           alt='logo'
           fill
-          sizes='100vw,'
+          sizes='110vx'
+          priority
           className='object-contain'
         />
       </div>
