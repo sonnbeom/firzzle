@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import OAuthButton from './OAuthButton';
 
 const CtaSection = () => {
   return (
@@ -15,13 +15,12 @@ const CtaSection = () => {
             AI 기반 학습 경험의 혁신을 직접 경험해 보세요.
           </p>
 
-          <Button
-            size='lg'
-            variant='secondary'
-            className='bg-white px-8 py-6 text-lg font-semibold text-blue-400 transition-transform'
-          >
-            카카오톡으로 시작하기
-          </Button>
+          <OAuthButton
+            url='https://kauth.kakao.com/oauth/authorize?'
+            oauth='kakao'
+            title='카카오로 시작하기'
+            className='bg-white py-3 text-blue-400'
+          />
         </div>
       </div>
     </section>
