@@ -4,8 +4,8 @@ import Icons from './Icons';
 
 const SearchBar = () => {
   return (
-    <div className='flex w-[600px]'>
-      <div className='flex w-full items-center gap-3 rounded border border-gray-200 px-3 py-2'>
+    <div className='flex w-full md:w-[600px] xl:w-[800px]'>
+      <div className='flex w-full items-center gap-3 rounded border border-gray-200 px-3 py-2 xl:px-4 xl:py-3'>
         <input
           value={''}
           onChange={() => {}}

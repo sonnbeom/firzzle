@@ -7,7 +7,7 @@ const SideMenu = () => {
   const { isActive } = useIsActiveTab();
 
   return (
-    <div className='flex w-full flex-col items-start gap-4'>
+    <div className='flex w-full items-start gap-4 xl:flex-col'>
       <TabButton
         title='사진첩'
         isActive={isActive('snapbook')}

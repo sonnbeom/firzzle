@@ -23,8 +23,8 @@ const MyContentContainer = () => {
   });
 
   return (
-    <div className='flex w-full flex-col gap-8'>
-      <div className='grid w-full grid-cols-2 gap-8'>
+    <div className='flex w-full flex-col gap-4 xl:gap-8'>
+      <div className='grid w-full grid-cols-1 gap-4 md:grid-cols-2 xl:gap-8 2xl:grid-cols-3'>
         {contents &&
           contents.length > 0 &&
           contents.map((item) => (
