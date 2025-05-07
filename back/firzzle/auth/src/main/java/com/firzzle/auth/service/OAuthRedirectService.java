@@ -45,7 +45,7 @@ public class OAuthRedirectService {
                 "0:0:0:0:0:0:0:1".equals(clientIp);
 
         if (isLocalRequest) {
-            String redirectUri = clientLocalUrl + "/auth/callback";
+            String redirectUri = clientLocalUrl + "/redirect";
             logger.info("로컬 환경 감지 - 클라이언트 리다이렉트 URI: {}", redirectUri);
             return redirectUri;
         } else {
