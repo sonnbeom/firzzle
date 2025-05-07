@@ -11,9 +11,7 @@ interface PageProps {
 const SharedSnapBookPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
-  async function getSnapReviewData(
-    id: string,
-  ): Promise<SnapReview | null> {
+  async function getSnapReviewData(id: string): Promise<SnapReview | null> {
     try {
       const response = await getContentSnapReview(Number(id));
       return response.data;
@@ -30,7 +28,7 @@ const SharedSnapBookPage = async ({ params }: PageProps) => {
   }
 
   return (
-    <div className='container mx-auto px-4'>
+    <div className='container mx-auto mt-10 px-4'>
       <div className='space-y-6'>
         <Review {...snapData} />
       </div>
