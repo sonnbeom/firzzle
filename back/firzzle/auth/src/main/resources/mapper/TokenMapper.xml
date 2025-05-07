@@ -6,14 +6,14 @@
     <!-- 리프레시 토큰 조회 -->
     <select id="selectRefreshToken" parameterType="String" resultType="DataBox">
         SELECT
-            token_id as d_token_id,
-            jti as d_jti,
-            uuid as d_uuid,
-            role as d_role,
-            scope as d_scope,
-            refresh_token as d_refresh_token,
-            indate as d_indate,
-            expire_date as d_expire_date
+            token_seq as token_seq,
+            jti as jti,
+            uuid as uuid,
+            role as role,
+            scope as scope,
+            refresh_token as refresh_token,
+            indate as indate,
+            expire_date as expire_date
         FROM
             fb_ai_refresh_tokens
         WHERE

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ContentRecommendationMapper">
+
+    <!-- 공통 컬럼 정의 -->
+    <sql id="contentColumns">
+        C.content_seq,
+        C.video_id,
+        C.url,
+        C.title,
+        C.description,
+        C.category,
+        C.thumbnail_url,
+        C.duration,
+        C.process_status,
+        C.indate,
+        C.completed_at,
+        C.delete_yn,
+        (SELECT GROUP_CONCAT(tag SEPARATOR ',') FROM fb_ai_content_tags WHERE content_seq = C.content_seq) AS tags
+    </sql>
+
+    <!-- 추천 콘텐츠 목록 조회 -->
+    <select id="selectRecommendedContents" resultType="DataBox" parameterType="RequestBox">
+        SELECT
+        <include refid="contentColumns" />,
+        COUNT(T2.content_tag_seq) AS match_count
+        FROM
+        fb_ai_contents C
+        INNER JOIN
+        fb_ai_content_tags T ON C.content_seq = T.content_seq
+        INNER JOIN
+        fb_ai_user_contents UC ON UC.user_content_seq = #{userContentSeq}
+        INNER JOIN
+        fb_ai_content_tags T2 ON T.tag = T2.tag AND T2.content_seq = UC.content_seq
+        WHERE
+        C.delete_yn = 'N'
+        AND C.content_seq != UC.content_seq
+        GROUP BY
+        C.content_seq
+        ORDER BY
+        match_count DESC, C.indate DESC
+        LIMIT 6
+    </select>
+</mapper>

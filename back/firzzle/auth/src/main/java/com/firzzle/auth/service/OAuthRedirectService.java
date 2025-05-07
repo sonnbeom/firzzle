@@ -21,7 +21,7 @@ public class OAuthRedirectService {
 
     private final HttpServletRequest request;
 
-    @Value("${oauth2.client-local-url:http://localhost:5173}")
+    @Value("${oauth2.client-local-url:http://localhost:3000}")
     private String clientLocalUrl;
 
     @Value("${oauth2.client-api-url:https://firzzle.site}")
@@ -45,11 +45,11 @@ public class OAuthRedirectService {
                 "0:0:0:0:0:0:0:1".equals(clientIp);
 
         if (isLocalRequest) {
-            String redirectUri = clientLocalUrl + "/oauth/callback";
+            String redirectUri = clientLocalUrl + "/redirect";
             logger.info("로컬 환경 감지 - 클라이언트 리다이렉트 URI: {}", redirectUri);
             return redirectUri;
         } else {
-            String redirectUri = clientApiUrl + "/oauth/callback";
+            String redirectUri = clientApiUrl + "/redirect";
             logger.info("배포 환경 감지 - 클라이언트 리다이렉트 URI: {}", redirectUri);
             return redirectUri;
         }
