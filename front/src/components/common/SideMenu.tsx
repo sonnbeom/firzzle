@@ -13,6 +13,7 @@ const SideMenu = () => {
         isActive={isActive('snapbook')}
         route='/mylearning/snapbook'
         iconId='snapbook'
+        className='items-start'
       />
 
       <TabButton
@@ -20,6 +21,7 @@ const SideMenu = () => {
         isActive={isActive('contents')}
         route='/mylearning/contents'
         iconId='content'
+        className='items-start'
       />
     </div>
   );
