@@ -55,7 +55,8 @@ public class ContentService {
      * @return DataBox - 등록된 콘텐츠 정보
      */
     public DataBox insertContent(RequestBox box) {
-        logger.debug("콘텐츠 등록 요청 - YouTube URL: {}", box.getString("youtubeUrl"));
+        logger.debug("콘텐츠 등록 요청 - YouTube URL: {}, UUID: {}",
+                box.getString("youtubeUrl"), box.getString("uuid"));
 
         MyBatisTransactionManager transaction = myBatisSupport.getTransactionManager();
         DataBox result = null;
@@ -73,62 +74,112 @@ public class ContentService {
             // 2. 중복 체크
             RequestBox checkBox = new RequestBox("checkBox");
             checkBox.put("videoId", videoId);
-            int count = contentDAO.selectCountByVideoId(checkBox);
-            if (count > 0) {
-                throw new BusinessException(ErrorCode.DUPLICATE_RESOURCE, "이미 등록된 YouTube 동영상입니다.");
+            DataBox existingContent = contentDAO.selectContentByVideoId(checkBox);
+            Long contentSeq;
+
+            if (existingContent != null) {
+                // 2-1. 이미 등록된 콘텐츠인 경우
+                contentSeq = existingContent.getLong2("content_seq");
+                logger.debug("이미 등록된 YouTube 동영상입니다. 사용자-콘텐츠 매핑만 생성합니다. ContentSeq: {}", contentSeq);
+
+                // 2-2. 이미 해당 사용자가 등록한 콘텐츠인지 확인
+                RequestBox userContentCheckBox = new RequestBox("userContentCheckBox");
+                userContentCheckBox.put("contentSeq", contentSeq);
+                userContentCheckBox.put("uuid", box.getString("uuid"));
+                int userContentCount = contentDAO.selectUserContentCount(userContentCheckBox);
+
+                if (userContentCount > 0) {
+                    logger.debug("이미 해당 사용자가 등록한 콘텐츠입니다. ContentSeq: {}, UUID: {}",
+                            contentSeq, box.getString("uuid"));
+
+                    // 이미 등록된 콘텐츠 정보 조회 및 반환
+                    RequestBox selectBox = new RequestBox("selectBox");
+                    selectBox.put("contentSeq", contentSeq);
+                    selectBox.put("uuid", box.getString("uuid"));
+                    result = contentDAO.selectContentDataBox(selectBox);
+
+                    transaction.commit();
+                    return result;
+                }
+            } else {
+                // 3. 신규 콘텐츠 등록
+                RequestBox insertBox = new RequestBox("insertBox");
+                insertBox.put("videoId", videoId);
+                insertBox.put("url", box.getString("youtubeUrl"));
+                insertBox.put("title", box.getString("title"));
+                insertBox.put("description", box.getString("description"));
+                insertBox.put("category", box.getString("category"));
+                insertBox.put("thumbnailUrl", generateThumbnailUrl(videoId));
+                insertBox.put("duration", 0); // 초기값, 분석 후 업데이트 예정
+                insertBox.put("processStatus", "Q"); // 대기중(Queued)
+                insertBox.put("tags", box.getString("tags"));
+
+                // 현재 시간을 YYYYMMDDHHMMSS 형식으로 추가
+                try {
+                    String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
+                    insertBox.put("indate", currentDateTime);
+                } catch (Exception e) {
+                    logger.error("현재 시간 포맷 설정 중 오류 발생: {}", e.getMessage());
+                    insertBox.put("indate", ""); // 기본값으로 설정
+                }
+
+                // 콘텐츠 등록
+                int insertResult = contentDAO.insertContent(insertBox);
+                if (insertResult == 0) {
+                    throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록에 실패했습니다.");
+                }
+
+                contentSeq = insertBox.getLong("contentSeq");
+
+                // 태그 처리
+                String tags = box.getString("tags");
+                if (StringUtils.hasText(tags)) {
+                    List<String> tagList = Arrays.stream(tags.split(","))
+                            .map(String::trim)
+                            .filter(StringUtils::hasText)
+                            .collect(Collectors.toList());
+
+                    if (!tagList.isEmpty()) {
+                        RequestBox tagBox = new RequestBox("tagBox");
+                        tagBox.put("contentSeq", contentSeq);
+                        tagBox.put("tags", tagList);
+                        contentDAO.insertContentTags(tagBox);
+                    }
+                }
+
+                // 분석 작업 큐에 등록
+                sendToAnalysisQueue(contentSeq);
+
+                logger.info("신규 콘텐츠 등록 완료 - ContentSeq: {}, Title: {}",
+                        contentSeq, box.getString("title"));
             }
 
-            // 3. 등록을 위한 RequestBox 생성
-            RequestBox insertBox = new RequestBox("insertBox");
-            insertBox.put("videoId", videoId);
-            insertBox.put("url", box.getString("youtubeUrl"));
-            insertBox.put("title", box.getString("title"));
-            insertBox.put("description", box.getString("description"));
-            insertBox.put("category", box.getString("category"));
-            insertBox.put("thumbnailUrl", generateThumbnailUrl(videoId));
-            insertBox.put("duration", 0); // 초기값, 분석 후 업데이트 예정
-            insertBox.put("processStatus", "Q"); // 대기중(Queued)
-            insertBox.put("tags", box.getString("tags"));
+            // 4. 사용자-콘텐츠 매핑 등록
+            RequestBox userContentBox = new RequestBox("userContentBox");
+            userContentBox.put("uuid", box.getString("uuid"));
+            userContentBox.put("contentSeq", contentSeq);
 
             // 현재 시간을 YYYYMMDDHHMMSS 형식으로 추가
             try {
                 String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
-                insertBox.put("indate", currentDateTime);
+                userContentBox.put("indate", currentDateTime);
             } catch (Exception e) {
                 logger.error("현재 시간 포맷 설정 중 오류 발생: {}", e.getMessage());
-                insertBox.put("indate", ""); // 기본값으로 설정
+                userContentBox.put("indate", ""); // 기본값으로 설정
             }
 
-            // 4. 콘텐츠 등록
-            int insertResult = contentDAO.insertContent(insertBox);
-            if (insertResult == 0) {
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록에 실패했습니다.");
+            int userContentResult = contentDAO.insertUserContent(userContentBox);
+            if (userContentResult == 0) {
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 콘텐츠 매핑 등록에 실패했습니다.");
             }
 
-            // 5. 태그 처리
-            String tags = box.getString("tags");
-            if (StringUtils.hasText(tags)) {
-                List<String> tagList = Arrays.stream(tags.split(","))
-                        .map(String::trim)
-                        .filter(StringUtils::hasText)
-                        .collect(Collectors.toList());
+            logger.info("사용자-콘텐츠 매핑 등록 완료 - ContentSeq: {}, UUID: {}",
+                    contentSeq, box.getString("uuid"));
 
-                if (!tagList.isEmpty()) {
-                    RequestBox tagBox = new RequestBox("tagBox");
-                    tagBox.put("contentSeq", insertBox.getLong("contentSeq"));
-                    tagBox.put("tags", tagList);
-                    contentDAO.insertContentTags(tagBox);
-                }
-            }
-
-            // 6. 분석 작업 큐에 등록
-            sendToAnalysisQueue(insertBox.getLong("contentSeq"));
-
-            logger.info("콘텐츠 등록 완료 - ContentSeq: {}, Title: {}", insertBox.getLong("contentSeq"), box.getString("title"));
-
-            // 7. 등록된 콘텐츠 정보 조회 및 반환
+            // 5. 등록된 콘텐츠 정보 조회 및 반환
             RequestBox selectBox = new RequestBox("selectBox");
-            selectBox.put("contentSeq", insertBox.getLong("contentSeq"));
+            selectBox.put("contentSeq", contentSeq);
+            selectBox.put("uuid", box.getString("uuid"));
             result = contentDAO.selectContentDataBox(selectBox);
 
             // 성공 시 커밋
@@ -152,18 +203,20 @@ public class ContentService {
      * 콘텐츠 정보 조회
      * 특정 콘텐츠의 상세 정보를 조회합니다.
      *
-     * @param box - 조회할 콘텐츠 일련번호
+     * @param box - 조회할 콘텐츠 일련번호, UUID
      * @return DataBox - 조회된 콘텐츠 정보
      */
     public DataBox selectContent(RequestBox box) {
-        logger.debug("콘텐츠 정보 조회 요청 - ContentSeq: {}", box.getLong("contentSeq"));
+        logger.debug("콘텐츠 정보 조회 요청 - UserContentSeq: {}, UUID: {}",
+                box.getLong("userContentSeq"), box.getString("uuid"));
 
-        DataBox content = contentDAO.selectContentDataBox(box);
+        DataBox content = contentDAO.selectContentByUserContentSeq(box);
         if (content == null) {
             throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "요청한 콘텐츠를 찾을 수 없습니다.");
         }
 
-        logger.debug("콘텐츠 정보 조회 완료 - ContentSeq: {}, Title: {}", content.getString("content_seq"), content.getString("title"));
+        logger.debug("콘텐츠 정보 조회 완료 - ContentSeq: {}, Title: {}",
+                content.getString("d_content_seq"), content.getString("d_title"));
         return content;
     }
 
@@ -175,8 +228,8 @@ public class ContentService {
      * @return List<DataBox> - 조회된 콘텐츠 목록
      */
     public List<DataBox> selectContentList(RequestBox box) {
-        logger.debug("콘텐츠 목록 조회 요청 - Page: {}, Size: {}",
-                box.getInt("p_pageno"), box.getInt("p_pagesize"));
+        logger.debug("콘텐츠 목록 조회 요청 - Page: {}, Size: {}, UUID: {}",
+                box.getInt("p_pageno"), box.getInt("p_pagesize"), box.getString("uuid"));
 
         List<DataBox> contentList = contentDAO.selectContentListDataBox(box);
         logger.debug("콘텐츠 목록 조회 완료 - 조회된 콘텐츠 수: {}", contentList.size());
@@ -191,6 +244,7 @@ public class ContentService {
      * @return int - 조회된 콘텐츠 개수
      */
     public int selectContentCount(RequestBox box) {
+        logger.debug("콘텐츠 개수 조회 요청 - UUID: {}", box.getString("uuid"));
         return contentDAO.selectContentCount(box);
     }
 

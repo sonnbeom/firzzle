@@ -23,7 +23,7 @@ public class PageRequestDTO {
 
 	@Schema(description = "정렬 기준 필드명", example = "indate", pattern = "^[a-zA-Z0-9_]*$")
 	@Pattern(regexp = "^[a-zA-Z0-9_]*$", message = "정렬 기준은 영문, 숫자, 언더스코어만 허용됩니다")
-	private String p_order;
+	private String p_order = "";
 
 	@Schema(description = "정렬 방향", example = "DESC", allowableValues = { "ASC", "DESC" }, defaultValue = "DESC")
 	@Pattern(regexp = "^(ASC|DESC)$", message = "정렬 방향은 ASC 또는 DESC만 가능합니다")
