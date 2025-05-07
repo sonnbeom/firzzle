@@ -23,6 +23,7 @@ const Review = ({ contentTitle, indate, frames = [] }: ReviewProps) => {
                   src={frame.imageUrl}
                   alt='리뷰사진'
                   fill
+                  style={{ objectFit: 'fill' }}
                   sizes={
                     frames.length > 1
                       ? '(max-width: 768px) 100vw, 50vw'
