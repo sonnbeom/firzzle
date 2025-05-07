@@ -1,4 +1,4 @@
-import { getRecommendations, getExpertRecommendations } from '@/api/recommend';
+import { getRecommendations } from '@/api/recommend';
 import Lecture from '@/components/recommend/Lecture';
 
 interface PageProps {
