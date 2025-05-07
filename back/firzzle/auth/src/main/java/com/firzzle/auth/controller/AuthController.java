@@ -330,35 +330,29 @@ public class AuthController {
             setRefreshTokenCookie(response, tokenResponseDTO.getRefreshToken());
 
             // OAuthRedirectService를 통해 적절한 클라이언트 리다이렉트 URI 결정
-            String clientRedirectUri = oAuthRedirectService.determineClientRedirectUri();
-
-            // 프론트엔드로 리다이렉트할 URL 생성 (JWT 토큰을 쿼리 파라미터로 전달)
-            String redirectUrl = UriComponentsBuilder.fromUriString(clientRedirectUri)
-                    .queryParam("token", tokenResponseDTO.getAccessToken())
-                    .build()
-                    .toUriString();
+            String redirectUrl = oAuthRedirectService.determineClientRedirectUri();
 
             logger.info("카카오 로그인 성공 - 리다이렉트: {}", redirectUrl);
 
-            // 프론트엔드로 리다이렉트
+            // 헤더에 액세스 토큰 추가
+            response.setHeader("Authorization", "Bearer " + tokenResponseDTO.getAccessToken());
+
             response.sendRedirect(redirectUrl);
 
         } catch (BusinessException e) {
             logger.error("카카오 콜백 처리 중 비즈니스 예외 발생: {}", e.getMessage());
-            // OAuthRedirectService를 통해 에러 리다이렉트 URI 결정
-            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri() + "/error";
+            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri();
             try {
-                response.sendRedirect(clientErrorRedirectUri + "?message=" + URLEncoder.encode(e.getMessage(), "UTF-8"));
+                response.sendRedirect(clientErrorRedirectUri);
             } catch (IOException ex) {
                 logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         } catch (Exception e) {
             logger.error("카카오 콜백 처리 중 예외 발생: {}", e.getMessage(), e);
-            // OAuthRedirectService를 통해 에러 리다이렉트 URI 결정
-            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri() + "/error";
+            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri();
             try {
-                response.sendRedirect(clientErrorRedirectUri + "?message=" + URLEncoder.encode("카카오 콜백 처리 중 오류가 발생했습니다.", "UTF-8"));
+                response.sendRedirect(clientErrorRedirectUri);
             } catch (IOException ex) {
                 logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
