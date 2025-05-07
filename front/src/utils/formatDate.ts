@@ -1,4 +1,3 @@
-export const formatDate = (date: string) => {
-  const yyyymmdd = date.split('T')[0];
-  return yyyymmdd;
+export const formatDate = (dateString: string) => {
+  return dateString.split(' ')[0];
 };

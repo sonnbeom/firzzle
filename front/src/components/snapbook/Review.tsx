@@ -1,18 +1,12 @@
 import Image from 'next/image';
 import { ShareResponse } from '@/types/share';
 import { SnapReview } from '@/types/snapReview';
+import { formatDate } from '@/utils/formatDate';
 
 type ReviewProps = SnapReview | ShareResponse;
 
 const Review = ({ contentTitle, indate, frames = [] }: ReviewProps) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}.${month}.${day}`;
-  };
-
+  const newDate = formatDate(indate);
   return (
     <div className='mx-auto max-w-3xl rounded-lg bg-blue-50 p-4'>
       <div className='space-y-4'>
@@ -50,7 +44,7 @@ const Review = ({ contentTitle, indate, frames = [] }: ReviewProps) => {
           <h2 className='text-sm font-semibold text-gray-950 sm:text-lg'>
             {contentTitle}
           </h2>
-          <p className='mt-2 text-sm text-gray-600'>{formatDate(indate)}</p>
+          <p className='mt-2 text-sm text-gray-600'>{newDate}</p>
         </div>
       </div>
     </div>
