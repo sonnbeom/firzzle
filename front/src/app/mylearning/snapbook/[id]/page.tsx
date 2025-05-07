@@ -33,9 +33,11 @@ const SnapBookDetailPage = async ({ params }: PageProps) => {
               {snapData.contentTitle}
             </h1>
           </Link>
-          <ShareButton 
-          shareUrl={shareData.shareUrl}
-          />
+          <div className='mt-4'>
+            <ShareButton 
+              shareUrl={shareData.shareUrl}
+            />
+          </div>
         </div>
         <Review {...snapData} />
       </div>

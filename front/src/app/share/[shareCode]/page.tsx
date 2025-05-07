@@ -17,7 +17,8 @@ const SharedSnapBookPage = async ({ params }: PageProps) => {
     }
 
     return (
-      <div className='container mx-auto mt-10 px-4'>
+      <div className='container mx-auto mt-16 px-4'>
+        <div className='h-20'></div>
         <div className='space-y-6'>
           <Review {...response} />
         </div>
