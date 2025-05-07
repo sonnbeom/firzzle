@@ -19,8 +19,8 @@ const MyContentCard = ({
     <Link href={`/content/${contentSeq}`} className='flex gap-3'>
       <div className='relative aspect-[16/9] w-[150px]'>
         <Image
-          src={`${thumbnailUrl}`}
-          alt='logo'
+          src={thumbnailUrl}
+          alt='thumbnail'
           fill
           sizes='100vw,'
           className='object-contain'

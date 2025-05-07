@@ -35,7 +35,7 @@ const NewChatButton = () => {
           onClick={handleClick}
           disabled={currentCount === dummyData.total}
         >
-          <Icons id='newchat' size={20} />
+          <Icons id='new-chat' size={20} />
           <p className='text-gray-950'>새 질문 생성</p>
         </button>
       )}
