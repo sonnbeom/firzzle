@@ -10,9 +10,8 @@ interface PageProps {
 const Recommend = async ({ params }: PageProps) => {
   const { id } = await params;
 
-  const [lecturesResponse, expertsResponse] = await Promise.all([
+  const [lecturesResponse] = await Promise.all([
     getRecommendations(id),
-    getExpertRecommendations(id),
   ]);
 
   return (
