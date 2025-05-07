@@ -11,7 +11,7 @@ import static com.firzzle.common.logging.dto.LogEvent.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1")
+@RequestMapping("/api/v1")
 public class MainTestController {
 
     @GetMapping("/test")
