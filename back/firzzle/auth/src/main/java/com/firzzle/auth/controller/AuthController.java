@@ -335,7 +335,7 @@ public class AuthController {
             logger.info("카카오 로그인 성공 - 리다이렉트: {}", redirectUrl);
 
             // 헤더에 액세스 토큰 추가
-            response.setHeader("Authorization", "Bearer " + tokenResponseDTO.getAccessToken());
+            response.setHeader("Authorization", tokenResponseDTO.getAccessToken());
 
             response.sendRedirect(redirectUrl);
 
