@@ -1,6 +1,6 @@
 import { InfiniteScrollResponse } from './common';
 
-interface Content {
+export interface Content {
   contentSeq: string;
   title: string;
   description: string;

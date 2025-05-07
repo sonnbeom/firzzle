@@ -11,7 +11,7 @@ interface SnapListProps {
 function SnapList({ initialData }: SnapListProps) {
   // 날짜별 스냅리뷰 추출
   const dailyReviews = initialData.content[0].dailySnapReviews;
-  
+
   return (
     <div className='MB container mx-auto px-4'>
       {Object.entries(dailyReviews)
@@ -19,17 +19,17 @@ function SnapList({ initialData }: SnapListProps) {
         .map(([date, reviews]) => (
           <div key={date} className='mb-16'>
             <h2 className='mb-4 text-lg text-gray-950 md:text-xl'>
-              {new Date(date).toLocaleDateString('ko-KR', { 
+              {new Date(date).toLocaleDateString('ko-KR', {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric'
+                day: 'numeric',
               })}
             </h2>
             <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
               {reviews.map((review) => (
                 <Link
                   key={review.contentSeq}
-                  href={`/content/snapbook/${review.contentSeq}`}
+                  href={`/mylearning/snapbook/${review.contentSeq}`}
                   className='block'
                 >
                   <SnapCard data={review} />

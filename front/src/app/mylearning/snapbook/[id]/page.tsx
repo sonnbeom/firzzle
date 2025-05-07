@@ -34,7 +34,7 @@ const SnapBookDetailPage = async ({ params }: PageProps) => {
     <div className='container mx-auto px-4'>
       <div className='space-y-6'>
         <div className='flex items-center justify-between'>
-          <Link href='/content/snapbook' className='flex items-center gap-2'>
+          <Link href='/mylearning/snapbook' className='flex items-center gap-2'>
             <Icons id='arrow-left' className='h-8 w-8' />
             <h1 className='text-sm font-semibold text-gray-950 sm:text-lg'>
               {snapData.contentTitle}

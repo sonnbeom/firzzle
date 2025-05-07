@@ -1,24 +1,19 @@
 <svg width="0" height="0" fill="none" style="visibility: hidden; position: absolute;" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
     <defs>
-        <symbol id='arrow-left' width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <symbol id='arrow-fill-left' width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" fill-rule="evenodd" d="m14.5 15.47-1.06 1.062L8.898 12l4.542-4.531 1.06 1.062L11.021 12l3.479 3.47ZM12 2.25c-5.376 0-9.75 4.374-9.75 9.75s4.374 9.75 9.75 9.75 9.75-4.374 9.75-9.75S17.376 2.25 12 2.25Z" clip-rule="evenodd"/>
         </symbol>
-        <symbol id='arrow-right' width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <symbol id='arrow-fill-right' width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" fill-rule="evenodd" d="M10.56 16.532 9.5 15.47 12.979 12 9.5 8.531l1.06-1.062L15.102 12l-4.542 4.532ZM12 2.25c-5.376 0-9.75 4.374-9.75 9.75s4.374 9.75 9.75 9.75 9.75-4.374 9.75-9.75S17.376 2.25 12 2.25Z" clip-rule="evenodd"/>
         </symbol>
         <symbol id='content' width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" fill-rule="evenodd" d="M6.88 15.84h10.24v-1.5H6.88v1.5Zm5.33-9.89L9.95 3.17h-7.7v17.66h19.5V5.95h-9.54Z" clip-rule="evenodd"/>
         </symbol>
-        <symbol id='menu' width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M21 5.25H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Zm0 5H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Zm0 5H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Zm0 5H3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h18c.41 0 .75.34.75.75s-.34.75-.75.75Z"/>
-        </symbol>
-        <symbol id='newchat' width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <symbol id='new-chat' width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" d="m19.51 5.85-5.94-3.43c-.97-.56-2.17-.56-3.15 0L4.49 5.85a3.15 3.15 0 0 0-1.57 2.73v6.84c0 1.12.6 2.16 1.57 2.73l5.94 3.43c.97.56 2.17.56 3.15 0l5.94-3.43a3.15 3.15 0 0 0 1.57-2.73V8.58a3.192 3.192 0 0 0-1.58-2.73Zm-5.26 7.55-1.04.6-1.04.6c-1.33.77-2.42.14-2.42-1.4v-2.4c0-1.54 1.09-2.17 2.42-1.4l1.04.6 1.04.6c1.33.77 1.33 2.03 0 2.8Z"/>
         </symbol>
         <symbol id='search' width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14 5h6m-6 3h3" opacity=".4"/>
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 11.5c0 5.25-4.25 9.5-9.5 9.5S2 16.75 2 11.5 6.25 2 11.5 2"/>
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m22 22-2-2" opacity=".4"/>
+            <path fill="currentColor" d="M11.5 2C6.26 2 2 6.26 2 11.5S6.26 21 11.5 21s9.5-4.26 9.5-9.5S16.74 2 11.5 2Zm0 11.75h-3c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h3c.41 0 .75.34.75.75s-.34.75-.75.75Zm3-3h-6c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h6c.41 0 .75.34.75.75s-.34.75-.75.75Zm6.8 11.249c-.18 0-.36-.07-.49-.2l-1.86-1.86a.706.706 0 0 1 0-.99c.27-.27.71-.27.99 0l1.86 1.86c.27.27.27.71 0 .99-.14.13-.32.2-.5.2Z"/>
         </symbol>
         <symbol id='snapbook' width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" fill-rule="evenodd" d="M2.05 10.95h8v-8h-8v8Zm19.9-6.828L14.222 2.05l-2.07 7.728 7.727 2.07 2.07-7.727ZM2.05 21.95h8v-8h-8v8Zm11 0h8v-8h-8v8Z" clip-rule="evenodd"/>
@@ -34,6 +29,12 @@
         </symbol>
         <symbol id='arrow-up' width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" fill-rule="evenodd" d="m19 16.914-7-7-7 7L3.586 15.5 12 7.086l8.414 8.414L19 16.914Z" clip-rule="evenodd"/>
+        </symbol>
+        <symbol id='arrow-left' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="M15.5 20.414 7.086 12 15.5 3.586 16.914 5l-7 7 7 7-1.414 1.414Z" clip-rule="evenodd"/>
+        </symbol>
+        <symbol id='arrow-right' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="M8.5 20.414 7.086 19l7-7-7-7L8.5 3.586 16.914 12 8.5 20.414Z" clip-rule="evenodd"/>
         </symbol>
     </defs>
 </svg>

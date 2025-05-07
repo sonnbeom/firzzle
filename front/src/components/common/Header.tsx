@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../ui/button';
@@ -30,7 +31,12 @@ const Header = () => {
       {!isLogin ? (
         <Button variant='default'>시작하기</Button>
       ) : (
-        <Button variant='text'>학습 내역</Button>
+        <Link
+          href='/mylearning/snapbook'
+          className='bg-white text-xl font-medium text-gray-950 hover:bg-gray-50'
+        >
+          학습 내역
+        </Link>
       )}
     </div>
   );

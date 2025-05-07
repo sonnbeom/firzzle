@@ -13,10 +13,12 @@ type FetchOptions<TBody = unknown, TParams = unknown> = Omit<
   withAuth?: boolean; // 인증 여부
   contentType?: string; // 요청 컨텐츠 타입
   params?: Params<TParams>; // URL 쿼리 파라미터
+  retryCount?: number; // 재시도 횟수
 };
 
 export class FetchClient {
   private baseUrl: string;
+  private readonly MAX_RETRIES = 2;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -45,6 +47,7 @@ export class FetchClient {
       headers,
       body,
       params,
+      retryCount = 0,
       ...restOptions
     } = options;
 
@@ -74,29 +77,48 @@ export class FetchClient {
       }
     }
 
-    // fetch 요청 응답
-    const response = await fetch(apiUrl, {
-      ...restOptions,
-      headers: allHeaders,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    try {
+      // fetch 요청 응답
+      const response = await fetch(apiUrl, {
+        ...restOptions,
+        headers: allHeaders,
+        body: body ? JSON.stringify(body) : undefined,
+      });
 
-    // 응답 데이터 파싱
-    const responseData = await response.json();
+      // 응답 데이터 파싱
+      const responseData = await response.json();
 
-    // 응답 데이터가 에러일 경우 예외처리
-    if (!response.ok) {
-      throw responseData as ApiResponseError;
+      // 응답 데이터가 에러일 경우 예외처리
+      if (!response.ok) {
+        throw responseData as ApiResponseError;
+      }
+
+      const dataResponse = responseData as ApiResponseWithData<TResponse>;
+
+      // 응답 데이터의 status가 FAIL인 경우 예외처리
+      if (dataResponse.status === 'FAIL') {
+        throw new Error(dataResponse.message);
+      }
+
+      return dataResponse;
+    } catch (error) {
+      // 재시도 횟수가 최대 재시도 횟수보다 작은 경우에만 재시도
+      if (retryCount < this.MAX_RETRIES) {
+        // 재시도 간격을 위한 지연 (선택적)
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * (retryCount + 1)),
+        );
+
+        // 재시도 시도
+        return this.request(url, {
+          ...options,
+          retryCount: retryCount + 1,
+        });
+      }
+
+      // 최대 재시도 횟수를 초과한 경우 에러 throw
+      throw error;
     }
-
-    const dataResponse = responseData as ApiResponseWithData<TResponse>;
-
-    // 응답 데이터의 status가 FAIL인 경우 예외처리
-    if (dataResponse.status === 'FAIL') {
-      throw new Error(dataResponse.message);
-    }
-
-    return dataResponse;
   }
 
   // GET 요청

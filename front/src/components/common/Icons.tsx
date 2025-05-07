@@ -2,17 +2,19 @@ import { SVGProps } from 'react';
 
 interface IconsProps extends SVGProps<SVGSVGElement> {
   id:
-    | 'arrow-left'
-    | 'arrow-right'
+    | 'arrow-fill-left'
+    | 'arrow-fill-right'
     | 'content'
     | 'menu'
-    | 'newchat'
+    | 'new-chat'
     | 'search'
     | 'snapbook'
     | 'upload'
     | 'write'
     | 'arrow-down'
-    | 'arrow-up';
+    | 'arrow-up'
+    | 'arrow-left'
+    | 'arrow-right';
   size?: number;
   color?: string;
 }
