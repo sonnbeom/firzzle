@@ -6,7 +6,7 @@
     <!-- 리프레시 토큰 조회 -->
     <select id="selectRefreshToken" parameterType="String" resultType="DataBox">
         SELECT
-            token_id as d_token_id,
+            token_seq as d_token_seq,
             jti as d_jti,
             uuid as d_uuid,
             role as d_role,
