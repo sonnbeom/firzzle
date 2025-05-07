@@ -16,7 +16,10 @@ const MyContentCard = ({
   thumbnailUrl,
 }: MyContentCardProps) => {
   return (
-    <Link href={`/content/${contentSeq}`} className='flex gap-3'>
+    <Link
+      href={`/content/${contentSeq}`}
+      className='flex w-full gap-3 rounded py-2 hover:bg-gray-50'
+    >
       <div className='relative aspect-[16/9] w-[150px]'>
         <Image
           src={thumbnailUrl}

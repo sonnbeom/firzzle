@@ -7,7 +7,7 @@ const TabHeader = () => {
   const { contentSeq, isActive } = useIsActiveTab();
 
   return (
-    <div className='flex w-full justify-between gap-4'>
+    <div className='flex w-full justify-around'>
       <TabButton
         title='요약 노트'
         isActive={isActive(contentSeq)}
