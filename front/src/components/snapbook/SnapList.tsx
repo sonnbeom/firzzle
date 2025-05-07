@@ -6,22 +6,22 @@ import { SnapReviewListResponse } from '@/types/snapReview';
 import LoadingSpinner from '../common/LoadingSpinner';
 import SnapDateGroup from './SnapDateGroup';
 
-const EMPTY_SNAP_REVIEW: SnapReviewListResponse = {
-  content: [
-    {
-      dailySnapReviews: {},
-      totalDays: 0,
-    },
-  ],
-  p_pageno: 1,
-  p_pagesize: 10,
-  totalElements: 0,
-  totalPages: 0,
-  last: true,
-  hasNext: false,
-};
-
 const SnapList = () => {
+  const EMPTY_SNAP_REVIEW: SnapReviewListResponse = {
+    content: [
+      {
+        dailySnapReviews: {},
+        totalDays: 0,
+      },
+    ],
+    p_pageno: 1,
+    p_pagesize: 10,
+    totalElements: 0,
+    totalPages: 0,
+    last: true,
+    hasNext: false,
+  };
+  
   const {
     data: snapReviews,
     isFetchingNextPage,
