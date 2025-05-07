@@ -1,5 +1,5 @@
 import { ContentListResponse, ContentResponse } from '@/types/content';
-import { externalApi, internalApi } from './common/apiInstance';
+import { externalApi } from './common/apiInstance';
 
 export const postContent = async () => {
   return await externalApi.post('/contents');
@@ -23,7 +23,7 @@ export const getContentList = async (
   category?: string,
   status?: string,
 ) => {
-  const { data } = await internalApi.get<ContentListResponse>(
+  const { data } = await externalApi.get<ContentListResponse>(
     `/learning/contents`,
     {
       params: {

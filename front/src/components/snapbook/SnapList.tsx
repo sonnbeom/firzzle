@@ -29,7 +29,7 @@ function SnapList({ initialData }: SnapListProps) {
               {reviews.map((review) => (
                 <Link
                   key={review.contentSeq}
-                  href={`/content/snapbook/${review.contentSeq}`}
+                  href={`/mylearning/snapbook/${review.contentSeq}`}
                   className='block'
                 >
                   <SnapCard data={review} />
