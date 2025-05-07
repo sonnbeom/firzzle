@@ -8,7 +8,6 @@ import MyContentCard from './MyContentCard';
 const MyContentContainer = () => {
   const {
     data: contents,
-    isLoading,
     isFetchingNextPage,
     observerTarget,
   } = useInfiniteScroll<Content>({

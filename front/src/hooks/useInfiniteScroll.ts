@@ -12,7 +12,6 @@ interface UseInfiniteScrollProps<T> {
   }>;
   enabled?: boolean;
   pageSize?: number;
-  initialData?: T[];
 }
 
 export function useInfiniteScroll<T>({
@@ -20,7 +19,6 @@ export function useInfiniteScroll<T>({
   queryFn,
   enabled = true,
   pageSize = 20,
-  initialData,
 }: UseInfiniteScrollProps<T>) {
   // Intersection Observer의 타겟 요소에 대한 ref
   const observerTarget = useRef<HTMLDivElement>(null);
