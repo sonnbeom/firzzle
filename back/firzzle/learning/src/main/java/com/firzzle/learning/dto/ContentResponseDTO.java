@@ -58,10 +58,10 @@ public class ContentResponseDTO {
     private String transcript;
 
     @Schema(description = "등록일시")
-    private LocalDateTime indate;
+    private String indate;
 
     @Schema(description = "처리 완료 일시")
-    private LocalDateTime completedAt;
+    private String completedAt;
 
     @Schema(description = "삭제 여부")
     private String deleteYn;
