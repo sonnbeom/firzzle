@@ -18,22 +18,22 @@ public class ExpertResponseDTO {
     @Schema(description = "전문가 일련번호")
     private Long expertSeq;
 
-    @Schema(description = "이름")
+    @Schema(description = "전문가 이름")
     private String name;
 
-    @Schema(description = "직함")
+    @Schema(description = "전문가 직함")
     private String title;
 
-    @Schema(description = "회사")
+    @Schema(description = "전문가 소속 회사")
     private String company;
 
-    @Schema(description = "프로필 이미지 URL")
+    @Schema(description = "전문가 프로필 이미지 URL")
     private String profileImageUrl;
 
-    @Schema(description = "LinkedIn URL")
+    @Schema(description = "LinkedIn 프로필 URL")
     private String linkedinUrl;
 
-    @Schema(description = "관련성 점수")
+    @Schema(description = "콘텐츠와의 관련성 점수")
     private Float relevance;
 
     @Schema(description = "전문 분야 목록")
