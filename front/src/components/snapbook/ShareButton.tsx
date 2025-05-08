@@ -16,7 +16,7 @@ export default function ShareButton({ shareUrl }: ShareButtonProps) {
     <>
       <Button
         variant='default'
-        className='text-xs sm:text-lg cursor-pointer'
+        className='text-sm sm:text-md md:text-lg cursor-pointer'
         onClick={() => setIsShareOpen(true)}
       >
         공유하기
