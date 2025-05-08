@@ -1,7 +1,0 @@
-package com.firzzle.llm.util;
-
-public class QdrantCollections {
-    public static final String SCRIPT = "script_vectors";
-    public static final String DICTIONARY = "dictionary_vectors";
-    public static final String TEST = "test_vectors";
-}
