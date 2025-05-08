@@ -1,11 +1,126 @@
 server:
-  port: 8080
+  port: 8082
 
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: llm-server
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://api.openai.com/v1
+      timeline:
+        model: gpt-4o-mini
+      summary:
+        model: gpt-4o-mini
+
+
+# 공통 설정
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
   kafka:
-    bootstrap-servers: 43.202.107.226:9092
+    topic:
+      content-analysis: content-analysis-topic
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  packages-to-scan: com.firzzle.llm.controller
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+  secret-key: ${JASYPT_SECRET_KEY}
+
+eureka:
+  client:
+    enabled: false # HEAD 브랜치 설정 우선
+
+qdrant:
+  host: ${QDRANT_HOST}
+  api-key: ${QDRANT_API_KEY}
+
+---
+
+# local 환경
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    jdbc-url: ENC(+lTxE7Jf6xDUX4EbEmIGZdpIvhpuvh7Onxzom7ocQk7tnaWh7HUUHJKv8D7FJaCodQ16ht90bAOBqaOKYqO0moYTUkmiPN/eDaY+IOXcikOD6KrDjT5g/p42qqSPYx3H45TiqQ4Y7VyU/GAqDElydTq34ZBfLNIqzyM3VnoCSiMng77175W9islbKP6My29Mz+OQjs28f/BSa+xvzjuyng==)
+    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
+    maximum-pool-size: 10
+  kafka:
+    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
+    consumer:
+      group-id: firzzle
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8082
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(gcqgrb530BaHAxfrXv+H99Truf7GbhCtAnVug3PXHz8rD8pTQgy3sMOl7rhKPFpY)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.llm.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  config: classpath:logback/logback-local.xml
+
+---
+
+# dev 환경
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 10
+  kafka:
+    bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
     consumer:
       group-id: llm-group
       auto-offset-reset: earliest
@@ -15,18 +130,88 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+server:
+  port: 8080
+
 eureka:
   client:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://43.202.107.226:8761/eureka/
-      #      defaultZone: http://localhost:8761/eureka
-
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.llm.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
 
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
 
+logging:
+  config: classpath:logback/logback-dev.xml
 
+---
 
+# production 환경
+spring:
+  config:
+    activate:
+      on-profile: production
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 20
+  kafka:
+    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
+    consumer:
+      group-id: llm-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.llm.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
+logging:
+  config: classpath:logback/logback-production.xml
