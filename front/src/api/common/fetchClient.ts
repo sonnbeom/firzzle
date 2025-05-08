@@ -1,4 +1,10 @@
-import { ApiResponseError, ApiResponseWithData } from '@/types/common';
+import {
+  ApiResponseError,
+  ApiResponseWithData,
+  ApiResponseWithoutData,
+} from '@/types/common';
+import { getCookie, removeCookie } from '@/utils/auth';
+import { refresh } from '../auth';
 
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
@@ -51,7 +57,7 @@ export class FetchClient {
       ...restOptions
     } = options;
 
-    const session = { accessToken: '' }; // 추후 auth api 연결
+    const accessToken = withAuth ? getCookie('accessToken') : '';
 
     // 헤더 객체 생성
     const allHeaders = new Headers(
@@ -59,7 +65,7 @@ export class FetchClient {
         {
           'Content-Type': contentType,
         },
-        withAuth ? { Authorization: `Bearer ${session?.accessToken}` } : {},
+        withAuth ? { Authorization: `Bearer ${accessToken}` } : {},
         headers,
       ),
     );
@@ -85,16 +91,20 @@ export class FetchClient {
         body: body ? JSON.stringify(body) : undefined,
       });
 
-      // 204 No Content 응답 처리
-      if (response.status === 204) {
-        return {
-          status: 'OK',
-          cause: null,
-          message: null,
-          prevUrl: null,
-          redirectUrl: null,
-          data: null,
-        };
+      // accessToken이 만료된 경우 토큰 갱신
+      if (response.status === 401) {
+        if (retryCount >= this.MAX_RETRIES) {
+          // 토큰 갱신 실패 시 로그아웃 처리
+          removeCookie('accessToken');
+          window.location.href = '/';
+          throw new Error('토큰 갱신을 실패했습니다.');
+        }
+
+        await refresh();
+        return this.request(url, {
+          ...options,
+          retryCount: retryCount + 1,
+        });
       }
 
       // 응답 데이터 파싱
@@ -102,7 +112,26 @@ export class FetchClient {
 
       // 응답 데이터가 에러일 경우 예외처리
       if (!response.ok) {
-        throw responseData as ApiResponseError;
+        throw {
+          status: 'FAIL',
+          cause: responseData.cause,
+          message: responseData.message,
+          prevUrl: responseData.prevUrl,
+          redirectUrl: responseData.redirectUrl,
+          data: null,
+        } as ApiResponseError;
+      }
+
+      // 204 No Content 응답 처리
+      if (response.status === 204) {
+        return {
+          status: 'OK',
+          cause: '',
+          message: '',
+          prevUrl: '',
+          redirectUrl: '',
+          data: null,
+        } as ApiResponseWithoutData;
       }
 
       const dataResponse = responseData as ApiResponseWithData<TResponse>;
@@ -116,7 +145,6 @@ export class FetchClient {
     } catch (error) {
       // 재시도 횟수가 최대 재시도 횟수보다 작은 경우에만 재시도
       if (retryCount < this.MAX_RETRIES) {
-        // 재시도 간격을 위한 지연 (선택적)
         await new Promise((resolve) =>
           setTimeout(resolve, 1000 * (retryCount + 1)),
         );
@@ -128,7 +156,7 @@ export class FetchClient {
         });
       }
 
-      // 최대 재시도 횟수를 초과한 경우 에러 throw
+      // 최대 재시도 횟수를 초과한 경우 에러 처리
       throw error;
     }
   }
@@ -139,7 +167,10 @@ export class FetchClient {
   }
 
   // POST 요청
-  public post<TResponse, TBody>(url: string, options?: FetchOptions<TBody>) {
+  public post<TResponse, TBody = unknown>(
+    url: string,
+    options?: FetchOptions<TBody>,
+  ) {
     return this.request<TResponse>(url, { method: 'POST', ...options });
   }
 

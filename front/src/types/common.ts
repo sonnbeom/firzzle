@@ -6,6 +6,9 @@ interface ApiResponse {
   prevUrl: string;
   redirectUrl: string;
 }
+export type ApiResponseWithoutData = ApiResponse & {
+  data: null;
+};
 
 export type ApiResponseWithData<T> = ApiResponse & {
   data: T;
