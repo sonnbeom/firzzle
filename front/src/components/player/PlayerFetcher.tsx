@@ -9,8 +9,8 @@ interface PlayerFetcherProps {
 
 const PlayerFetcher = ({ playerId, title }: PlayerFetcherProps) => {
   return (
-    <div className='flex w-[800px] flex-col items-center gap-10'>
-      <p className='line-clamp-2 text-center text-2xl font-semibold text-gray-900'>
+    <div className='flex w-full flex-col items-center gap-5 md:w-[600px] lg:w-[800px] lg:gap-10'>
+      <p className='line-clamp-2 text-center text-lg font-semibold text-gray-900 md:text-xl lg:text-2xl'>
         {title}
       </p>
       <PlayerFrame playerId={playerId} />

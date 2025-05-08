@@ -21,9 +21,9 @@ const PlayerContent = ({
   );
 
   return (
-    <div className='flex w-full flex-col items-center gap-5 lg:gap-10'>
+    <div className='flex h-full w-full flex-col items-center justify-start gap-5 pt-20 lg:gap-10'>
       {!playerInfo ? (
-        <div className='mt-60 flex flex-col items-center gap-1 lg:mt-50 lg:gap-2'>
+        <div className='flex flex-col items-center gap-1 lg:gap-2'>
           <p className='text-2xl font-semibold whitespace-nowrap text-gray-900 md:text-3xl'>
             오늘은 어떤 영상을 학습할까요?
           </p>
