@@ -329,20 +329,22 @@ public class AuthController {
             // 리프레시 토큰을 HTTP-Only 쿠키로 설정
             setRefreshTokenCookie(response, tokenResponseDTO.getRefreshToken());
 
-            // OAuthRedirectService를 통해 적절한 클라이언트 리다이렉트 URI 결정
-            String redirectUrl = oAuthRedirectService.determineClientRedirectUri();
+            // 리다이렉트 URL 결정
+            String baseRedirectUrl = oAuthRedirectService.determineClientRedirectUri();
+
+            // 액세스 토큰을 쿼리 파라미터로 추가
+            String redirectUrl = baseRedirectUrl + "?accessToken=" + tokenResponseDTO.getAccessToken();
 
             logger.info("카카오 로그인 성공 - 리다이렉트: {}", redirectUrl);
 
-            // 헤더에 액세스 토큰 추가
-            response.setHeader("Authorization", tokenResponseDTO.getAccessToken());
-
             response.sendRedirect(redirectUrl);
-
         } catch (BusinessException e) {
             logger.error("카카오 콜백 처리 중 비즈니스 예외 발생: {}", e.getMessage());
             String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri();
             try {
+                // URL 인코딩 시 StandardCharsets.UTF_8 사용
+                String encodedMessage = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8.toString());
+                clientErrorRedirectUri += "?error=business&message=" + encodedMessage;
                 response.sendRedirect(clientErrorRedirectUri);
             } catch (IOException ex) {
                 logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
@@ -352,6 +354,9 @@ public class AuthController {
             logger.error("카카오 콜백 처리 중 예외 발생: {}", e.getMessage(), e);
             String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri();
             try {
+                // URL 인코딩 시 StandardCharsets.UTF_8 사용
+                String encodedMessage = URLEncoder.encode("서버 오류가 발생했습니다.", StandardCharsets.UTF_8.toString());
+                clientErrorRedirectUri += "?error=server&message=" + encodedMessage;
                 response.sendRedirect(clientErrorRedirectUri);
             } catch (IOException ex) {
                 logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
