@@ -17,6 +17,7 @@ import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
@@ -380,7 +381,7 @@ public class GlobalExceptionHandler {
 
         // 국제화된 메시지 가져오기
         String message = e.getLocalizedMessage(messageSource);
-        
+
         // 퍼브 이식성 고려
 //        String message = RenderMessageManager.getMessage("MSG_0000000618"));//MSG_0000000618::처리과정 도중 오류가 발생하였습니다.
         return ResponseEntity
@@ -418,6 +419,26 @@ public class GlobalExceptionHandler {
                 .body(Response.<Void>builder()
                         .status(Status.FAIL)
                         .message("파일 업로드 처리 중 오류가 발생했습니다. 다시 시도해 주세요.")
+                        .build()
+                );
+    }
+
+    /**
+     * ============================================
+     * 10. 외부 API 호출 예외 처리
+     * ============================================
+     */
+
+    // 외부 API 호출 예외
+    @ExceptionHandler(RestClientException.class)
+    protected ResponseEntity<Response<Void>> handleRestClientException(RestClientException e) {
+        log.error("외부 API 호출 예외 발생: {}", e.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(Response.<Void>builder()
+                        .status(Status.FAIL)
+                        .message("외부 서비스 연동 중 오류가 발생했습니다.")
                         .build()
                 );
     }

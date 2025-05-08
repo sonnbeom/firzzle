@@ -20,7 +20,7 @@ ext {
 	jjwtVersion = '0.12.6'
 	springSecurityVersion = '6.1.5'
 	jacksonVersion = '2.14.0'
-	nettyVersion = '4.1.100.Final'
+//	nettyVersion = '4.1.100.Final'
 	logbackVersion = '1.2.13'
 }
 
@@ -57,7 +57,7 @@ subprojects {
 			// 라이브러리 BOM
 			mavenBom "io.github.resilience4j:resilience4j-bom:${resilience4jVersion}"
 			mavenBom "com.fasterxml.jackson:jackson-bom:${jacksonVersion}"
-			mavenBom "io.netty:netty-bom:${nettyVersion}"
+//			mavenBom "io.netty:netty-bom:${nettyVersion}"
 		}
 	}
 

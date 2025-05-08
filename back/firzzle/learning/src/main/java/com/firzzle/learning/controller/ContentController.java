@@ -261,7 +261,12 @@ public class ContentController {
         if (dataBox == null) {
             return null;
         }
-
+        LocalDateTime indate = parseDateTime(dataBox.getString("d_indate"));
+        String formattedIndate = indate != null ?
+                indate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
+        LocalDateTime completedAt = parseDateTime(dataBox.getString("d_completed_at"));
+        String formattedCompletedAt = completedAt != null ?
+                completedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
         try {
             return ContentResponseDTO.builder()
                     .contentSeq(dataBox.getLong2("d_content_seq"))
@@ -276,8 +281,8 @@ public class ContentController {
                     .tags(dataBox.getString("d_tags"))
                     .analysisData(dataBox.getString("d_analysis_data"))
                     .transcript(dataBox.getString("d_transcript"))
-                    .indate(parseDateTime(dataBox.getString("d_indate")))
-                    .completedAt(parseDateTime(dataBox.getString("d_completed_at")))
+                    .indate(formattedIndate)
+                    .completedAt(formattedCompletedAt)
                     .deleteYn(dataBox.getString("d_delete_yn"))
                     .build();
 

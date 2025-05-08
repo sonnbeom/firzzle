@@ -44,8 +44,7 @@ public class SttController {
     @Operation(summary = "유튜브 영상 스크립트 추출", description = "유튜브 영상에서 스크립트를 추출합니다.")
     public ResponseEntity<?> transcribeByYoutubeUrl(@RequestParam("url") String youtubeUrl) {
         try {
-            String transcript = sttService.transcribeFromYoutube(youtubeUrl);
-            return ResponseEntity.ok(transcript);
+            return ResponseEntity.ok(sttService.transcribeFromYoutube(youtubeUrl));
         }catch (BusinessException e) {
             logger.error("유튜브 스크립트 추출 중 비즈니스 예외 발생: {}", e.getMessage());
             throw e;

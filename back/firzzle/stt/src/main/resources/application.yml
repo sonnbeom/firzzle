@@ -92,7 +92,9 @@ spring:
     password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
     maximum-pool-size: 10
   kafka:
-    bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
+    listener:
+      auto-startup: false
+    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
     consumer:
       group-id: stt-group
       auto-offset-reset: earliest

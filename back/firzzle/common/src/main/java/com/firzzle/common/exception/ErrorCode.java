@@ -21,6 +21,11 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "MSG_0000070101", "인증이 필요합니다"),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "MSG_0000070102", "접근 권한이 없습니다"),
     UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "MSG_0000070103", "해당 리소스에 접근할 권한이 없습니다"),
+    MISSING_OAUTH_INFO(HttpStatus.BAD_REQUEST, "MSG_0000070104", "필수 OAuth 정보가 누락되었습니다"),
+    INVALID_OAUTH_TOKEN(HttpStatus.UNAUTHORIZED, "MSG_0000070105", "유효하지 않은 OAuth 토큰입니다"),
+    EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "MSG_0000070106", "외부 API 호출 중 오류가 발생했습니다"),
+    NOT_SUPPORTED_OAUTH(HttpStatus.BAD_REQUEST, "MSG_0000070107", "지원되지 않는 OAuth 제공자입니다"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "MSG_0000070108", "유효하지 않은 토큰입니다"),
 
     // =========== JWT ===========
     JWT_EXPIRED(HttpStatus.UNAUTHORIZED, "MSG_0000070201", "토큰이 만료되었습니다"),

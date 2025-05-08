@@ -33,7 +33,7 @@ public class JasyptConfig {
         ArrayList<String> decryptList = new ArrayList<>();
         encryptList.add("jdbc:p6spy:mysql://localhost:3306/testdb?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true"); //암호화 대상 문자 추가
         //복호화 대상 문자열 추가 ENC() 괄호 내부 값으로 넣기
-        decryptList.add("4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=");
+        decryptList.add("XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so");
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setProvider(new BouncyCastleProvider());
         encryptor.setPoolSize(2);
