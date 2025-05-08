@@ -3,7 +3,7 @@ import {
   ApiResponseWithData,
   ApiResponseWithoutData,
 } from '@/types/common';
-import { getCookie, removeCookie } from '@/utils/auth';
+import { getCookie, removeCookie } from '@/utils/authService';
 import { refresh } from '../auth';
 
 type Params<T = unknown> = {

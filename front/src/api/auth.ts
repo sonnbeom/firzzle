@@ -1,5 +1,5 @@
 import { TokenResponse } from '@/types/auth';
-import { setCookie } from '@/utils/auth';
+import { setCookie } from '@/utils/authService';
 import { externalApi } from './common/apiInstance';
 
 // 토큰 갱신
