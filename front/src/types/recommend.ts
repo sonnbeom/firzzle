@@ -7,11 +7,7 @@ export interface SnapReviewListResponse extends InfiniteScrollResponse<Content> 
 }
 
 // 추천 강의 Props 타입
-export interface VideoProps {
-  title: string;
-  url: string;
-  thumbnailUrl: string;
-}
+export type VideoProps = Pick<Content, 'title' | 'url' | 'thumbnailUrl'>;
 
 // 전문가 추천 데이터 타입
 export interface ExpertRecommend {
