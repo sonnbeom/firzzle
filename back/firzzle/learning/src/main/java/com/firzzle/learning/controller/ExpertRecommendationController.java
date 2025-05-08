@@ -69,6 +69,12 @@ public class ExpertRecommendationController {
             // 서비스 호출
             List<DataBox> expertDataBoxes = expertService.getRecommendedExperts(box);
 
+            // DataBox 목록이 없는 경우 204 No Content 반환
+            if (expertDataBoxes.size()==0) {
+                logger.debug("전문가 추천 조회 {}건", expertDataBoxes.size());
+                return ResponseEntity.noContent().build();
+            }
+
             // DataBox 목록을 DTO 목록으로 변환
             List<ExpertResponseDTO> experts = new ArrayList<>();
             for (DataBox expertDataBox : expertDataBoxes) {
