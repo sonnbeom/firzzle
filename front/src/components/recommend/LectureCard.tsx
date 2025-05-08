@@ -30,7 +30,7 @@ const LectureCard = memo(({ video }: LectureCardProps) => {
           className='h-full w-full object-contain'
         />
       </div>
-      <p className='mt-2 line-clamp-2 text-sm text-gray-700'>{video.title}</p>
+      <p className='mt-2 line-clamp-2 text-sm text-gray-700 px-2'>{video.title}</p>
     </div>
   );
 });
