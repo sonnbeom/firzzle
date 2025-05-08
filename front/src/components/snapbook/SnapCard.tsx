@@ -8,7 +8,7 @@ interface SnapCardProps {
 
 const SnapCard = ({ data, priority = false }: SnapCardProps) => {
   return (
-    <div className='group mx-auto h-[260px] max-w-[240px] overflow-hidden rounded-lg bg-white shadow-md transition-all'>
+    <div className='group mx-auto h-[220px] lg:h-[260px] max-w-[240px] overflow-hidden rounded-lg bg-white shadow-md transition-all'>
       <div className='relative aspect-video w-full'>
         <Image
           src={data.thumbnailUrl}

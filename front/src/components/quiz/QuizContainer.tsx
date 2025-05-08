@@ -39,7 +39,7 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
   } = usePreventNavigation(hasAnswered && !showAnswer);
 
   return (
-    <div className='relative min-h-screen w-full px-2 md:px-10'>
+    <div className='relative w-full px-2 md:px-10'>
       {/* Dialog */}
       <BasicDialog
         isOpen={showDialog}
@@ -101,7 +101,7 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
 
       {/* 도전하기 버튼 */}
       {!showAnswer && (
-        <div className='bottom-0 left-0 w-full bg-white py-4'>
+        <div className='sticky bottom-0 left-0 w-full bg-white py-4'>
           <Button
             variant={isCompleted ? 'default' : 'disabled'}
             className={`w-full py-6 text-lg font-semibold ${isCompleted ? 'bg-blue-400 hover:bg-blue-400' : ''} text-white`}

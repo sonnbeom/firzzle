@@ -42,7 +42,7 @@ const Review = ({ contentTitle, indate, frames = [] }: ReviewProps) => {
           ))}
         </div>
         <div className='text-center'>
-          <h2 className='text-sm font-semibold text-gray-950 sm:text-lg'>
+          <h2 className=' font-semibold text-gray-950 text-lg'>
             {contentTitle}
           </h2>
           <p className='mt-2 text-sm text-gray-600'>{newDate}</p>

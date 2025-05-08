@@ -34,7 +34,7 @@ const QuizCard = ({
             }`}
             onClick={() => onSelect(options[0].optionSeq)}
           >
-            <span className='absolute left-4 text-2xl md:text-[36px]'>O</span>
+            <span className='absolute left-2 md:left-4 text-2xl md:text-[36px]'>O</span>
             <span className='text-center'>맞아요</span>
           </Button>
         </div>
@@ -51,8 +51,8 @@ const QuizCard = ({
             }`}
             onClick={() => onSelect(options[1].optionSeq)}
           >
-            <span className='absolute left-4 text-2xl md:text-[36px]'>X</span>
-            <span className='text-center'>아니에요</span>
+            <span className='absolute left-2 md:left-4 text-xl md:text-[36px]'>X</span>
+            <span className='text-center '>아니에요</span>
           </Button>
         </div>
       </div>

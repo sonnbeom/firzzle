@@ -15,8 +15,7 @@ const DetailLayout = async ({ params, children }: PageProps) => {
 
   return (
     <div className='flex h-full w-full gap-5 overflow-hidden'>
-      <div className='flex flex-3 flex-col gap-6 overflow-hidden'>
-        {/* <SideMenu /> */}
+      <div className='hidden flex-3 flex-col gap-6 overflow-hidden lg:flex'>
         {/* 영상 */}
         <PlayerFrame playerId={data.videoId} />
         {/* 러닝챗 */}
