@@ -6,8 +6,10 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.response.PageResponseDTO;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
+import com.firzzle.learning.dto.ContentRecommendationSearchDTO;
 import com.firzzle.learning.dto.ContentResponseDTO;
 import com.firzzle.learning.service.ContentRecommendationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,26 +52,30 @@ public class ContentRecommendationController {
      */
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('content:read')")
     @GetMapping(value = "/{contentSeq}/recommendations", produces = "application/json;charset=UTF-8")
-    @Operation(summary = "콘텐츠 추천 조회", description = "현재 콘텐츠와 관련된 추천 콘텐츠 목록을 조회합니다.")
+    @Operation(summary = "콘텐츠 추천 조회", description = "현재 콘텐츠와 관련된 추천 콘텐츠 목록을 페이지네이션하여 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "추천 콘텐츠 조회 성공"),
             @ApiResponse(responseCode = "404", description = "콘텐츠를 찾을 수 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<Response<List<ContentResponseDTO>>> getContentRecommendations(
+    public ResponseEntity<Response<PageResponseDTO<ContentResponseDTO>>> getContentRecommendations(
             @Parameter(description = "조회할 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
+            @Parameter(description = "검색 및 페이지 요청 정보") ContentRecommendationSearchDTO searchDTO,
             HttpServletRequest request) {
 
-        logger.info("콘텐츠 추천 조회 요청 - 유저 콘텐츠 일련번호: {}", userContentSeq);
+        logger.info("콘텐츠 추천 조회 요청 - 유저 콘텐츠 일련번호: {}, 페이지: {}, 사이즈: {}",
+                userContentSeq, searchDTO.getP_pageno(), searchDTO.getP_pagesize());
 
         try {
             // RequestBox로 변환
             RequestBox box = RequestManager.getBox(request);
-            logger.debug(box.toString());
             box.put("userContentSeq", userContentSeq);
 
-            // 서비스 호출
+            // 추천 콘텐츠 목록 조회
             List<DataBox> recommendationDataBoxes = recommendationService.getRecommendations(box);
+
+            // 총 추천 콘텐츠 수 조회
+            int totalCount = recommendationService.getRecommendationsCount(box);
 
             // DataBox 목록을 DTO 목록으로 변환
             List<ContentResponseDTO> recommendations = new ArrayList<>();
@@ -77,9 +83,17 @@ public class ContentRecommendationController {
                 recommendations.add(convertToContentResponseDTO(dataBox));
             }
 
-            Response<List<ContentResponseDTO>> response = Response.<List<ContentResponseDTO>>builder()
+            // 페이지 응답 객체 생성
+            PageResponseDTO<ContentResponseDTO> pageResponse = PageResponseDTO.<ContentResponseDTO>builder()
+                    .content(recommendations)
+                    .p_pageno(searchDTO.getP_pageno())
+                    .p_pagesize(searchDTO.getP_pagesize())
+                    .totalElements(totalCount)
+                    .build();
+
+            Response<PageResponseDTO<ContentResponseDTO>> response = Response.<PageResponseDTO<ContentResponseDTO>>builder()
                     .status(Status.OK)
-                    .data(recommendations)
+                    .data(pageResponse)
                     .build();
 
             return ResponseEntity.ok(response);

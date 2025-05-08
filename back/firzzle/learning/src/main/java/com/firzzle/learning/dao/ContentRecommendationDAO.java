@@ -33,4 +33,14 @@ public class ContentRecommendationDAO extends MyBatisSupport {
         logger.debug("콘텐츠 추천 목록 조회 DAO - 콘텐츠 일련번호: {}", box.getLong("contentSeq"));
         return sqlSession.selectDataBoxList(NAMESPACE + ".selectRecommendedContents", box);
     }
+
+    /**
+     * 추천 콘텐츠 개수 조회
+     *
+     * @param box - 요청 정보가 담긴 RequestBox
+     * @return int - 추천 콘텐츠 전체 개수
+     */
+    public int selectRecommendedContentsCount(RequestBox box) {
+        return (int) sqlSession.selectOne(NAMESPACE + ".selectRecommendedContentsCount", box);
+    }
 }
