@@ -21,13 +21,13 @@ const PlayerContent = ({
   );
 
   return (
-    <div className='flex w-full flex-col items-center gap-10'>
+    <div className='flex w-full flex-col items-center gap-5 lg:gap-10'>
       {!playerInfo ? (
-        <div className='mt-50 flex flex-col items-center gap-2'>
-          <p className='text-4xl font-semibold text-gray-900'>
+        <div className='mt-60 flex flex-col items-center gap-1 lg:mt-50 lg:gap-2'>
+          <p className='text-2xl font-semibold whitespace-nowrap text-gray-900 md:text-3xl'>
             오늘은 어떤 영상을 학습할까요?
           </p>
-          <p className='text-lg font-medium text-gray-900'>
+          <p className='font-medium whitespace-nowrap text-gray-900 md:text-lg'>
             YouTube, Vimeo 등 다양한 플랫폼의 영상 링크를 입력하세요.
           </p>
         </div>
@@ -38,7 +38,7 @@ const PlayerContent = ({
         />
       )}
 
-      <div className='flex w-[800px] flex-col items-center gap-10'>
+      <div className='w-full md:w-[700px] lg:w-[800px]'>
         {!isSubmitted ? (
           <UrlInputField
             defaultUrl={initialUrl}

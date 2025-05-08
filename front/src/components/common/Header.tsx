@@ -18,13 +18,13 @@ const Header = () => {
   return isAdminPage ? (
     <></>
   ) : (
-    <div className='flex w-full items-center justify-between border-b border-gray-300 px-8'>
-      <div className='relative h-[80px] w-[115px]'>
+    <div className='flex w-full items-center justify-between border-b border-gray-300 px-6 py-3 md:py-4 lg:py-6'>
+      <div className='relative h-full w-[60px] md:w-[80px] lg:w-[100px]'>
         <Image
           src='/assets/images/Firzzle.png'
           alt='logo'
           fill
-          sizes='110vx'
+          sizes='100vx'
           priority
           className='object-contain'
         />
@@ -34,7 +34,7 @@ const Header = () => {
       ) : (
         <Link
           href='/mylearning/snapbook'
-          className='bg-white text-xl font-medium text-gray-950 hover:bg-gray-50'
+          className='bg-white font-medium text-gray-900 hover:bg-gray-50 md:text-lg lg:text-xl'
         >
           학습 내역
         </Link>
