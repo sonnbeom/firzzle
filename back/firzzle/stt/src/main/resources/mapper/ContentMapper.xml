@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="ContentMapper">
+<mapper namespace="com.firzzle.stt.mapper.ContentMapper">
 
 	    <!-- 공통 컬럼 정의 -->
     <sql id="contentColumns">
@@ -19,7 +19,8 @@
         (SELECT GROUP_CONCAT(tag SEPARATOR ',') FROM fb_ai_content_tags WHERE content_seq = C.content_seq) AS tags
     </sql>
 
-	<insert id="insertContent" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="contentSeq">
+	<!-- 새로운 데이터 삽입 -->
+	<insert id="insertContent" parameterType="com.firzzle.stt.dto.ContentDTO" useGeneratedKeys="true" keyProperty="contentSeq">
 	  INSERT INTO fb_ai_contents
 	  <trim prefix="(" suffix=")" suffixOverrides=",">
 	    url,
@@ -31,8 +32,6 @@
 	    <if test="category != null">category,</if>
 	    <if test="thumbnailUrl != null">thumbnail_url,</if>
 	    <if test="processStatus != null">process_status,</if>
-	    <if test="completedAt != null">completed_at,</if>
-	    <if test="deleteYn != null">delete_yn,</if>
 	  </trim>
 	  VALUES
 	  <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -45,9 +44,16 @@
 	    <if test="category != null">#{category},</if>
 	    <if test="thumbnailUrl != null">#{thumbnailUrl},</if>
 	    <if test="processStatus != null">#{processStatus},</if>
-	    <if test="completedAt != null">#{completedAt},</if>
-	    <if test="deleteYn != null">#{deleteYn},</if>
 	  </trim>
 	</insert>
+
+	<!-- videoId 기준 데이터 존재 여부 확인 -->
+	<select id="existsByVideoId" parameterType="string" resultType="long">
+    SELECT C.content_seq
+    FROM fb_ai_contents C
+    WHERE C.video_id = #{videoId}
+    AND C.delete_yn = 'N'
+    LIMIT 1
+	</select>
 
 </mapper>
