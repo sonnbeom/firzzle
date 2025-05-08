@@ -23,7 +23,7 @@ export function usePagination<T>({
   items,
   itemsPerPage,
 }: UsePaginationProps<T>): UsePaginationReturn<T> {
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
   // 메모이제이션
@@ -34,7 +34,7 @@ export function usePagination<T>({
 
   // 이전 페이지로 이동
   const handlePrevPage = () => {
-    if (currentPage > 0) {
+    if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
