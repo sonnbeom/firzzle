@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-
+import OAuthButton from './OAuthButton';
 const HeroSection = () => {
   return (
     <section className='bg-gradient-to-r from-[#E8EDFF] to-[#F8F9FF] py-16 md:py-24'>
@@ -26,14 +26,12 @@ const HeroSection = () => {
             </p>
 
             <div className='flex flex-wrap gap-4 pt-4'>
-              <Button size='lg' className='px-6'>
-                카카오톡으로 시작하기
-              </Button>
-              <Button
-                size='lg'
-                variant='outline'
-                className='bg-transparent px-6'
-              >
+              <OAuthButton
+                url='https://kauth.kakao.com/oauth/authorize?'
+                oauth='kakao'
+                title='카카오로 시작하기'
+              />
+              <Button size='lg' variant='outline' className='bg-transparent'>
                 기능 둘러보기
               </Button>
             </div>
