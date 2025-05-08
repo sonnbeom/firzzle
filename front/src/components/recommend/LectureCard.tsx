@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { memo } from 'react';
 import { VideoProps } from '@/types/recommend';
 
@@ -10,13 +10,9 @@ interface LectureCardProps {
 }
 
 const LectureCard = memo(({ video }: LectureCardProps) => {
-  const router = useRouter();
-
   return (
-    <div
-      onClick={() =>
-        router.push(`/content?url=${encodeURIComponent(video.url)}`)
-      }
+    <Link
+      href={`/content?url=${encodeURIComponent(video.url)}`}
       className='block cursor-pointer hover:opacity-80'
     >
       <div className='relative aspect-video w-full max-w-[300px] overflow-hidden rounded-lg border border-gray-200'>
@@ -30,8 +26,8 @@ const LectureCard = memo(({ video }: LectureCardProps) => {
           className='h-full w-full object-contain'
         />
       </div>
-      <p className='mt-2 line-clamp-2 text-sm text-gray-700 px-2'>{video.title}</p>
-    </div>
+      <p className='mt-2 line-clamp-2 text-sm text-gray-700'>{video.title}</p>
+    </Link>
   );
 });
 
