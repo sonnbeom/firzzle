@@ -120,7 +120,7 @@ spring:
       on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(9Wk2pF1dkXP6uSs98LLh2AYT32JfmMuWb92xE8ZSseatItNzml507yRyv58SFCL7s35IEh9LdPcAGE941GEMrVXoSuwbnBDX3BtMXbkrCdEhWBALEI4v+0oUeMyQf1EAs+Ik3pBJVpYJp9H3zCoFgX3tmbp6Ycu3/yxpkhGlgK+FQYNJbiRzwlviR0C6VmhR)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 10
@@ -155,7 +155,7 @@ spring:
       on-profile: production
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(9Wk2pF1dkXP6uSs98LLh2AYT32JfmMuWb92xE8ZSseatItNzml507yRyv58SFCL7s35IEh9LdPcAGE941GEMrVXoSuwbnBDX3BtMXbkrCdEhWBALEI4v+0oUeMyQf1EAs+Ik3pBJVpYJp9H3zCoFgX3tmbp6Ycu3/yxpkhGlgK+FQYNJbiRzwlviR0C6VmhR)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20
