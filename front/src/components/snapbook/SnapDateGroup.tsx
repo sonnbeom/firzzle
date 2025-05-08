@@ -30,7 +30,7 @@ const SnapDateGroup = ({ reviews, isPriorityPage }: SnapDateGroupProps) => {
           <h2 className='mb-4 text-lg text-gray-950 md:text-xl'>
             {formatDateToKorean(date)}
           </h2>
-          <div className='grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5'>
+          <div className='grid gap-4 grid-cols-3 md:grid-cols-4'>
             {dateReviews.map((review, index) => (
               <Link
                 key={review.contentSeq}

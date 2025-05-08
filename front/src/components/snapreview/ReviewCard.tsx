@@ -63,13 +63,13 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
   };
 
   return (
-    <div className='space-y-4 p-4 md:p-6'>
-      <div className='text-sm text-gray-600'>
+    <div className='space-y-4 p-4 lg:p-6'>
+      <div className='text-xs text-gray-600 md:text-sm'>
         사진을 클릭하면 영상 해당 부분이 재생됩니다.
       </div>
       <div className='flex gap-4'>
         {/* 이미지 그룹 */}
-        <div className='w-1/3 bg-blue-50 p-4'>
+        <div className='w-1/2 bg-blue-50 p-4 md:w-2/5 lg:w-1/3'>
           <div className='space-y-8'>
             {localReviews.map((item) => (
               <div
@@ -99,7 +99,7 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
                 <div className='absolute right-0 bottom-[-16px] left-0 border-b border-blue-50'></div>
                 {editingId === String(item.frameSeq) ? (
                   <textarea
-                    className='md:text-md mt-2 h-[140px] w-full resize-none border border-blue-50 text-sm text-gray-700 focus:border-blue-400'
+                    className='lg:text-md mt-2 h-[140px] w-full resize-none border border-blue-50 text-sm text-gray-700 focus:border-blue-400'
                     value={item.comment || ''}
                     placeholder='내용을 작성해 주세요.'
                     onChange={(e) =>
@@ -111,19 +111,17 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
                   />
                 ) : (
                   <div
-                    className={`h-full ${!item.comment ? 'flex items-center justify-center' : ''}`}
+                    className={`h-full overflow-hidden ${!item.comment ? 'flex items-center justify-center' : ''}`}
                   >
                     <p
-                      className={`md:text-md mt-2 text-sm break-words text-gray-700 ${!item.comment ? 'text-center' : ''}`}
+                      className={`lg:text-md mt-2 line-clamp-5 text-sm text-gray-700 md:line-clamp-6 md:text-sm lg:line-clamp-none ${!item.comment ? 'text-center' : ''}`}
                     >
                       {item.comment || '내용을 작성해 주세요.'}
                     </p>
                   </div>
                 )}
-                <div
-                  className={`flex items-center justify-end ${editingId === String(item.frameSeq) ? '-mt-12 -mr-2' : '-mt-2 -mr-4'}`}
-                >
-                  <span className='text-sm text-gray-500'>
+                <div className='-mt-2 -mr-4 flex items-center justify-end'>
+                  <span className='lg:text-md text-xs text-gray-500 md:text-sm'>
                     ({item.comment?.length || 0}/{MAX_SNAP_REVIEW_LENGTH})
                   </span>
                   <button
@@ -140,13 +138,39 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
                       editingId === String(item.frameSeq) ? 'Save' : 'Edit'
                     }
                   >
-                    <Icons
-                      id={
-                        editingId === String(item.frameSeq) ? 'upload' : 'write'
-                      }
-                      size={24}
-                      color={'text-gray-900'}
-                    />
+                    <div className='hidden md:block lg:hidden'>
+                      <Icons
+                        id={
+                          editingId === String(item.frameSeq)
+                            ? 'upload'
+                            : 'write'
+                        }
+                        size={20}
+                        color={'text-gray-900'}
+                      />
+                    </div>
+                    <div className='hidden lg:block'>
+                      <Icons
+                        id={
+                          editingId === String(item.frameSeq)
+                            ? 'upload'
+                            : 'write'
+                        }
+                        size={24}
+                        color={'text-gray-900'}
+                      />
+                    </div>
+                    <div className='block md:hidden'>
+                      <Icons
+                        id={
+                          editingId === String(item.frameSeq)
+                            ? 'upload'
+                            : 'write'
+                        }
+                        size={18}
+                        color={'text-gray-900'}
+                      />
+                    </div>
                   </button>
                 </div>
               </div>

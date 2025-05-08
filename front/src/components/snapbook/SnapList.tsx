@@ -54,7 +54,7 @@ const SnapList = () => {
   if (!snapReviews || snapReviews.length === 0) {
     return (
       <div className='flex min-h-[50vh] items-center justify-center'>
-        <p className='text-center text-lg text-gray-600'>
+        <p className='text-center text-md md:text-lg text-gray-600'>
           작성한 스냅 리뷰가 없습니다.
         </p>
       </div>
