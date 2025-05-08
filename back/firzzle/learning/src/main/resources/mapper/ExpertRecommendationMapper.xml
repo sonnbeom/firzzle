@@ -2,32 +2,80 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="ExpertRecommendationMapper">
 
-    <!-- 추천 전문가 목록 조회 -->
+    <!-- 추천 전문가 목록 조회 (페이지네이션 적용) -->
     <select id="selectRecommendedExperts" resultType="DataBox" parameterType="RequestBox">
+        <include refid="PageMapper.spage"/>
         SELECT
-            E.expert_seq,
-            E.name,
-            E.title,
-            E.company,
-            E.profile_image_url,
-            E.linkedin_url,
-            E.relevance
+        <include refid="PageMapper.sorder"/>
+        <if test="p_order != null and p_order != ''">
+            ORDER BY sub.${p_order} ${p_sortorder}
+        </if>
+        <if test="p_order == null or p_order == ''">
+            ORDER BY sub.relevance DESC
+        </if>
+        <include refid="PageMapper.eorder"/>
+        sub.*
         FROM
-            fb_ai_expert_recommendations E
-                JOIN
-            fb_ai_expert_expertise EE ON E.expert_seq = EE.expert_seq
-                JOIN
-            fb_ai_user_contents UC ON UC.user_content_seq = #{userContentSeq}
-                JOIN
-            fb_ai_content_tags CT ON EE.expertise = CT.tag
+        (
+        SELECT
+        E.expert_seq,
+        E.name,
+        E.title,
+        E.company,
+        E.profile_image_url,
+        E.linkedin_url,
+        E.relevance
+        FROM
+        fb_ai_expert_recommendations E
+        JOIN
+        fb_ai_expert_expertise EE ON E.expert_seq = EE.expert_seq
+        JOIN
+        fb_ai_user_contents UC ON UC.user_content_seq = #{userContentSeq}
+        JOIN
+        fb_ai_content_tags CT ON EE.expertise = CT.tag
         WHERE
-            CT.content_seq = UC.content_seq
-          AND E.delete_yn = 'N'
+        CT.content_seq = UC.content_seq
+        AND E.delete_yn = 'N'
+        <if test="expertise != null and expertise != ''">
+            AND EE.expertise = #{expertise}
+        </if>
+        <if test="company != null and company != ''">
+            AND E.company LIKE CONCAT('%', #{company}, '%')
+        </if>
         GROUP BY
-            E.expert_seq
-        ORDER BY
-            E.relevance DESC
-            LIMIT 5
+        E.expert_seq
+        ) sub
+        <include refid="PageMapper.epage"/>
+    </select>
+
+    <!-- 추천 전문가 개수 조회 -->
+    <select id="selectRecommendedExpertsCount" resultType="int" parameterType="RequestBox">
+        SELECT
+        COUNT(*)
+        FROM
+        (
+        SELECT
+        E.expert_seq
+        FROM
+        fb_ai_expert_recommendations E
+        JOIN
+        fb_ai_expert_expertise EE ON E.expert_seq = EE.expert_seq
+        JOIN
+        fb_ai_user_contents UC ON UC.user_content_seq = #{userContentSeq}
+        JOIN
+        fb_ai_content_tags CT ON EE.expertise = CT.tag
+        WHERE
+        CT.content_seq = UC.content_seq
+        AND E.delete_yn = 'N'
+        <if test="expertise != null and expertise != ''">
+            AND EE.expertise = #{expertise}
+        </if>
+        <if test="company != null and company != ''">
+            AND E.company LIKE CONCAT('%', #{company}, '%')
+        </if>
+        GROUP BY
+        E.expert_seq
+        ) AS temp
     </select>
 
     <!-- 전문가의 전문 분야 목록 조회 -->
