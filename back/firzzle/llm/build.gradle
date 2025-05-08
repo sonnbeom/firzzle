@@ -13,75 +13,107 @@ java {
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
 }
 
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springAiVersion', "1.0.0-M7")
+    set('nettyVersion', "4.1.107.Final")
+    set('reactorNettyVersion', "1.1.15")
+}
+
 dependencies {
-    // 프로젝트 의존성
-    implementation project(':common')
-//	implementation project(':user-domain')
-
-    // MyBatis 관련 의존성 추가
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
-    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-
-    // Hibernate Core만 추가 P6spy formstyle을 위함
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    //p6spy
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
-
-    // Web & API
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+    // WebFlux & Web Services
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    // Eureka Client
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     // Kafka
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.apache.kafka:kafka-streams'
 
-    // OpenAPI/Swagger
+    // Eureka Client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
+
+    // Spring AI (OpenAI)
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+    // MySQL
+    implementation 'mysql:mysql-connector-java:8.0.33'
+
+    // MyBatis
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+
+    // Hibernate Core (for P6spy formstyle)
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // P6Spy
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
+
+    // Swagger/OpenAPI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 
-    //jasypt
+    // jasypt + 보안
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
 
-    // Test
+    // Netty (버전 충돌 방지)
+    implementation platform("io.netty:netty-bom:${nettyVersion}")
+    implementation 'io.netty:netty-resolver-dns'
+    implementation 'io.netty:netty-codec-dns'
+    implementation 'io.netty:netty-transport'
+    implementation 'io.netty:netty-handler'
+
+    // Reactor Netty (Spring WebFlux가 끌고오는 구버전 덮어쓰기)
+    implementation "io.projectreactor.netty:reactor-netty-core:${reactorNettyVersion}"
+    implementation "io.projectreactor.netty:reactor-netty-http:${reactorNettyVersion}"
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // 개발용
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    
+    implementation 'org.apache.logging.log4j:log4j-api:2.22.1'
+	implementation 'org.apache.logging.log4j:log4j-core:2.22.1'
+	implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.22.1' // ← 이거도 꼭!
+	    
+
+    // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // 프로젝트 의존성 (모듈)
+    implementation project(':common')
 }
 
-// 모듈의 build.gradle
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
 processResources {
-    // common 모듈의 리소스를 현재 모듈의 리소스로 복사
-
-    // messages
     from project(':common').sourceSets.main.resources.matching {
-        include 'messages/**'  // messages 디렉토리 아래의 모든 파일을 복사
-    }
-
-    // logback
-    from project(':common').sourceSets.main.resources.matching {
-        include 'logback/**'  // logback 디렉토리 아래의 모든 파일을 복사
-    }
-
-    // mapper/common
-    from project(':common').sourceSets.main.resources.matching {
-        include 'mapper/common/**'  // mapper/common 디렉토리 아래의 모든 파일을 복사
-    }
-
-    // 개별 파일 복사
-    from project(':common').sourceSets.main.resources.matching {
+        include 'messages/**'
+        include 'logback/**'
+        include 'mapper/common/**'
         include 'banner.txt'
         include 'log4jdbc.log4j2.properties'
         include 'spy.properties'
@@ -92,10 +124,14 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.named('bootBuildImage') {
+    builder = 'paketobuildpacks/builder-jammy-base:latest'
+}
+
 bootJar {
-    enabled = true  // 서비스는 실행 가능한 jar 생성
+    enabled = true
 }
 
 jar {
-    enabled = false  // bootJar를 사용하므로 일반 jar는 비활성화
+    enabled = false
 }

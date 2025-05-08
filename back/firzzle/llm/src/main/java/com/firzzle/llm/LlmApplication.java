@@ -22,8 +22,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableDiscoveryClient
 public class LlmApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(LlmApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(LlmApplication.class, args);
+	}
 
 }
