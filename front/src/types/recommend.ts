@@ -1,10 +1,10 @@
 import { InfiniteScrollResponse } from './common';
 
 // 추천 영상 조회 타입
-export type SnapReviewListResponse = InfiniteScrollResponse<{
-  content: Content[];
-  originTags: string;
-}>
+export interface SnapReviewListResponse extends InfiniteScrollResponse<Content> {
+  originTags?: string;
+}
+
 // 추천 영상 컨텐츠 타입
 export interface Content {
   contentSeq: number;
@@ -27,16 +27,11 @@ export interface Content {
 }
 
 
-// 추천 강의 활용 데이터 타입
-export interface RecommendVideo {
+// 추천 강의 Props 타입
+export interface VideoProps {
   title: string;
   url: string;
   thumbnailUrl: string;
-}
-// 추천 강의 Props 타입
-export interface VideoProps {
-  videos: RecommendVideo[];
-  originTags : string;
 }
 
 // 전문가 추천 데이터 타입
