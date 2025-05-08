@@ -12,13 +12,13 @@ spring:
     import: optional:file:.env[.properties]
 
 # Whisper 설정
-whisper:
-  executable:
-    path: ${WHISPER_EXECUTABLE_PATH}
-  model:
-    path: ${WHISPER_MODEL_PATH}
-  working:
-    dir: ${WHISPER_WORKING_DIR}
+# whisper:
+#   executable:
+#     path: ${WHISPER_EXECUTABLE_PATH}
+#   model:
+#     path: ${WHISPER_MODEL_PATH}
+#   working:
+#     dir: ${WHISPER_WORKING_DIR}
 
 # 파일 저장 경로
 app:
@@ -44,19 +44,6 @@ jasypt:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
 
-eureka:
-  client:
-    enabled: false # HEAD 브랜치 설정 우선
-
-# Eureka
-#eureka:
-#  client:
-#    register-with-eureka: true
-#    fetch-registry: true
-#    service-url:
-#      defaultZone: http://43.202.107.226:8761/eureka/
-#  instance:
-#    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 # MyBatis
 mybatis:
@@ -106,14 +93,15 @@ spring:
 server:
   port: 8080
 
-#eureka:
-#  client:
-#    register-with-eureka: true
-#    fetch-registry: true
-#    service-url:
-#      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
-#  instance:
-#    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+# Eureka
+eureka:
+ client:
+   register-with-eureka: true
+   fetch-registry: true
+   service-url:
+     defaultZone: ENC(etnQYDTb1OsekLJqM94FlI7mDcZcIknlO8awZoRoSfh4l6x01Kavl3mQU05eYXyBRM7oFbg9YBXHTjHfrqTt+w==)
+ instance:
+   instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 decorator:
   datasource:
@@ -149,15 +137,6 @@ spring:
 
 server:
   port: 8080
-
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
-  instance:
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 decorator:
   datasource:
