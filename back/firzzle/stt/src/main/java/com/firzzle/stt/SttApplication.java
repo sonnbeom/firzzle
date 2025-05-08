@@ -28,7 +28,7 @@ import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties
 	    }
 	    // excludeFilters 부분 제거
 	)
-//	@MapperScan("com.firzzle.stt.mapper") // MyBatis 매퍼
+@MapperScan("com.firzzle.stt.mapper") // MyBatis 매퍼
 @EnableDiscoveryClient
 public class SttApplication {
 
