@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // accessToken이 없고 루트 경로가 아닌 경우 루트로 리다이렉트
-  if (!accessToken && pathname !== '/') {
+  if (!accessToken && pathname !== '/' && !pathname.startsWith('/share')) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
