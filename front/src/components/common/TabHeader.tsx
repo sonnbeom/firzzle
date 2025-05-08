@@ -7,7 +7,7 @@ const TabHeader = () => {
   const { contentSeq, isActive } = useIsActiveTab();
 
   return (
-    <div className='flex w-full justify-around gap-4 overflow-x-auto pb-2 lg:overflow-x-hidden lg:pb-0'>
+    <div className='flex w-full justify-around gap-4 overflow-x-auto pb-1 lg:overflow-x-hidden lg:pb-0'>
       <TabButton
         title='러닝 채팅'
         isActive={isActive('learningchat')}

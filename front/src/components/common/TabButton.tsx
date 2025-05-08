@@ -19,10 +19,10 @@ const TabButton = ({
   return (
     <Link
       href={route}
-      className={`flex w-full flex-col items-center gap-1 p-2 hover:bg-gray-50 ${className}`}
+      className={`flex w-full flex-col items-center p-2 hover:bg-gray-50 lg:gap-1 ${className}`}
     >
       <button
-        className={`${isActive ? 'font-semibold text-blue-400' : 'font-medium text-gray-700'} flex cursor-pointer items-center gap-2 text-xl`}
+        className={`${isActive ? 'font-semibold text-blue-400' : 'font-medium text-gray-700'} flex cursor-pointer items-center gap-2 text-lg lg:text-xl`}
       >
         {iconId && (
           <Icons

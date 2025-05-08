@@ -16,26 +16,28 @@ const Lecture = () => {
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 6;
 
-  const fetchLectures = useCallback(async (page: number) => {
-    try {
-      const response = await getRecommendations(
-        Number(contentId),
-        page,
-        itemsPerPage,
-      );
-      const videos = response.content.map((item) => ({
-        title: item.title,
-        url: item.url,
-        thumbnailUrl: item.thumbnailUrl,
-      }));
+  const fetchLectures = useCallback(
+    async (page: number) => {
+      try {
+        const response = await getRecommendations(Number(contentId), {
+          p_pageno: page,
+          p_pagesize: itemsPerPage,
+        });
+        const videos = response.content.map((item) => ({
+          title: item.title,
+          url: item.url,
+          thumbnailUrl: item.thumbnailUrl,
+        }));
 
-      setLectures(videos);
-      setTotalItems(response.totalElements);
-      setKeyword(response.originTags);
-    } catch (error) {
-      console.error('Failed to fetch lectures:', error);
-    }
-  }, [contentId, itemsPerPage]);
+        setLectures(videos);
+        setTotalItems(response.totalElements);
+        setKeyword(response.originTags);
+      } catch (error) {
+        console.error('Failed to fetch lectures:', error);
+      }
+    },
+    [contentId, itemsPerPage],
+  );
 
   const {
     currentPage,
@@ -56,7 +58,8 @@ const Lecture = () => {
   return (
     <div>
       <h2 className='text-center text-lg font-medium text-gray-900 md:text-xl'>
-         <span className='font-semibold text-blue-400'>{keyword}</span> 관련된 강의를 추천해드릴게요
+        <span className='font-semibold text-blue-400'>{keyword}</span> 관련된
+        강의를 추천해드릴게요
       </h2>
       {showPagination && (
         <div className='flex justify-end'>
@@ -76,7 +79,7 @@ const Lecture = () => {
           </button>
         </div>
       )}
-      <div className='grid gap-5 pt-5 grid-cols-3'>
+      <div className='grid grid-cols-3 gap-5 pt-5'>
         {lectures.map((video, idx) => (
           <LectureCard key={idx} video={video} />
         ))}

@@ -28,3 +28,14 @@ export interface InfiniteScrollResponse<T> {
   last: boolean;
   hasNext: boolean;
 }
+
+// 무한스크롤 요청 타입
+export interface InfiniteScrollRequest {
+  p_pageno?: number;
+  p_pagesize?: number;
+  p_order?: string;
+  p_sortorder?: string;
+  keyword?: string;
+  category?: string;
+  status?: string;
+}

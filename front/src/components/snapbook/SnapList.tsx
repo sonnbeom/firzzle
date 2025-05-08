@@ -21,7 +21,7 @@ const SnapList = () => {
     last: true,
     hasNext: false,
   };
-  
+
   const {
     data: snapReviews,
     isFetchingNextPage,
@@ -31,7 +31,12 @@ const SnapList = () => {
     queryKey: ['snapReviews'],
     queryFn: async (page, pageSize) => {
       try {
-        const response = await getSnapReviews(page, pageSize, 'indate', 'desc');
+        const response = await getSnapReviews({
+          p_pageno: page,
+          p_pagesize: pageSize,
+          p_order: 'indate',
+          p_sortorder: 'desc',
+        });
         return {
           data: [response],
           hasNextPage: !response.last,
@@ -54,7 +59,7 @@ const SnapList = () => {
   if (!snapReviews || snapReviews.length === 0) {
     return (
       <div className='flex min-h-[50vh] items-center justify-center'>
-        <p className='text-center text-md md:text-lg text-gray-600'>
+        <p className='text-md text-center text-gray-600 md:text-lg'>
           작성한 스냅 리뷰가 없습니다.
         </p>
       </div>

@@ -6,7 +6,7 @@ import { postContent } from '@/api/content';
 import { getPlayer } from '@/api/player';
 import { PlayerInfo } from '@/types/player';
 import BasicButton from '../common/BasicButton';
-import Icons from '../common/Icons';
+import SearchBar from '../common/SearchBar';
 
 interface UrlInputFieldProps {
   defaultUrl?: string;
@@ -45,18 +45,16 @@ const UrlInputField = ({
   };
 
   return (
-    <div className='flex w-full items-center gap-4'>
-      <div className='flex flex-1 items-center gap-3 rounded border border-gray-200 px-3 py-2'>
-        <Icons id='search' />
-        <input
-          value={value}
-          onChange={(e) => {
-            setValue(e.target.value);
-          }}
-          placeholder='학습할 영상의 링크를 입력하세요.'
-          className='w-full text-lg focus:outline-none'
-        />
-      </div>
+    <div className='flex w-full items-center gap-2 lg:gap-4'>
+      <SearchBar
+        value={value}
+        placeholder='학습할 영상의 링크를 입력하세요.'
+        onChange={(e) => {
+          setValue(e.target.value);
+        }}
+        onSubmit={handleUrlConfirm}
+        hasSubmitButton={false}
+      />
 
       <BasicButton
         isDisabled={value === ''}

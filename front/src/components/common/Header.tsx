@@ -1,44 +1,24 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '../ui/button';
+import HeaderButton from './HeaderButton';
 
 const Header = () => {
-  const pathname = usePathname();
-  const [isLogin, setIsLogin] = useState(true);
-  const isAdminPage = pathname?.includes('/admin');
-
-  if (pathname?.startsWith('/share')) {
-    return null;
-  }
-
-  return isAdminPage ? (
-    <></>
-  ) : (
-    <div className='flex w-full items-center justify-between border-b border-gray-300 px-8'>
-      <div className='relative h-[80px] w-[115px]'>
+  return (
+    <div className='flex w-full items-center justify-between border-b border-gray-300 px-6 py-3 md:py-4 lg:py-6'>
+      <Link
+        href='/'
+        className='relative h-full w-[60px] md:w-[80px] lg:w-[100px]'
+      >
         <Image
           src='/assets/images/Firzzle.png'
           alt='logo'
           fill
-          sizes='110vx'
+          sizes='100vx'
           priority
           className='object-contain'
         />
-      </div>
-      {!isLogin ? (
-        <Button variant='default'>시작하기</Button>
-      ) : (
-        <Link
-          href='/mylearning/snapbook'
-          className='bg-white text-xl font-medium text-gray-950 hover:bg-gray-50'
-        >
-          학습 내역
-        </Link>
-      )}
+      </Link>
+      <HeaderButton />
     </div>
   );
 };

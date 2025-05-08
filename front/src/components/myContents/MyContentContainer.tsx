@@ -13,7 +13,10 @@ const MyContentContainer = () => {
   } = useInfiniteScroll<Content>({
     queryKey: ['contents'],
     queryFn: async (page, pageSize) => {
-      const data = await getContentList(page, pageSize);
+      const data = await getContentList({
+        p_pageno: page,
+        p_pagesize: pageSize,
+      });
       return {
         data: data.content,
         hasNextPage: data.hasNext,

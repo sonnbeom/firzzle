@@ -20,7 +20,7 @@ const Summary = async ({ params, searchParams }: PageProps) => {
   };
 
   return (
-    <div className='flex w-full flex-col gap-7'>
+    <div className='flex w-full flex-col gap-4 lg:gap-7'>
       <LevelTab initialTab={tab} />
       <Suspense fallback={<div>Loading...</div>}>
         <SummaryContent

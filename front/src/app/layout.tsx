@@ -8,7 +8,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang='en'>
       <body>
         <QueryProvider>
-          <div className='relative flex h-[100dvh] w-full flex-col'>
+          <div className='!important relative flex h-[100dvh] w-full min-w-[320px] flex-col'>
             <Header />
             <div className='flex-1'>{children}</div>
           </div>
