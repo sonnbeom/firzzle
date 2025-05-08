@@ -45,22 +45,22 @@
         </rollingPolicy>
     </appender>
 
-    <root level="INFO">
+    <root level="info">
         <appender-ref ref="CONSOLE" />
 <!--        <appender-ref ref="FILELOG" />-->
     </root>
 
-    <logger name="p6spy" level="debug" additivity="false">
+    <logger name="p6spy" level="info" additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>
 
-    <logger name="org.springframework" level="debug" additivity="false">
+    <logger name="org.springframework" level="error" additivity="false">
         <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
-        <!-- <appender-ref ref="CONSOLE" /> -->
-        <!-- <appender-ref ref="FILELOG" /> -->
+         <appender-ref ref="CONSOLE" />
+<!--         <appender-ref ref="FILELOG" />-->
     </logger>
 
-    <logger name="jdbc.audit" level="debug" additivity="false">
+    <logger name="jdbc.audit" level="error" additivity="false">
         <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
          <appender-ref ref="CONSOLE" />
          <appender-ref ref="FILELOG" />
