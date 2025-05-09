@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firzzle.llm.ContentMapper">
+
+    <sql id="contentColumns">
+        C.content_seq,
+        C.video_id,
+        C.url,
+        C.title,
+        C.description,
+        C.category,
+        C.thumbnail_url,
+        C.duration,
+        C.process_status,
+        C.indate,
+        C.completed_at,
+        C.delete_yn,
+        (SELECT GROUP_CONCAT(tag SEPARATOR ',') FROM fb_ai_content_tags WHERE content_seq = C.content_seq) AS tags
+    </sql>
+
+   
+
+</mapper>

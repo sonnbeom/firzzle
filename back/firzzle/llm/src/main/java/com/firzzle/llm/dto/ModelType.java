@@ -1,4 +1,4 @@
-package com.firzzle.llm.domain;
+package com.firzzle.llm.dto;
 
 public enum ModelType {
     TIMELINE, SUMMARY
