@@ -6,6 +6,8 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.PageResponseDTO;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
@@ -28,6 +30,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.firzzle.common.logging.dto.UserActionLog.*;
+import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : SnapReviewController.java
@@ -78,6 +83,11 @@ public class SnapReviewController {
                     .status(Status.OK)
                     .data(responseDTO)
                     .build();
+
+            // 스냅리뷰 조회 로깅 => ELK
+            String referer = box.getString("referer");
+            String uuid = box.getString("uuid");
+            log(userPreferenceLog(uuid, referer.toUpperCase(), "SNAP_REVIEW_READ"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
@@ -351,6 +361,10 @@ public class SnapReviewController {
                     .message("스냅리뷰가 성공적으로 수정되었습니다.")
                     .data(updatedFrameList)
                     .build();
+
+            // 스냅리뷰 작성 로깅 => ELK
+            String uuid = box.getString("uuid");
+            log(userActionLog(uuid,"SNAP_REVIEW_INPUT"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {

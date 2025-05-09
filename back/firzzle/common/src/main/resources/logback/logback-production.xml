@@ -3,24 +3,27 @@
 
     <property name="LOG_DIR" value="/log" />
 
-    <!-- console appender -->
+    <!-- ✅ Logstash Appender -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>43.203.118.56:5000</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <!-- 콘솔 appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>
-                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
-            </Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</Pattern>
         </layout>
     </appender>
 
-    <!-- console appender -->
+    <!-- STDOUT appender -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>
-                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
-            </Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</Pattern>
         </layout>
     </appender>
 
+    <!-- 파일 로그 appender -->
     <appender name="FILELOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
@@ -29,9 +32,7 @@
         </filter>
         <file>${LOG_DIR}/firzzle.log</file>
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <Pattern>
-                %d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
-            </Pattern>
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</Pattern>
         </layout>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_DIR}/firzzle-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
@@ -42,6 +43,7 @@
         </rollingPolicy>
     </appender>
 
+    <!-- ❌ root logger: Logstash 제외 -->
     <root level="ERROR">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="CONSOLE" />
@@ -49,21 +51,29 @@
     </root>
 
     <logger name="org.springframework" level="ERROR" additivity="false">
-        <appender-ref ref="FILELOG" />
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILELOG" />
     </logger>
 
     <logger name="com.firzzle" level="ERROR" additivity="false">
-        <appender-ref ref="FILELOG" />
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILELOG" />
     </logger>
 
-    <!-- Kafka 로거 설정 -->
     <logger name="org.apache.kafka" level="ERROR" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILELOG" />
+    </logger>
+
+    <!-- ✅ Eureka 로그 차단: Logstash로 전송 안 함 -->
+    <logger name="com.netflix.discovery" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILELOG" />
+    </logger>
+
+    <!-- ✅ ELK_LOGGER 전용 -->
+    <logger name="ELK_LOGGER" level="INFO" additivity="false">
+        <appender-ref ref="LOGSTASH"/>
     </logger>
 
 </configuration>

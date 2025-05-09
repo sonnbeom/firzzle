@@ -31,9 +31,9 @@ public class JasyptConfig {
     public static void main(String[] args) {
         ArrayList<String> encryptList = new ArrayList<>();
         ArrayList<String> decryptList = new ArrayList<>();
-        encryptList.add("jdbc:p6spy:mysql://localhost:3306/testdb?useSSL=false&characterEncoding=UTF-8&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true"); //암호화 대상 문자 추가
+        encryptList.add("http://43.202.107.226:8761/eureka/"); //암호화 대상 문자 추가
         //복호화 대상 문자열 추가 ENC() 괄호 내부 값으로 넣기
-        decryptList.add("XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so");
+        decryptList.add("ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=");
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setProvider(new BouncyCastleProvider());
         encryptor.setPoolSize(2);
