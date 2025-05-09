@@ -3,11 +3,12 @@ package com.firzzle.llm.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firzzle.llm.client.*;
+import com.firzzle.llm.dto.*;
 import com.firzzle.llm.prompt.*;
 import com.firzzle.llm.repository.TestRepository;
 import com.firzzle.llm.entity.*;
 import com.firzzle.llm.util.*;
-import com.firzzle.llm.domain.*;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

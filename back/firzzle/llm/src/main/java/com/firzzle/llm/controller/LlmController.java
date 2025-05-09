@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.firzzle.llm.domain.*;
+import com.firzzle.llm.dto.*;
 import com.firzzle.llm.service.*;
 
 /**

@@ -1,4 +1,4 @@
-package com.firzzle.llm.domain;
+package com.firzzle.llm.dto;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
