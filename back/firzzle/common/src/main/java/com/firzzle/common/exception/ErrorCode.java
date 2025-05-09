@@ -21,6 +21,11 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "MSG_0000070101", "인증이 필요합니다"),
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "MSG_0000070102", "접근 권한이 없습니다"),
     UNAUTHORIZED_ACCESS(HttpStatus.FORBIDDEN, "MSG_0000070103", "해당 리소스에 접근할 권한이 없습니다"),
+    MISSING_OAUTH_INFO(HttpStatus.BAD_REQUEST, "MSG_0000070104", "필수 OAuth 정보가 누락되었습니다"),
+    INVALID_OAUTH_TOKEN(HttpStatus.UNAUTHORIZED, "MSG_0000070105", "유효하지 않은 OAuth 토큰입니다"),
+    EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "MSG_0000070106", "외부 API 호출 중 오류가 발생했습니다"),
+    NOT_SUPPORTED_OAUTH(HttpStatus.BAD_REQUEST, "MSG_0000070107", "지원되지 않는 OAuth 제공자입니다"),
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "MSG_0000070108", "유효하지 않은 토큰입니다"),
 
     // =========== JWT ===========
     JWT_EXPIRED(HttpStatus.UNAUTHORIZED, "MSG_0000070201", "토큰이 만료되었습니다"),
@@ -47,13 +52,18 @@ public enum ErrorCode {
     SNAP_REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070605", "스냅리뷰를 찾을 수 없습니다"),
     FRAME_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070606", "프레임을 찾을 수 없습니다"),
     SHARE_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070607", "공유 코드를 찾을 수 없습니다"),
-    SHARE_CODE_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "MSG_0000070608", "이미 취소된 공유 코드입니다");
+    SHARE_CODE_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "MSG_0000070608", "이미 취소된 공유 코드입니다"),
 
     // =========== LLM Module ===========
     // 여기부터 MSG_0000070701 시작
 
-    // =========== STT Module ===========
-    // 여기부터 MSG_0000070801 시작
+
+	// =========== STT Module ===========
+    INVALID_YOUTUBE_URL(HttpStatus.BAD_REQUEST, "MSG_0000070801", "유효하지 않은 YouTube URL입니다"),
+    SCRIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070802", "해당 영상에서 자막을 찾을 수 없습니다"),
+    VIDEO_TOO_SHORT(HttpStatus.BAD_REQUEST, "MSG_0000070803", "영상 길이가 너무 짧습니다"),
+    VIDEO_TOO_LONG(HttpStatus.BAD_REQUEST, "MSG_0000070804", "영상 길이가 너무 깁니다");
+
 
     // =========== Main Module ===========
     // 여기부터 MSG_0000070901 시작

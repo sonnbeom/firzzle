@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ComponentScan(basePackages = {
 		"com.firzzle.auth",  // 현재 모듈의 패키지
 		"com.firzzle.common",  // common 모듈의 설정 패키지
+		"com.firzzle.jwt",  // jwt 모듈의 설정 패키지
 })
 @EnableDiscoveryClient
 public class AuthApplication {

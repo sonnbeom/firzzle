@@ -17,6 +17,8 @@ repositories {
 	mavenCentral()
 }
 
+ext['jjwtVersion'] = '0.12.6'
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -26,7 +28,21 @@ configurations {
 dependencies {
 	// 프로젝트 의존성
 	implementation project(':common')
-//	implementation project(':user-domain')
+	implementation project(':jwt')
+
+	// Spring Security와 OAuth2 의존성
+//	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// JWT
+	implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+	runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+	runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+	// Web & API
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 	// MyBatis 관련 의존성 추가
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
@@ -35,19 +51,11 @@ dependencies {
 	// Hibernate Core만 추가 P6spy formstyle을 위함
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-	//p6spy
-	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
-
-	// Web & API
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
 	// Eureka Client
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
-	// Kafka
-	implementation 'org.springframework.kafka:spring-kafka'
+	// p6spy
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
 
 	// OpenAPI/Swagger
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
@@ -58,7 +66,7 @@ dependencies {
 
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.kafka:spring-kafka-test'
+//	testImplementation 'org.springframework.security:spring-security-test'
 }
 
 // 모듈의 build.gradle
