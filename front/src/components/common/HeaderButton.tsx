@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { logout } from '@/api/auth';
 import OAuthButton from '../home/OAuthButton';
 
 const HeaderButton = () => {
@@ -17,12 +18,22 @@ const HeaderButton = () => {
           className='hidden md:block'
         />
       ) : (
-        <Link
-          href='/mylearning/snapbook'
-          className='bg-white font-medium text-gray-900 hover:bg-gray-50 md:text-lg lg:text-xl'
-        >
-          학습 내역
-        </Link>
+        <div className='flex items-center gap-8'>
+          <Link
+            href='/mylearning/snapbook'
+            className='bg-white font-medium text-gray-900 hover:bg-gray-50 md:text-lg lg:text-xl'
+          >
+            학습내역
+          </Link>
+          <button
+            className='bg-white font-medium text-gray-900 hover:bg-gray-50 md:text-lg lg:text-xl'
+            onClick={() => {
+              logout();
+            }}
+          >
+            로그아웃
+          </button>
+        </div>
       )}
     </>
   );

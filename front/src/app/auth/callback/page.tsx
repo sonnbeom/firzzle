@@ -2,7 +2,6 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
-import { internalApi } from '@/api/common/apiInstance';
 
 const AuthCallback = () => {
   const router = useRouter();
@@ -13,16 +12,12 @@ const AuthCallback = () => {
       try {
         const accessToken = searchParams.get('accessToken');
 
-        const response = await internalApi.get(
-          `/auth/callback?accessToken=${accessToken}`,
-        );
-
-        if (response.status === 'OK') {
-          router.push(response.redirectUrl);
-        } else {
-          console.log(response.message);
-          router.push(response.redirectUrl);
-        }
+        await fetch(`/auth/callback?accessToken=${accessToken}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
       } catch (error) {
         console.error('OAuth 인증 콜백 실패', error);
         router.push('/');
