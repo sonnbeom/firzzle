@@ -58,17 +58,18 @@ public class ContentSummaryService {
             sectionBox.put("summarySeq", summaryDataBox.getLong2("d_summary_seq"));
             List<DataBox> sectionDataBoxes = summaryDAO.selectSummarySections(sectionBox);
 
-            // 3. 각 섹션의 details JSON 문자열을 파싱하여 List<String>으로 변환
-            for (DataBox sectionDataBox : sectionDataBoxes) {
-                try {
-                    String detailsJson = sectionDataBox.getString("d_details");
-                    List<String> detailsList = objectMapper.readValue(detailsJson, new TypeReference<List<String>>() {});
-                    sectionDataBox.put("details_list", detailsList);
-                } catch (Exception e) {
-                    logger.error("섹션 details JSON 파싱 중 오류: {}", e.getMessage());
-                    sectionDataBox.put("details_list", List.of());
-                }
-            }
+            // 3. details JSON => TEXT 형식으로 변경 되어 생략
+//            // 3. 각 섹션의 details JSON 문자열을 파싱하여 List<String>으로 변환
+//            for (DataBox sectionDataBox : sectionDataBoxes) {
+//                try {
+//                    String detailsJson = sectionDataBox.getString("d_details");
+//                    List<String> detailsList = objectMapper.readValue(detailsJson, new TypeReference<List<String>>() {});
+//                    sectionDataBox.put("details_list", detailsList);
+//                } catch (Exception e) {
+//                    logger.error("섹션 details JSON 파싱 중 오류: {}", e.getMessage());
+//                    sectionDataBox.put("details_list", List.of());
+//                }
+//            }
 
             // 4. 요약 정보에 섹션 목록 추가
             summaryDataBox.put("sections", sectionDataBoxes);
