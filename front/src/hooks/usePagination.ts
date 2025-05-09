@@ -1,16 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 
-// 페이지네이션 훅의 입력 파라미터
-interface UsePaginationProps<T> {
-  items: T[];
+interface UsePaginationProps {
   itemsPerPage: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
 }
 
-//페이지네이션 훅의 반환값
-interface UsePaginationReturn<T> {
+interface UsePaginationReturn {
   currentPage: number;
   totalPages: number;
-  visibleItems: T[];
   canGoPrev: boolean;
   canGoNext: boolean;
   showPagination: boolean;
@@ -18,43 +16,37 @@ interface UsePaginationReturn<T> {
   handleNextPage: () => void;
 }
 
-// 페이지네이션 기능을 제공하는 커스텀 훅
-export function usePagination<T>({
-  items,
+export function usePagination({
   itemsPerPage,
-}: UsePaginationProps<T>): UsePaginationReturn<T> {
+  totalItems,
+  onPageChange,
+}: UsePaginationProps): UsePaginationReturn {
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  // 메모이제이션
-  const visibleItems = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return items.slice(startIndex, startIndex + itemsPerPage);
-  }, [items, currentPage, itemsPerPage]);
-
-  // 이전 페이지로 이동
-  const handlePrevPage = () => {
+  const handlePrevPage = useCallback(() => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      onPageChange(newPage);
     }
-  };
+  }, [currentPage, onPageChange]);
 
-  // 다음 페이지로 이동
-  const handleNextPage = () => {
+  const handleNextPage = useCallback(() => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      onPageChange(newPage);
     }
-  };
+  }, [currentPage, totalPages, onPageChange]);
 
-  // 페이지네이션 UI 표시 여부
-  const showPagination = items.length > itemsPerPage;
+  const showPagination = totalItems > itemsPerPage;
   const canGoPrev = currentPage > 1;
   const canGoNext = currentPage < totalPages;
 
   return {
     currentPage,
     totalPages,
-    visibleItems,
     canGoPrev,
     canGoNext,
     showPagination,
