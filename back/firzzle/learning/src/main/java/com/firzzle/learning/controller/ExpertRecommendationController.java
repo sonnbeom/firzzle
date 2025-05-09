@@ -5,6 +5,8 @@ import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.learning.dto.ExpertRecommendationResponseDTO;
@@ -32,6 +34,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.firzzle.common.logging.dto.UserActionLog.*;
+import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : ExpertRecommendationController.java
@@ -148,6 +153,11 @@ public class ExpertRecommendationController {
                     .status(Status.OK)
                     .data(responseDTO)
                     .build();
+
+            // 전문가 추천 로깅 => ELK
+            String referer = box.getString("referer");
+            String userId = box.getString("uuid");
+            log(userPreferenceLog(userId, referer.toUpperCase(), "RECOMMEND_EXPERT"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {

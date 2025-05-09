@@ -6,6 +6,8 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.learning.dto.QuizResponseDTO;
@@ -33,6 +35,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.firzzle.common.logging.dto.UserActionLog.userPreferenceLog;
+import static com.firzzle.common.logging.service.LoggingService.log;
 
 /**
  * @Class Name : QuizController.java
@@ -85,6 +90,11 @@ public class QuizController {
                     .status(Status.OK)
                     .data(quizResponseDTO)
                     .build();
+
+            //퀴즈 조회 로깅 => ELK
+            String referer = box.getString("referer");
+            String userId = box.getString("uuid");
+            log(userPreferenceLog(userId, referer.toUpperCase(), "QUIZ_READ"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
@@ -143,6 +153,9 @@ public class QuizController {
                     .message("퀴즈 답변이 성공적으로 제출되었습니다.")
                     .data(responseDTO)
                     .build();
+
+            // 퀴즈답변 작성 로깅 => ELK
+            LoggingService.log(UserActionLog.userActionLog(uuid, "QUIZ_SUBMIT"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
