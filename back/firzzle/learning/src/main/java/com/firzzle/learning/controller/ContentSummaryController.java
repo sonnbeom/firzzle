@@ -6,6 +6,8 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.learning.dto.ContentSummaryResponseDTO;
@@ -29,6 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.firzzle.common.logging.dto.UserActionLog.*;
+import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : ContentSummaryController.java
@@ -82,6 +87,10 @@ public class ContentSummaryController {
                 responseDTO.setEasyMajorTopic(easySummaryDataBox.getString("d_major_topic"));
                 responseDTO.setEasySections(convertToSectionDTOList((List<DataBox>)easySummaryDataBox.getObject("sections")));
                 responseDTO.setEasyIndate(formatDateTime(easySummaryDataBox.getString("d_indate")));
+
+                //요약 쉽게 로깅 => ELK
+                String userId = box.getString("uuid");
+                log(summaryPreferenceLog(userId,"EASY"));
             }
 
             // 어려운 버전 요약 설정
@@ -90,6 +99,10 @@ public class ContentSummaryController {
                 responseDTO.setHardMajorTopic(hardSummaryDataBox.getString("d_major_topic"));
                 responseDTO.setHardSections(convertToSectionDTOList((List<DataBox>)hardSummaryDataBox.getObject("sections")));
                 responseDTO.setHardIndate(formatDateTime(hardSummaryDataBox.getString("d_indate")));
+
+                //요약 어렵게 로깅 => ELK
+                String userId = box.getString("uuid");
+                log(summaryPreferenceLog(userId,"DIFFICULT"));
             }
 
             if(hardSummaryDataBox == null && easySummaryDataBox == null){
@@ -100,6 +113,11 @@ public class ContentSummaryController {
                     .status(Status.OK)
                     .data(responseDTO)
                     .build();
+
+            //요약 로깅 => ELK
+            String referer = box.getString("referer");
+            String userId = box.getString("uuid");
+            log(userPreferenceLog(userId, referer.toUpperCase(), "SUMMARY"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {

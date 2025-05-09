@@ -6,6 +6,8 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.PageResponseDTO;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
@@ -36,6 +38,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static com.firzzle.common.logging.dto.UserActionLog.*;
+import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : ContentController.java
@@ -70,6 +75,7 @@ public class ContentController {
 //            , @RequestBody Map<String, Object> requestBody // ContentRequestDTO를 없앤다면
     ) {
 
+
         logger.info("콘텐츠 등록 요청 - URL: {}", contentRequestDTO.getYoutubeUrl());
 
         try {
@@ -92,6 +98,10 @@ public class ContentController {
                     .message("콘텐츠가 성공적으로 등록되었습니다.")
                     .data(registeredContent)
                     .build();
+
+            // 컨텐츠 생성 로깅 => ELK
+            String userId = box.getString("uuid");
+            log(userActionLog(userId, "CONTENT_CREATED"));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (BusinessException e) {
@@ -119,7 +129,7 @@ public class ContentController {
             HttpServletRequest request) {
 
         logger.info("콘텐츠 정보 조회 요청 - 콘텐츠 일련번호: {}", userContentSeq);
-
+        LoggingService.log(UserActionLog.userActionLog("TEST_ID", "CONTENT_CREATED"));
         try {
             // PathVariable => Content-Type 관계 없이 넣어줘야 함
             RequestBox box = RequestManager.getBox(request);
@@ -132,6 +142,10 @@ public class ContentController {
                     .status(Status.OK)
                     .data(contentResponseDTO)
                     .build();
+
+            // 컨텐츠 조회 로깅 => ELK
+            String userId = box.getString("uuid");
+            log(userActionLog(userId, "START_LEARNING"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {

@@ -1,0 +1,65 @@
+package com.firzzle.common.logging.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDateTime;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@SuperBuilder
+public class UserActionLog extends LogEvent {
+    private String fromContent;
+    private String toContent;
+    private String detail;
+    private String recommendAction;
+    private String summaryPreference;
+
+    public static UserActionLog userActionLog (String userId, String detail) {
+
+        return UserActionLog.builder()
+                .event("USER_ACTION")
+                .userId(userId)
+                .detail(detail)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+    public static UserActionLog userLoginLog () {
+
+        return UserActionLog.builder()
+                .event("USER_ACTION")
+                .detail("LOGIN")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+    public static UserActionLog userRecommendActionLog (String userId, String recommendAction) {
+
+        return UserActionLog.builder()
+                .event("USER_ACTION")
+                .userId(userId)
+                .detail("RECOMMEND")
+                .recommendAction(recommendAction)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+    public static UserActionLog userPreferenceLog(String userId, String fromContent, String toContent) {
+
+        return UserActionLog.builder()
+                .event("USER_ACTION")
+                .userId(userId)
+                .detail("PREFERENCE")
+                .timestamp(LocalDateTime.now())
+                .fromContent(fromContent)
+                .toContent(toContent)
+                .build();
+    }
+    public static UserActionLog summaryPreferenceLog(String userId, String summaryPreference) {
+
+        return UserActionLog.builder()
+                .event("USER_ACTION")
+                .userId(userId)
+                .detail("SUMMARY_PREFERENCE")
+                .timestamp(LocalDateTime.now())
+                .summaryPreference(summaryPreference)
+                .build();
+    }
+}
