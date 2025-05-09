@@ -10,10 +10,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // accessToken이 있고 루트 경로인 경우 /content로 리다이렉트
-  if (accessToken && pathname === '/') {
-    return NextResponse.redirect(new URL('/content', request.url));
-  }
+  // // accessToken이 있고 루트 경로인 경우 /content로 리다이렉트
+  // if (accessToken && pathname === '/') {
+  //   return NextResponse.redirect(new URL('/content', request.url));
+  // }
 
   return NextResponse.next();
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Link } from 'lucide-react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import OAuthButton from '../home/OAuthButton';
 
@@ -14,6 +14,7 @@ const HeaderButton = () => {
           url='https://kauth.kakao.com/oauth/authorize?'
           oauth='kakao'
           title='시작하기'
+          className='hidden md:block'
         />
       ) : (
         <Link

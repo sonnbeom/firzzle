@@ -4,10 +4,10 @@ import HeaderButton from './HeaderButton';
 
 const Header = () => {
   return (
-    <div className='flex w-full items-center justify-between border-b border-gray-300 px-6 py-3 md:py-4 lg:py-6'>
+    <div className='flex w-full items-center justify-between border-b border-gray-300 px-6 py-4 lg:py-5'>
       <Link
         href='/'
-        className='relative h-full w-[60px] md:w-[80px] lg:w-[100px]'
+        className='relative h-[25px] w-[83px] md:h-[30px] md:w-[100px] lg:h-[35px] lg:w-[117px]'
       >
         <Image
           src='/assets/images/Firzzle.png'

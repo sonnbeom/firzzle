@@ -49,13 +49,13 @@ const FeaturesSection = () => {
   ];
 
   return (
-    <section id='features' className='bg-white py-24'>
+    <section id='features' className='bg-white py-16 md:py-24'>
       <div className='container mx-auto px-4'>
-        <div className='mx-auto mb-16 max-w-3xl text-center'>
-          <h2 className='mb-4 text-4xl font-bold text-gray-900'>
+        <div className='mx-auto mb-16 max-w-md text-center'>
+          <h2 className='mb-2 text-2xl font-bold text-gray-900 md:mb-4 md:text-4xl'>
             학습 경험을 혁신하는 핵심 기능
           </h2>
-          <p className='text-xl text-gray-600'>
+          <p className='text-lg text-gray-600 md:text-xl'>
             firzzle AI의 강력한 기능으로 모든 영상 학습을 더 효율적이고
             효과적으로 만들어 보세요.
           </p>
