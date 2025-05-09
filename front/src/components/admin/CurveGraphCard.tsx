@@ -29,8 +29,8 @@ ChartJS.register(
 );
 
 interface DataPoint {
-  x: string;
-  y: number;
+  x: string; // x축 날짜
+  y: number; // y축 값
 }
 
 interface DataSet {
@@ -38,30 +38,9 @@ interface DataSet {
   data: DataPoint[];
 }
 
-const generateRandomColor = () => {
-  const colors = [
-    '#FF6B6B',
-    '#4ECDC4',
-    '#45B7D1',
-    '#96CEB4',
-    '#FFEEAD',
-    '#D4A5A5',
-    '#9B6B6B',
-    '#E9967A',
-    '#4682B4',
-    '#6B8E23',
-    '#B19CD9',
-    '#FFB6C1',
-    '#20B2AA',
-    '#F0E68C',
-    '#DDA0DD',
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
-
 interface CurveGraphCardProps {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   tags?: {
     text: string;
     color: string;
@@ -75,33 +54,24 @@ interface CurveGraphCardProps {
   };
 }
 
-const formatDate = (date: Date, interval: 'day' | 'month' | 'year'): string => {
-  switch (interval) {
-    case 'day':
-      return date.toLocaleDateString('ko-KR', {
-        month: '2-digit',
-        day: '2-digit',
-      });
-    case 'month':
-      return date.toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: '2-digit',
-      });
-    case 'year':
-      return date.getFullYear().toString();
-  }
-};
+const predefinedColors = [
+  '#4A90E2', // 하늘색
+  '#50C878', // 에메랄드
+  '#FF6B6B', // 코랄
+  '#845EF7', // 보라
+  '#FF922B', // 주황
+  '#20C997', // 민트
+  '#F06595', // 분홍
+  '#7950F2', // 진보라
+  '#94D82D', // 라임
+  '#FF8787', // 연분홍
+];
 
-const getDateInterval = (
-  startDate: Date,
-  endDate: Date,
-): 'day' | 'month' | 'year' => {
-  const diffInDays = Math.floor(
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
-  );
-  if (diffInDays <= 31) return 'day';
-  if (diffInDays <= 365) return 'month';
-  return 'year';
+let colorIndex = 0;
+const generateRandomColor = () => {
+  const color = predefinedColors[colorIndex];
+  colorIndex = (colorIndex + 1) % predefinedColors.length;
+  return color;
 };
 
 const CurveGraphCard = ({
@@ -113,8 +83,6 @@ const CurveGraphCard = ({
   endDate,
   mode,
 }: CurveGraphCardProps) => {
-  const interval = getDateInterval(startDate, endDate);
-
   const chartData = {
     labels: dataSets[0].data.map((point) => point.x),
     datasets: dataSets.map((set) => {
@@ -123,11 +91,13 @@ const CurveGraphCard = ({
         label: set.label,
         data: set.data.map((point) => point.y),
         borderColor: color,
-        backgroundColor: `${color}20`,
+        backgroundColor: color,
         tension: 0.4,
+        borderWidth: 2,
         pointRadius: 4,
-        pointBackgroundColor: color,
-        fill: false,
+        pointBorderWidth: 5,
+        pointBorderColor: `${color}80`,
+        pointHoverRadius: 3,
       };
     }),
   };
@@ -138,9 +108,17 @@ const CurveGraphCard = ({
     plugins: {
       legend: {
         position: 'bottom' as const,
+        align: 'center' as const,
         labels: {
+          boxWidth: 8,
+          boxHeight: 8,
           usePointStyle: true,
-          padding: 20,
+          pointStyle: 'circle',
+          padding: 15,
+          itemSpacing: 30,
+          font: {
+            size: 14,
+          },
         },
       },
     },
@@ -168,27 +146,28 @@ const CurveGraphCard = ({
   };
 
   return (
-    <div className='h-[300px] w-full rounded-2xl bg-white p-4 shadow-sm lg:h-[350px] lg:p-6'>
-      <div className='mb-4 flex flex-wrap items-center justify-between gap-2 lg:mb-6'>
-        <div className='flex flex-wrap items-center gap-2'>
-          {tags?.map((tag, index) => (
-            <BasicBadge key={index} text={tag.text} color={tag.color} />
-          ))}
-          <span className='text-base font-medium lg:text-lg'>{title}</span>
-          <BasicPopOver
-            trigger={
-              <InfoCircledIcon className='h-3.5 w-3.5 cursor-pointer text-gray-400 lg:h-5 lg:w-5' />
-            }
-            content={
-              <span className='text-xs text-gray-600 lg:text-sm'>
-                {description}
-              </span>
-            }
-          />
+    <div className='h-[300px] w-full rounded-2xl bg-white p-6 shadow-sm'>
+      {(title || tags?.length || mode || description) && (
+        <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
+          <div className='flex flex-wrap items-center gap-2'>
+            {tags?.map((tag, index) => (
+              <BasicBadge key={index} text={tag.text} color={tag.color} />
+            ))}
+            {title && <span className='text-base font-medium'>{title}</span>}
+            {description && (
+              <BasicPopOver
+                trigger={
+                  <InfoCircledIcon className='h-4 w-4 cursor-pointer text-gray-400' />
+                }
+                content={
+                  <span className='text-xs text-gray-600'>{description}</span>
+                }
+              />
+            )}
+          </div>
         </div>
-        {mode && <BasicBadge text={mode.text} color={mode.color} />}
-      </div>
-      <div className='h-[220px] lg:h-[250px]'>
+      )}
+      <div className='h-[calc(100%-3rem)] w-full'>
         <Line data={chartData} options={options} />
       </div>
     </div>
