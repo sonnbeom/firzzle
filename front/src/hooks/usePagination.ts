@@ -28,7 +28,7 @@ export function usePagination<T>({
 
   // 메모이제이션
   const visibleItems = useMemo(() => {
-    const startIndex = currentPage * itemsPerPage;
+    const startIndex = (currentPage - 1) * itemsPerPage;
     return items.slice(startIndex, startIndex + itemsPerPage);
   }, [items, currentPage, itemsPerPage]);
 
@@ -41,15 +41,15 @@ export function usePagination<T>({
 
   // 다음 페이지로 이동
   const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
+    if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
 
   // 페이지네이션 UI 표시 여부
   const showPagination = items.length > itemsPerPage;
-  const canGoPrev = currentPage > 0;
-  const canGoNext = currentPage < totalPages - 1;
+  const canGoPrev = currentPage > 1;
+  const canGoNext = currentPage < totalPages;
 
   return {
     currentPage,
