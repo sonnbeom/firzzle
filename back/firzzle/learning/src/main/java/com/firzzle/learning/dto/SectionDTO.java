@@ -27,12 +27,12 @@ public class SectionDTO {
     @Schema(description = "섹션 제목")
     private String title;
 
-    @Schema(description = "섹션 내용 요약")
-    private String content;
+//    @Schema(description = "섹션 내용 요약")
+//    private String content;
 
     @Schema(description = "시작 시간(초)")
     private Integer startTime;
 
-    @Schema(description = "섹션 상세 내용 (JSON 배열)")
-    private List<String> details;
+    @Schema(description = "섹션 상세 내용")
+    private String details;
 }

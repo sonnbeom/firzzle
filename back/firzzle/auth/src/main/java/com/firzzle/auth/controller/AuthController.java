@@ -11,6 +11,8 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,6 +39,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import static com.firzzle.common.logging.dto.UserActionLog.*;
+import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : AuthController.java
@@ -106,6 +111,9 @@ public class AuthController {
                     .message("카카오 로그인 성공")
                     .data(tokenResponseDTO)
                     .build();
+
+            // 로그인 조회 => ELK
+            log(userLoginLog());
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {

@@ -3,7 +3,12 @@
 
     <property name="LOG_DIR" value="C:/development/log" />
 
-    <!-- console appender -->
+    <!-- ✅ Logstash Appender (ELK_LOGGER만 사용) -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>43.203.118.56:5000</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
@@ -12,7 +17,6 @@
         </layout>
     </appender>
 
-    <!-- File appender (rolling) -->
     <appender name="FILELOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/firzzle.log</file>
         <layout class="ch.qos.logback.classic.PatternLayout">
@@ -45,31 +49,28 @@
         </rollingPolicy>
     </appender>
 
+    <!-- ✅ root logger: Logstash 제외 -->
     <root level="info">
         <appender-ref ref="CONSOLE" />
-<!--        <appender-ref ref="FILELOG" />-->
+        <!-- <appender-ref ref="FILELOG" /> -->
     </root>
 
+    <!-- ✅ Eureka 등 제외 로거들 유지 -->
     <logger name="p6spy" level="info" additivity="false">
         <appender-ref ref="CONSOLE" />
     </logger>
 
     <logger name="org.springframework" level="error" additivity="false">
-        <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
-         <appender-ref ref="CONSOLE" />
-<!--         <appender-ref ref="FILELOG" />-->
+        <appender-ref ref="CONSOLE" />
     </logger>
 
     <logger name="jdbc.audit" level="error" additivity="false">
-        <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
-         <appender-ref ref="CONSOLE" />
-         <appender-ref ref="FILELOG" />
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILELOG" />
     </logger>
 
     <logger name="jdbc.resultsettable" level="error" additivity="false">
-        <!-- 중복 출력 방지를 위해 appender 참조 제거 -->
-         <appender-ref ref="CONSOLE" />
-<!--         <appender-ref ref="FILELOG" />-->
+        <appender-ref ref="CONSOLE" />
     </logger>
 
     <logger name="jdbc.sqltiming" level="info" additivity="false">
@@ -82,13 +83,20 @@
 
     <logger name="com.firzzle" level="debug" additivity="false">
         <appender-ref ref="CONSOLE" />
-<!--        <appender-ref ref="FILELOG" />-->
     </logger>
 
-    <!-- Kafka 로거 설정 추가 -->
     <logger name="org.apache.kafka" level="WARN" additivity="false">
         <appender-ref ref="CONSOLE" />
-<!--        <appender-ref ref="FILELOG" />-->
+    </logger>
+
+    <!-- ✅ Eureka 로그도 콘솔까지만 찍게 제어 (Logstash로 안 감) -->
+    <logger name="com.netflix.discovery" level="info" additivity="false">
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- ✅ 오직 ELK_LOGGER만 Logstash로 전송 -->
+    <logger name="ELK_LOGGER" level="INFO" additivity="false">
+        <appender-ref ref="LOGSTASH"/>
     </logger>
 
 </configuration>
