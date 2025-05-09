@@ -57,4 +57,24 @@ public class ExpertRecommendationService {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "추천 전문가 목록 조회 중 오류가 발생했습니다.");
         }
     }
+
+    /**
+     * 추천 전문가 개수 조회
+     *
+     * @param box - 요청 정보가 담긴 RequestBox (userContentSeq 필수)
+     * @return int - 추천 전문가 전체 개수
+     */
+    public int getRecommendedExpertsCount(RequestBox box) {
+        logger.debug("추천 전문가 개수 조회 요청 - UserContentSeq: {}", box.getLong("userContentSeq"));
+
+        try {
+            int count = expertRecommendationDAO.selectRecommendedExpertsCount(box);
+            logger.debug("추천 전문가 개수 조회 완료 - 총 개수: {}", count);
+
+            return count;
+        } catch (Exception e) {
+            logger.error("추천 전문가 개수 조회 중 오류 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "추천 전문가 개수 조회 중 오류가 발생했습니다.");
+        }
+    }
 }
