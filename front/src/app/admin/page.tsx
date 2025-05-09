@@ -8,7 +8,13 @@ import PopularExpertCard from '@/components/admin/PopularExpertCard';
 import VideoLengthCard from '@/components/admin/VideoLengthCard';
 
 const AdminPage = () => {
-  const handleDateChange = ({ startDate, endDate }: { startDate: Date; endDate: Date }) => {
+  const handleDateChange = ({
+    startDate,
+    endDate,
+  }: {
+    startDate: Date;
+    endDate: Date;
+  }) => {
     // 추후 여기서 데이터 fetching 등을 수행
   };
 

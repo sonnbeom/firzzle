@@ -86,7 +86,7 @@ const LearnigInsightPage = () => {
       dataSets: [
         {
           label: 'AI 퀴즈',
-          data: [68, 18, 35, 41, 12, 58, 18, 58, 53, 90, 42].map((y, i) => ({
+          data: [68, 18, 35, 41, 12, 58, 18].map((y, i) => ({
             x: dates[i],
             y,
           })),

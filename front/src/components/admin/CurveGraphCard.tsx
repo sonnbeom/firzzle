@@ -146,9 +146,9 @@ const CurveGraphCard = ({
   };
 
   return (
-    <div className='h-[300px] w-full rounded-2xl bg-white p-6 shadow-sm'>
+    <div className='h-[300px] w-full rounded-lg bg-white p-4 shadow-sm lg:rounded-2xl lg:p-6'>
       {(title || tags?.length || mode || description) && (
-        <div className='mb-4 flex flex-wrap items-center justify-between gap-2'>
+        <div className='mb-3 flex flex-wrap items-center justify-between gap-2 lg:mb-4'>
           <div className='flex flex-wrap items-center gap-2'>
             {tags?.map((tag, index) => (
               <BasicBadge key={index} text={tag.text} color={tag.color} />
@@ -168,7 +168,17 @@ const CurveGraphCard = ({
         </div>
       )}
       <div className='h-[calc(100%-3rem)] w-full'>
-        <Line data={chartData} options={options} />
+        <div
+          className={`graph-scroll ${dataSets[0]?.data.length > 10 ? 'overflow-x-auto' : ''}`}
+        >
+          <div
+            className={
+              dataSets[0]?.data.length > 10 ? 'min-w-[1200px]' : 'w-full'
+            }
+          >
+            <Line data={chartData} options={options} />
+          </div>
+        </div>
       </div>
     </div>
   );

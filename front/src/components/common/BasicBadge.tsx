@@ -11,7 +11,7 @@ const BasicBadge = ({ text, color }: BasicBadgeProps) => {
   return (
     <Badge
       variant='secondary'
-      className='text-md rounded-full px-3 py-1 font-medium text-white'
+      className='rounded-full px-3 py-1 text-sm font-medium text-white'
       style={{ backgroundColor: `${color}` }}
     >
       {text}
