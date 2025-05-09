@@ -9,13 +9,13 @@ spring:
     import: optional:file:.env[.properties]
 
 # # Whisper 설정
-whisper:
-  executable:
-    path: ${WHISPER_EXECUTABLE_PATH}
-  model:
-    path: ${WHISPER_MODEL_PATH}
-  working:
-    dir: ${WHISPER_WORKING_DIR}
+# whisper:
+#   executable:
+#     path: ${WHISPER_EXECUTABLE_PATH}
+#   model:
+#     path: ${WHISPER_MODEL_PATH}
+#   working:
+#     dir: ${WHISPER_WORKING_DIR}
 
 # 파일 저장 경로
 app:
@@ -116,7 +116,7 @@ spring:
       on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(7m4SHG2ZpQgfUQ9FWJUURCqH2AjDgsY5fC2TFLlRoyiXupkMnF8nthk0be0wx0Rt4JnehO43j7pb8vAGTo5oh83p8au/s0sCqKw2AORULUYxBr9YM23Hs86cXeTpUyp1+MBK4no6BgcEmiwiSZbgrH4F+6I026Khw1jU8olkiJiJY8+aD9t/Wxuj+dgrwLfF)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 10
@@ -160,7 +160,7 @@ spring:
       on-profile: production
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(7m4SHG2ZpQgfUQ9FWJUURCqH2AjDgsY5fC2TFLlRoyiXupkMnF8nthk0be0wx0Rt4JnehO43j7pb8vAGTo5oh83p8au/s0sCqKw2AORULUYxBr9YM23Hs86cXeTpUyp1+MBK4no6BgcEmiwiSZbgrH4F+6I026Khw1jU8olkiJiJY8+aD9t/Wxuj+dgrwLfF)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20

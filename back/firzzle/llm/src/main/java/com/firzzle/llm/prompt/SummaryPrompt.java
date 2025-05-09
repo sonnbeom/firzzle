@@ -6,46 +6,41 @@ import org.springframework.stereotype.Component;
 public class SummaryPrompt {    
     public String createInstruction() {
         return """
-		당신은 영상 대화 텍스트를 정리하는 전문가입니다.
+		Your Task
+		Segment the given script into groups of approximately 15,000 bytes each. The goal is to maximize byte utilization without breaking contextually linked sentences or paragraphs unnaturally.
 		
-		🛠️ 작업 목표:
-		- 자막 내용을 의미 단위로 분리하여 대주제들을 최소 1개에서 최대 10개로나누고,
-		- 각 대주제는 해당 구간이 시작된 절대 초 단위 시간값을 `"time"` 필드에 정확히 입력하세요.
-		- 확실하게 의미 구분이 가능한 구간으로 나누세요. 
-		- 하나의 구간이 너무 짧으면 안 돼 
-		- 
+		Rules
 		
-		📌 반드시 지켜야 할 시간 규칙:
-		- `"time"` 값은 반드시 자막 내용 중 실제 등장하는 타임스탬프(초 단위)와 일치해야 합니다.
-		- `"time": "0"`처럼 통일하거나, 상대 시간처럼 쓰지 마세요.
-		- `"time": "00:00:00"` 혹은 `"00"` 같은 포맷은 절대 사용하지 마세요.
-		- 자막 시작 시점이 "0"라면, 첫 대주제는 `"time": "0"`로 시작해야 합니다.
+		Primary goal: Utilize as much of the 15,000-byte limit as possible in each group.
 		
-		📝 출력 형식 (아래 구조 그대로):
-		```json
+		If contextually linked sentences exceed 15,000 bytes slightly, keep them together in one group.
+		
+		If contextually linked content far exceeds 15,000 bytes, start a new group even if the current group is underutilized.
+		
+		Do not break sentence or paragraph continuity unnecessarily.
+		
+		Output a JSON array of start times (in seconds), where each object represents the time extracted from the first line of each group.
+		
+		Input format
+		
+		Each line in the script starts with a time in seconds:
+
+		[68] 그는 천천히 걸어 들어왔다.
+		[72] 조용한 침묵이 흘렀다.
+		...
+		Output format
 		[
-		  {
-		    "majorTopic": "대주제 제목 1",
-		    "time": "0"
-		  },
-		  {
-		    "majorTopic": "대주제 제목 2",
-		    "time": "1073"
-		  },
-		  ...
+		  { "time": 68 },
+		  { "time": 312 },
+		  { "time": 755 }
 		]
-		
-		※ 지침:
-		- 시간 흐름을 기준으로 나누되, 어느 한쪽에 치우치지 마세요.
-		- 전체 텍스트를 균일하게 확인을 해야 합니다.
-		- 각 대주제는 자연스럽고 핵심을 담은 한 줄 제목으로 작성하세요.
-		- 출력은 JSON 형식만 작성하고, 다른 설명은 쓰지 마세요.
+		Only include real time values from the input (as integers).
+		Ensure groups are balanced across the entire script and not skewed toward beginning or end.
 
         """;
     }
 
     public String createInstruction2() {
-
 		return """
 		당신은 주어진 영상 스크립트를 바탕으로 '학습자가 해당 학습 내용을 빠르게 파악하여 공부할 수 있는 학습 콘텐츠'를 자동으로 생성하는 교육 전문 AI입니다.
 		주어진 작업 목표를 수행하세요.
