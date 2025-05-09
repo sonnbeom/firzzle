@@ -33,8 +33,8 @@ public class SttService {
 
     private static final Logger logger = LoggerFactory.getLogger(SttService.class);
 
-    @Value("${whisper.working.dir}")
-    private String whisperDir; // Whisper 작업 디렉토리
+    @Value("${app.file-storage.upload-dir}")
+    private String uploadDir; // 파일 업로드 디렉토리
 
     private final ContentService contentService; 
 
@@ -63,7 +63,7 @@ public class SttService {
             "--output", videoId + ".%(ext)s", // 저장 파일 이름
             url
         );
-        scriptsExtractor.directory(new File(whisperDir)); // 작업 디렉토리 설정
+        scriptsExtractor.directory(new File(uploadDir)); // 작업 디렉토리 설정
         scriptsExtractor.redirectErrorStream(true);        // 에러 스트림 병합
         runAndPrint(scriptsExtractor);                     // 프로세스 실행
 
@@ -129,7 +129,7 @@ public class SttService {
      * @return 변환된 스크립트 텍스트
      */
     public String printDownloadedFiles(String videoId) throws IOException {
-        Path workingDir = Paths.get(whisperDir);
+        Path workingDir = Paths.get(uploadDir);
         Path srtPath = workingDir.resolve(videoId + ".ko.srt");
 
         if (Files.exists(srtPath)) {
