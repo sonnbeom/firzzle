@@ -6,12 +6,15 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.response.PageResponseDTO;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
+import com.firzzle.learning.dto.ContentRecommendationResponseDTO;
 import com.firzzle.learning.dto.ContentRecommendationSearchDTO;
 import com.firzzle.learning.dto.ContentResponseDTO;
 import com.firzzle.learning.service.ContentRecommendationService;
+import com.firzzle.learning.service.ContentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,7 +32,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.firzzle.common.logging.dto.UserActionLog.userPreferenceLog;
+import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : ContentRecommendationController.java
@@ -46,6 +54,7 @@ public class ContentRecommendationController {
     private static final Logger logger = LoggerFactory.getLogger(ContentRecommendationController.class);
 
     private final ContentRecommendationService recommendationService;
+    private final ContentService contentService;
 
     /**
      * 콘텐츠 추천 조회
@@ -58,7 +67,7 @@ public class ContentRecommendationController {
             @ApiResponse(responseCode = "404", description = "콘텐츠를 찾을 수 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<Response<PageResponseDTO<ContentResponseDTO>>> getContentRecommendations(
+    public ResponseEntity<Response<ContentRecommendationResponseDTO<ContentResponseDTO>>> getContentRecommendations(
             @Parameter(description = "조회할 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
             @Parameter(description = "검색 및 페이지 요청 정보") ContentRecommendationSearchDTO searchDTO,
             HttpServletRequest request) {
@@ -70,6 +79,13 @@ public class ContentRecommendationController {
             // RequestBox로 변환
             RequestBox box = RequestManager.getBox(request);
             box.put("userContentSeq", userContentSeq);
+
+            // 원본 콘텐츠 태그 조회
+            DataBox originContent = contentService.selectContent(box);
+            String originTags = originContent.getString("d_tags");
+
+            // 태그를 쉼표 + 공백으로 구분하고 최대 3개만 유지
+            String formattedTags = formatTags(originTags, 3);
 
             // 추천 콘텐츠 목록 조회
             List<DataBox> recommendationDataBoxes = recommendationService.getRecommendations(box);
@@ -83,18 +99,26 @@ public class ContentRecommendationController {
                 recommendations.add(convertToContentResponseDTO(dataBox));
             }
 
-            // 페이지 응답 객체 생성
-            PageResponseDTO<ContentResponseDTO> pageResponse = PageResponseDTO.<ContentResponseDTO>builder()
+            // ContentRecommendationResponseDTO 생성
+            ContentRecommendationResponseDTO<ContentResponseDTO> responseDTO = ContentRecommendationResponseDTO
+                    .<ContentResponseDTO>recommendationBuilder()
                     .content(recommendations)
                     .p_pageno(searchDTO.getP_pageno())
                     .p_pagesize(searchDTO.getP_pagesize())
                     .totalElements(totalCount)
+                    .originTags(formattedTags)
                     .build();
 
-            Response<PageResponseDTO<ContentResponseDTO>> response = Response.<PageResponseDTO<ContentResponseDTO>>builder()
+            Response<ContentRecommendationResponseDTO<ContentResponseDTO>> response = Response
+                    .<ContentRecommendationResponseDTO<ContentResponseDTO>>builder()
                     .status(Status.OK)
-                    .data(pageResponse)
+                    .data(responseDTO)
                     .build();
+
+            //컨텐츠 추천 로깅 => ELK
+            String referer = box.getString("referer");
+            String userId = box.getString("uuid");
+            log(userPreferenceLog(userId, referer.toUpperCase(), "RECOMMEND_CONTENT"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
@@ -104,6 +128,25 @@ public class ContentRecommendationController {
             logger.error("콘텐츠 추천 조회 중 예외 발생: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 추천 조회 중 오류가 발생했습니다.");
         }
+    }
+
+    /**
+     * 태그 문자열을 포맷팅하고 최대 개수 제한
+     * @param tagString 원본 태그 문자열 (쉼표로 구분)
+     * @param maxCount 최대 태그 개수
+     * @return 포맷팅된 태그 문자열 (쉼표 + 공백으로 구분)
+     */
+    private String formatTags(String tagString, int maxCount) {
+        if (tagString == null || tagString.isEmpty()) {
+            return "";
+        }
+
+        String[] tags = tagString.split(",");
+        String result = Arrays.stream(tags)
+                .limit(maxCount)
+                .collect(Collectors.joining(", "));
+
+        return result;
     }
 
     /**

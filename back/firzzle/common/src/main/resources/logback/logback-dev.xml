@@ -3,7 +3,12 @@
 
     <property name="LOG_DIR" value="/log" />
 
-    <!-- console appender -->
+    <!-- ✅ Logstash appender 설정 -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>43.203.118.56:5000</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
@@ -12,7 +17,6 @@
         </layout>
     </appender>
 
-    <!-- console appender -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>
@@ -42,6 +46,7 @@
         </rollingPolicy>
     </appender>
 
+    <!-- ✅ root logger: 콘솔 + 파일 -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="STDOUT" />
@@ -60,10 +65,21 @@
         <appender-ref ref="FILELOG" />
     </logger>
 
-    <!-- Kafka 로거 설정 -->
     <logger name="org.apache.kafka" level="WARN" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILELOG" />
+    </logger>
+
+    <!-- ✅ Eureka 로그: Logstash 제외 -->
+    <logger name="com.netflix.discovery" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILELOG" />
+    </logger>
+
+    <!-- ✅ ELK_LOGGER 전용: 오직 이 로거만 Logstash로 전송 -->
+    <logger name="ELK_LOGGER" level="INFO" additivity="false">
+        <appender-ref ref="LOGSTASH"/>
     </logger>
 
 </configuration>

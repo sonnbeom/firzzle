@@ -45,4 +45,14 @@ public class ExpertRecommendationDAO extends MyBatisSupport {
         logger.debug("전문가 전문 분야 목록 조회 DAO - 전문가 일련번호: {}", box.getLong("expertSeq"));
         return sqlSession.selectDataBoxList(NAMESPACE + ".selectExpertExpertises", box);
     }
+
+    /**
+     * 추천 전문가 개수 조회
+     *
+     * @param box - 요청 정보가 담긴 RequestBox
+     * @return int - 추천 전문가 전체 개수
+     */
+    public int selectRecommendedExpertsCount(RequestBox box) {
+        return (int) sqlSession.selectOne(NAMESPACE + ".selectRecommendedExpertsCount", box);
+    }
 }
