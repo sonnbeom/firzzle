@@ -40,10 +40,13 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    jdbc-url: jdbc:p6spy:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
+#    jdbc-url: jdbc:p6spy:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
 #    jdbc-url: ENC(OvwLQr1WRx28Jf8teIXvvLXBlxMgNu0eP1KixLtefm5/bf0S7dHl1O5ETSNxw/7va+UrhvZjnt8yZOEi8jYIIQQNvZTXC2W7fJO9gm5jAQGbekBgF604D9FPOZUwxH/5wT79h4i8mJW+P867NgOM965KCxSTMx+nFCLQVmXyceyIQKHiaYJK1c1+jbpHCS0b)
-    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
-    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
+    jdbc-url: jdbc:p6spy:mysql://localhost:3306/firzzle_ai_playground?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+#    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    username: root
+#    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
+    password: 4245
     maximum-pool-size: 10
   # Kafka 설정
   kafka:
