@@ -9,13 +9,13 @@ spring:
     import: optional:file:.env[.properties]
 
 # # Whisper 설정
-# whisper:
-#   executable:
-#     path: ${WHISPER_EXECUTABLE_PATH}
-#   model:
-#     path: ${WHISPER_MODEL_PATH}
-#   working:
-#     dir: ${WHISPER_WORKING_DIR}
+whisper:
+  executable:
+    path: ${WHISPER_EXECUTABLE_PATH}
+  model:
+    path: ${WHISPER_MODEL_PATH}
+  working:
+    dir: ${WHISPER_WORKING_DIR}
 
 # 파일 저장 경로
 app:
