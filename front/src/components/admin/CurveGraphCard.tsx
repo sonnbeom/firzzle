@@ -54,26 +54,6 @@ interface CurveGraphCardProps {
   };
 }
 
-const predefinedColors = [
-  '#4A90E2', // 하늘색
-  '#50C878', // 에메랄드
-  '#FF6B6B', // 코랄
-  '#845EF7', // 보라
-  '#FF922B', // 주황
-  '#20C997', // 민트
-  '#F06595', // 분홍
-  '#7950F2', // 진보라
-  '#94D82D', // 라임
-  '#FF8787', // 연분홍
-];
-
-let colorIndex = 0;
-const generateRandomColor = () => {
-  const color = predefinedColors[colorIndex];
-  colorIndex = (colorIndex + 1) % predefinedColors.length;
-  return color;
-};
-
 const CurveGraphCard = ({
   title,
   description,
@@ -83,6 +63,26 @@ const CurveGraphCard = ({
   endDate,
   mode,
 }: CurveGraphCardProps) => {
+  const predefinedColors = [
+    '#4A90E2', // 하늘색
+    '#50C878', // 에메랄드
+    '#FF6B6B', // 코랄
+    '#845EF7', // 보라
+    '#FF922B', // 주황
+    '#20C997', // 민트
+    '#F06595', // 분홍
+    '#7950F2', // 진보라
+    '#94D82D', // 라임
+    '#FF8787', // 연분홍
+  ];
+
+  let colorIndex = 0;
+  const generateRandomColor = () => {
+    const color = predefinedColors[colorIndex];
+    colorIndex = (colorIndex + 1) % predefinedColors.length;
+    return color;
+  };
+
   const chartData = {
     labels: dataSets[0].data.map((point) => point.x),
     datasets: dataSets.map((set) => {
