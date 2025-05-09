@@ -6,7 +6,7 @@ export type SnapReviewListResponse = InfiniteScrollResponse<{
     [date: string]: SnapReview[];
   };
   totalDays: number;
-}>
+}>;
 
 // 스냅리뷰 정보
 export interface SnapReview {
