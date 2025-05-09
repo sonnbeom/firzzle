@@ -6,8 +6,6 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.logging.dto.UserActionLog;
-import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.learning.dto.ContentSummaryResponseDTO;
@@ -84,7 +82,6 @@ public class ContentSummaryController {
             // 쉬운 버전 요약 설정
             if (easySummaryDataBox != null) {
                 responseDTO.setEasySummarySeq(easySummaryDataBox.getLong2("d_summary_seq"));
-                responseDTO.setEasyMajorTopic(easySummaryDataBox.getString("d_major_topic"));
                 responseDTO.setEasySections(convertToSectionDTOList((List<DataBox>)easySummaryDataBox.getObject("sections")));
                 responseDTO.setEasyIndate(formatDateTime(easySummaryDataBox.getString("d_indate")));
 
@@ -96,7 +93,6 @@ public class ContentSummaryController {
             // 어려운 버전 요약 설정
             if (hardSummaryDataBox != null) {
                 responseDTO.setHardSummarySeq(hardSummaryDataBox.getLong2("d_summary_seq"));
-                responseDTO.setHardMajorTopic(hardSummaryDataBox.getString("d_major_topic"));
                 responseDTO.setHardSections(convertToSectionDTOList((List<DataBox>)hardSummaryDataBox.getObject("sections")));
                 responseDTO.setHardIndate(formatDateTime(hardSummaryDataBox.getString("d_indate")));
 
@@ -142,9 +138,8 @@ public class ContentSummaryController {
             sections.add(SectionDTO.builder()
                     .sectionSeq(sectionDataBox.getLong2("d_section_seq"))
                     .title(sectionDataBox.getString("d_title"))
-                    .content(sectionDataBox.getString("d_content"))
                     .startTime(sectionDataBox.getInt2("d_start_time"))
-                    .details((List<String>)sectionDataBox.getObject("details_list"))
+                    .details(sectionDataBox.getString("d_details"))
                     .build());
         }
 

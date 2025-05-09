@@ -7,7 +7,6 @@
         SELECT
             S.summary_seq,
             S.content_seq,
-            S.major_topic,
             S.level,
             S.indate
         FROM
@@ -19,12 +18,11 @@
           AND S.level = #{level}
     </select>
 
-    <!-- 요약 관련 섹션 목록 조회 -->
+    <!-- 요약 관련 섹션 목록 조회 S.summary as content, -->
     <select id="selectSummarySections" resultType="DataBox" parameterType="RequestBox">
         SELECT
             S.section_seq,
             S.title,
-            S.summary as content,
             S.start_time,
             S.details
         FROM
