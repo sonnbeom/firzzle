@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { DateRange } from 'react-date-range';
-import { ko } from 'date-fns/locale';
 import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { useState } from 'react';
+import { DateRange, Range, RangeKeyDict } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
 
@@ -21,12 +21,24 @@ const DateRangeSelector = ({ onChange }: DateRangeSelectorProps) => {
     },
   ]);
 
-  const handleSelect = (item: any) => {
-    setState([item.selection]);
+  const [tempState, setTempState] = useState(state);
+
+  const handleSelect = (ranges: RangeKeyDict) => {
+    const selection = ranges.selection as Range;
+    setTempState([selection]);
+  };
+
+  const handleConfirm = () => {
+    setState(tempState);
     onChange?.({
-      startDate: item.selection.startDate,
-      endDate: item.selection.endDate
+      startDate: tempState[0].startDate,
+      endDate: tempState[0].endDate,
     });
+    setIsOpen(false);
+  };
+
+  const handleCancel = () => {
+    setTempState(state);
     setIsOpen(false);
   };
 
@@ -41,42 +53,56 @@ const DateRangeSelector = ({ onChange }: DateRangeSelectorProps) => {
   };
 
   return (
-    <div className="relative">
-      <div 
-        className="flex items-center gap-2 cursor-pointer" 
+    <div className='relative'>
+      <div
+        className='flex cursor-pointer items-center gap-2'
         onClick={toggleCalendar}
       >
-        <span className="font-medium">조회 기간</span>
-        <div className="flex items-center gap-2 rounded-md border px-4 py-2 bg-white">
+        <span className='font-medium'>조회 기간</span>
+        <div className='flex items-center gap-2 rounded-md border bg-white px-4 py-2'>
           <span>{formatDateRange()}</span>
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
+            xmlns='http://www.w3.org/2000/svg'
+            fill='none'
+            viewBox='0 0 24 24'
             strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
+            stroke='currentColor'
+            className='h-5 w-5'
           >
             <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              d='M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5'
             />
           </svg>
         </div>
       </div>
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 z-10 shadow-lg rounded-lg bg-white border">
+        <div className='absolute top-full left-0 z-10 mt-2 rounded-lg border bg-white shadow-lg'>
           <DateRange
             editableDateInputs={true}
             onChange={handleSelect}
-            moveRangeOnFirstSelection={false}
-            ranges={state}
+            moveRangeOnFirstSelection={true}
+            ranges={tempState}
             months={1}
-            direction="horizontal"
+            direction='horizontal'
             locale={ko}
-            dateDisplayFormat="yyyy.MM.dd"
+            dateDisplayFormat='yyyy.MM.dd'
           />
+          <div className='flex justify-end gap-2 border-t p-3'>
+            <button
+              onClick={handleCancel}
+              className='rounded px-3 py-1 text-sm text-gray-500 hover:bg-gray-100'
+            >
+              취소
+            </button>
+            <button
+              onClick={handleConfirm}
+              className='rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600'
+            >
+              확인
+            </button>
+          </div>
         </div>
       )}
     </div>
