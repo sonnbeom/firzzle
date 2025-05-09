@@ -1,5 +1,9 @@
 import { InfiniteScrollRequest } from '@/types/common';
-import { SnapReviewListResponse, ExpertRecommend } from '@/types/recommend';
+import {
+  SnapReviewListResponse,
+  ExpertListResponse,
+  ExpertPaginationRequest,
+} from '@/types/recommend';
 import { externalApi } from './common/apiInstance';
 
 // 추천 강의 조회
@@ -17,8 +21,15 @@ export const getRecommendations = async (
 };
 
 // 전문가 추천 조회
-export const getExpertRecommendations = (contentId: string) => {
-  return externalApi.get<ExpertRecommend[]>(
-    `/contents/${contentId}/expert-recommendations`,
+export const getExpertRecommendations = async (
+  contentSeq: number,
+  request: ExpertPaginationRequest,
+) => {
+  const { data } = await externalApi.get<ExpertListResponse>(
+    `/learning/contents/${contentSeq}/expert-recommendations`,
+    {
+      params: request,
+    },
   );
+  return data;
 };

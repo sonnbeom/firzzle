@@ -39,29 +39,21 @@ const Lecture = () => {
     [contentId, itemsPerPage],
   );
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  const {
+    canGoPrev,
+    canGoNext,
+    showPagination,
+    handlePrevPage,
+    handleNextPage,
+  } = usePagination({
+    itemsPerPage,
+    totalItems,
+    onPageChange: fetchLectures,
+  });
 
   useEffect(() => {
-    fetchLectures(currentPage);
-  }, [contentId, currentPage, fetchLectures]);
-
-  const showPagination = totalItems > itemsPerPage;
-  const canGoPrev = currentPage > 1;
-  const canGoNext = currentPage < totalPages;
-
+    fetchLectures(1);
+  }, [contentId, fetchLectures]);
   return (
     <div>
       <h2 className='text-center text-lg font-medium text-gray-900 md:text-xl'>

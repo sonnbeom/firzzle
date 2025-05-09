@@ -16,6 +16,19 @@
   border-radius: 2px;
 }
 
+.graph-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.graph-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-300);
+  border-radius: 20px;
+}
+
+.graph-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-gray-400);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

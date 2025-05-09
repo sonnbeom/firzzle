@@ -1,86 +1,81 @@
 'use client';
 
-import Image from 'next/image';
-import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { getExpertRecommendations } from '@/api/recommend';
 import { usePagination } from '@/hooks/usePagination';
-import { ExpertRecommend } from '@/types/recommend';
+import { Expert as ExpertType } from '@/types/recommend';
 import Icons from '../common/Icons';
+import ExpertCard from './ExpertCard';
 
-interface ExpertProps {
-  experts: ExpertRecommend[];
-}
+const Expert = () => {
+  const params = useParams();
+  const contentId = params?.id as string;
+  const [experts, setExperts] = useState<ExpertType[]>([]);
+  const [keyword, setKeyword] = useState('');
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 3;
 
-const Expert = ({ experts }: ExpertProps) => {
+  const fetchExperts = useCallback(
+    async (page: number) => {
+      try {
+        const response = await getExpertRecommendations(Number(contentId), {
+          p_pageno: page,
+          p_pagesize: itemsPerPage,
+        });
+        setExperts(response.content);
+        setTotalItems(response.totalElements);
+        setKeyword(response.originTags);
+      } catch (error) {
+        console.error('Failed to fetch experts:', error);
+      }
+    },
+    [contentId, itemsPerPage],
+  );
+
   const {
-    visibleItems: visibleExperts,
-    showPagination,
     canGoPrev,
     canGoNext,
+    showPagination,
     handlePrevPage,
     handleNextPage,
   } = usePagination({
-    items: experts,
-    itemsPerPage: 3,
+    itemsPerPage,
+    totalItems,
+    onPageChange: fetchExperts,
   });
 
+  useEffect(() => {
+    fetchExperts(1);
+  }, [contentId, fetchExperts]);
+
   return (
-    <div>
-      <h2 className='text-center text-lg font-medium text-gray-900 sm:text-xl'>
-        <span className='font-semibold text-blue-400'>
-          {experts[0]?.keyword}
-        </span>{' '}
-        전문가와 대화해보세요
+    <div className='mt-8'>
+      <h2 className='text-center text-lg font-medium text-gray-900 md:text-xl'>
+        <span className='font-semibold text-blue-400'>{keyword}</span> 관련된
+        전문가를 추천해드릴게요
       </h2>
       {showPagination && (
         <div className='flex justify-end'>
-          <button onClick={handlePrevPage} disabled={!canGoPrev}>
+          <button onClick={handlePrevPage}>
             <Icons
-              id='arrow-left'
+              id='arrow-fill-left'
               size={24}
               color={canGoPrev ? 'text-blue-400' : 'text-gray-200'}
             />
           </button>
-          <button onClick={handleNextPage} disabled={!canGoNext}>
+          <button onClick={handleNextPage}>
             <Icons
-              id='arrow-right'
+              id='arrow-fill-right'
               size={24}
               color={canGoNext ? 'text-blue-400' : 'text-gray-200'}
             />
           </button>
         </div>
       )}
-      <div className='mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3'>
-        {visibleExperts.map((item, idx) => (
-          <div
-            key={idx}
-            className='flex h-[320px] w-full flex-col items-center rounded-xl bg-white p-6 shadow-md transition-transform'
-          >
-            <div className='relative mb-3 h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-blue-200'>
-              <Image
-                src={item.thumbnail}
-                alt={`${item.name} 전문가 이미지`}
-                width={96}
-                height={96}
-                className='h-full w-full object-contain'
-              />
-            </div>
-            <h3 className='mb-2 flex-shrink-0 text-lg font-bold text-gray-800'>
-              {item.name}
-            </h3>
-            <div className='mb-3 h-[120px] w-full'>
-              <p className='text-center text-sm text-gray-600'>
-                {item.description}
-              </p>
-            </div>
-            <Link
-              href={item.url}
-              target='_blank'
-              rel='noopener noreferrer'
-              className='mt-2 rounded-full bg-blue-50 px-4 py-1.5 text-sm text-blue-500 hover:bg-blue-100'
-            >
-              프로필 보기
-            </Link>
-          </div>
+      <div className='mx-auto grid max-w-[1000px] grid-cols-1 place-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+        {experts.map((expert) => (
+          <ExpertCard key={expert.expertSeq} expert={expert} />
         ))}
       </div>
     </div>

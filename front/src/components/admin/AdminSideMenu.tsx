@@ -1,10 +1,12 @@
+'use client';
+
 import Image from 'next/image';
-import { Button } from '../ui/button';
+import NavButton from './NavButton';
 
 const AdminSideMenu = () => {
   return (
-    <div className='items-col flex h-full w-full flex-col gap-3 bg-blue-50 p-3'>
-      <div className='relative h-[80px] w-[115px]'>
+    <div className='flex w-full flex-row items-center gap-2 bg-blue-50 p-2 lg:h-full lg:flex-col lg:items-start lg:gap-3 lg:p-3'>
+      <div className='relative hidden h-[80px] w-[115px] lg:block'>
         <Image
           src='/assets/images/Firzzle.png'
           alt='logo'
@@ -13,16 +15,10 @@ const AdminSideMenu = () => {
           className='object-contain'
         />
       </div>
-      <Button
-        variant='default'
-        className='w-full justify-start bg-white text-left text-blue-400'
-      >
-        요약
-      </Button>
-      <Button variant='text' className='w-full justify-start bg-transparent'>
-        인기 영상
-      </Button>
-      <hr className='w-full border-gray-200' />
+      <NavButton href='/admin'>인기 컨텐츠</NavButton>
+      <NavButton href='/admin/learninginsights'>학습 기능 분석</NavButton>
+      <NavButton href='/admin/strategyboard'>기획/전략</NavButton>
+      <hr className='hidden w-full border-gray-200 lg:block' />
     </div>
   );
 };

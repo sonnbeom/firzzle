@@ -1,14 +1,26 @@
 'use client';
 
 import ContentCard from '@/components/admin/ContentCard';
+import DateRangeSelector from '@/components/admin/DateRangeSelector';
 import FavoriteContentCard from '@/components/admin/FavoriteContentCard';
 import PopularCategoryCard from '@/components/admin/PopularCategoryCard';
 import PopularExpertCard from '@/components/admin/PopularExpertCard';
 import VideoLengthCard from '@/components/admin/VideoLengthCard';
 
 const AdminPage = () => {
+  const handleDateChange = ({
+    startDate,
+    endDate,
+  }: {
+    startDate: Date;
+    endDate: Date;
+  }) => {
+    // 추후 여기서 데이터 fetching 등을 수행
+  };
+
   return (
     <div className='flex flex-col gap-6 p-6'>
+      <DateRangeSelector onChange={handleDateChange} />
       <ContentCard
         title='인기 있는 영상 카테고리'
         description='2025.01 ~ 2025.04'
