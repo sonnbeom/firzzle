@@ -197,7 +197,8 @@ spring:
             redirect-uri: https://firzzle.site/api/v1/auth/kakao/callback
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+#    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(k+F6SlfryGm/i0nydvxqLGtp6L/5tSlEwxngDCI14pkqYK78EX0WrVwNSxhCh6zKPXlYH5FWFhCe8YYjs1uQd4BSyKlvcLUfDsGhQgs6z78sNFRitFE0VP5aMTTToQUlDYQDY2rZtInlmJtdPhvHLx9V5anr2cTiRJxM0IGqXj5KL78wxIA1ve/LhWFbtO596UpXM6BJfK9gDdRM/jk84A==)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20
