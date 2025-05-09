@@ -1,6 +1,6 @@
 package com.firzzle.llm.kafka.consumer;
 
-import com.firzzle.llm.domain.SummaryRequest;
+import com.firzzle.llm.dto.SummaryRequest;
 import com.firzzle.llm.service.LlmService;
 
 import lombok.RequiredArgsConstructor;

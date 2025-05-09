@@ -1,7 +1,6 @@
 package com.firzzle.llm.client;
 
 
-import com.firzzle.llm.domain.*;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.firzzle.llm.dto.*;
+
 import reactor.core.publisher.Mono;
 
 /**
