@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Icons from '../common/Icons';
 
 interface DropDownItem {
   label: string;
@@ -20,10 +21,17 @@ interface BasicDropDownProps {
   onChange?: (value: string) => void;
 }
 
-const BasicDropDown = ({ items, defaultValue, onChange }: BasicDropDownProps) => {
-  const [selectedValue, setSelectedValue] = React.useState(defaultValue || items[0].value);
-  
-  const selectedItem = items.find(item => item.value === selectedValue) || items[0];
+const BasicDropDown = ({
+  items,
+  defaultValue,
+  onChange,
+}: BasicDropDownProps) => {
+  const [selectedValue, setSelectedValue] = React.useState(
+    defaultValue || items[0].value,
+  );
+
+  const selectedItem =
+    items.find((item) => item.value === selectedValue) || items[0];
 
   const handleSelect = (item: DropDownItem) => {
     setSelectedValue(item.value);
@@ -35,9 +43,7 @@ const BasicDropDown = ({ items, defaultValue, onChange }: BasicDropDownProps) =>
       <DropdownMenuTrigger asChild>
         <button className='flex h-8 w-[120px] items-center justify-between gap-2 rounded border border-gray-200 bg-white px-3 text-sm hover:bg-gray-50'>
           <span className='truncate'>{selectedItem.label}</span>
-          <svg className='h-4 w-4 shrink-0 text-gray-500' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
-          </svg>
+          <Icons id='arrow-down' size={16} color='text-gray-500' />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
