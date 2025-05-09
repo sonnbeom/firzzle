@@ -28,9 +28,6 @@ public class ContentSummaryResponseDTO {
     @Schema(description = "쉬운 요약 일련번호")
     private Long easySummarySeq;
 
-    @Schema(description = "쉬운 요약 주제")
-    private String easyMajorTopic;
-
     @Schema(description = "쉬운 난이도 섹션 목록")
     private List<SectionDTO> easySections;
 
@@ -40,9 +37,6 @@ public class ContentSummaryResponseDTO {
     // 어려운 버전 요약 정보
     @Schema(description = "어려운 요약 일련번호")
     private Long hardSummarySeq;
-
-    @Schema(description = "어려운 요약 주제")
-    private String hardMajorTopic;
 
     @Schema(description = "어려운 난이도 섹션 목록")
     private List<SectionDTO> hardSections;
