@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ExamMapper">
+
+	<!-- 시험 문제 저장 (model_answer 제외) -->
+	<insert id="insertExam" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="examSeq">
+		INSERT INTO fb_ai_exams (
+			user_seq,
+			content_seq,
+			difficulty,
+			question_content,
+			indate,
+			ldate
+		) VALUES (
+					 get_user_seq_by_uuid(#{uuid}),
+					 #{contentSeq},
+					 #{difficulty},
+					 #{questionContent},
+					 #{indate},
+					 #{ldate}
+				 )
+	</insert>
+
+	<!-- 사용자별 콘텐츠에 대한 시험 문제 개수 조회 -->
+	<select id="selectExamCount" resultType="int" parameterType="RequestBox">
+		SELECT
+			COUNT(*)
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+	</select>
+
+	<!-- 시험 문제 정보 조회 (순서에 따라) -->
+	<select id="selectExam" resultType="DataBox" parameterType="RequestBox">
+		SELECT
+			E.exam_seq,
+			E.content_seq,
+			E.difficulty,
+			E.question_content,
+			E.answer_content,
+			E.model_answer,
+			E.evaluation,
+			E.indate,
+			E.ldate
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+		ORDER BY
+			E.exam_seq ASC
+			LIMIT ${(questionNumber-1)}, 1
+	</select>
+
+	<!-- 최근 시험 질문/응답 이력 조회 -->
+	<select id="selectRecentExams" resultType="DataBox" parameterType="RequestBox">
+		SELECT
+			exam_seq,
+			content_seq,
+			question_content as question,
+			answer_content as answer,
+			model_answer,
+			evaluation,
+			E.indate
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+		  AND
+			E.answer_content IS NOT NULL
+		ORDER BY
+			E.exam_seq DESC
+			LIMIT #{limit}
+	</select>
+
+	<!-- 시험 정보 업데이트 (사용자 답변, 평가 결과, 모범답안 포함) -->
+	<update id="updateExam" parameterType="RequestBox">
+		UPDATE
+			fb_ai_exams
+		SET
+			answer_content = #{answerContent},
+			model_answer = #{modelAnswer},
+			evaluation = #{evaluation},
+			ldate = #{ldate}
+		WHERE
+			exam_seq = #{examSeq}
+	</update>
+
+	<!-- 특정 문제에 이미 답변을 제출했는지 확인 -->
+	<select id="hasAnsweredQuestion" resultType="int" parameterType="RequestBox">
+		SELECT
+			COUNT(*)
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+		  AND
+			E.question_content = #{questionContent}
+		  AND
+			E.answer_content IS NOT NULL
+	</select>
+
+	<!-- 답변하지 않은 문제가 있는지 확인 -->
+	<select id="hasUnansweredQuestions" resultType="int" parameterType="RequestBox">
+		SELECT
+			COUNT(*)
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+		  AND
+			(E.answer_content IS NULL OR TRIM(E.answer_content) = '')
+	</select>
+
+	<!-- 가장 최근 문제 번호 조회 -->
+	<select id="getLatestQuestionNumber" resultType="int" parameterType="RequestBox">
+		SELECT
+			COUNT(*)
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+	</select>
+
+	<!-- 특정 문제 번호에 대한 상태 확인 -->
+	<select id="checkQuestionStatus" resultType="DataBox" parameterType="RequestBox">
+		SELECT
+			E.exam_seq,
+			E.question_content,
+			E.model_answer,
+			E.answer_content,
+			E.evaluation,
+			E.ldate
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+		ORDER BY
+			E.exam_seq ASC
+			LIMIT ${(questionNumber-1)}, 1
+	</select>
+</mapper>

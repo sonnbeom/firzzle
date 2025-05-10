@@ -3,7 +3,6 @@ package com.firzzle.llm.dto;
 import lombok.Data;
 
 @Data
-public class MajorTopic {
-    private String majorTopic;
+public class TimeLine {
     private String time;
 }

@@ -87,8 +87,8 @@
     <select id="selectContentByUserContentSeq" resultType="DataBox" parameterType="RequestBox">
         SELECT
         <include refid="contentColumns" />,
-        UC.progress as d_progress,
-        UC.last_accessed_at as d_last_accessed_at
+        UC.progress as progress,
+        UC.last_accessed_at as last_accessed_at
         FROM
         fb_ai_user_contents UC
         JOIN

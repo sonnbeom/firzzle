@@ -10,17 +10,20 @@ import com.firzzle.llm.entity.*;
 import com.firzzle.llm.util.*;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LlmService {
@@ -32,36 +35,102 @@ public class LlmService {
     private final EmbeddingService embeddingService;
     private final TestRepository testRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(LlmService.class);
     // 전체 자막 콘텐츠를 요약하는 비동기 함수
     @Async
     public CompletableFuture<String> summarizeContents(SummaryRequest request) {
         String content = request.getContent();
         List<String> scriptLines = Arrays.asList(content.split("\n"));
-        long startTime = System.nanoTime();
 
-        log.info("🚀 전체 요약 요청 시작");
+        logger.info("🚀 전체 요약 시작");
 
-        return extractMajorTopics(content)
-            .thenCompose(topics -> summarizeByChunks(topics, scriptLines))
+        return extractTimeLine(content)
+            .thenCompose(timelines -> summarizeByChunks(timelines, scriptLines))
             .thenApply(summary -> {
-                log.info("✅ 전체 요약 완료 ({}ms)", (System.nanoTime() - startTime) / 1_000_000);
-                log.info(summary);
-
+            	logger.info(summary);
                 saveSummaryToDbAndVector(summary, scriptLines); // ✅ 외부 함수로 분리
                 return summary;
             })
             .exceptionally(e -> {
-                log.error("❌ 전체 요약 처리 중 오류", e);
+                logger.error("❌ 전체 요약 처리 중 오류", e);
                 return "GPT 응답 중 오류가 발생했습니다.";
             });
     }
     
+    // 전체 자막 텍스트에서 주요 대주제를 추출하는 함수
+    @Async
+    private CompletableFuture<List<TimeLine>> extractTimeLine(String content) {
+        String instruction = summaryPrompt.createInstruction();
+    
+        return openAiClient.getChatCompletionAsync(instruction, content, ModelType.TIMELINE)
+                .thenApply(response -> {
+                    try {
+                        ObjectMapper mapper = new ObjectMapper();
+                        String cleaned = ScriptUtils.extractJsonOnly(response);
+                        logger.info(cleaned);
+                        return mapper.readValue(cleaned, new TypeReference<List<TimeLine>>() {});
+                    } catch (Exception e) {
+                        logger.error("❌ 대주제 JSON 파싱 실패: {}", response, e);
+                        throw new RuntimeException("대주제 파싱 실패", e);
+                    }
+                });
+    }
+    
+    // 주요 토픽별로 자막을 나누어 요약 요청을 보내는 함수
+    @Async
+    private CompletableFuture<String> summarizeByChunks(List<TimeLine> topics, List<String> scriptLines) {
+        List<CompletableFuture<String>> futures = new ArrayList<>();
+        
+        for (int i = 0; i < topics.size() - 1; i++) {
+            TimeLine timeA = topics.get(i);
+            TimeLine timeB = topics.get(i + 1);
+            String start = timeA.getTime();
+            String end = timeB.getTime();
+
+            String rawText = ScriptUtils.extractChunkText(scriptLines, start, end);
+
+            if (rawText.strip().isEmpty()) {
+                logger.warn("⚠️ {}~{} 범위에 자막이 없습니다. 건너뜀", start, end);
+                continue;
+            }
+
+            String chunkText = String.format(
+            	    start, rawText
+            	);
+            logger.info(chunkText+"\n\n");
+            String instruction = summaryPrompt.createInstruction2();
+            futures.add(openAiClient.getChatCompletionAsync(instruction, chunkText, ModelType.SUMMARY));
+        }
+
+        // 마지막 구간 (끝까지)
+        if (!topics.isEmpty()) {
+            TimeLine lastTopic = topics.get(topics.size() - 1);
+            String start = lastTopic.getTime();
+            String end = "99999";
+            String rawText = ScriptUtils.extractChunkText(scriptLines, start, end);
+
+            if (!rawText.strip().isEmpty()) {
+                String chunkText = String.format(
+                    start, rawText
+                );
+                futures.add(openAiClient.getChatCompletionAsync(summaryPrompt.createInstruction2(), chunkText, ModelType.SUMMARY));
+            }
+        }
+
+        return CompletableFuture
+            .allOf(futures.toArray(new CompletableFuture[0]))
+            .thenApply(v -> futures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.joining(",\n", "[", "]")));
+    }
+    
+    
     private void saveSummaryToDbAndVector(String summary, List<String> scriptLines) {
         // 벡터 저장
-        List<Float> vector = embeddingService.embed(summary);
+//        List<Float> vector = embeddingService.embed(summary);
         
 //		qdrantClient.upsertVector(QdrantCollections.SCRIPT, uuid.hashCode(), vector, summary)
-//		    .doOnError(e -> log.error("업서트 실패", e))
+//		    .doOnError(e -> logger.error("업서트 실패", e))
 //		    .subscribe(); // 비동기 처리
     }
 
@@ -85,7 +154,7 @@ public class LlmService {
     @Async
     public CompletableFuture<String> testGptResponse(String question) {
         long startTime = System.nanoTime();
-        log.info("\uD83D\uDE80 GPT 질문 수신: {}", question);
+        logger.info("\uD83D\uDE80 GPT 질문 수신: {}", question);
 
         return CompletableFuture.supplyAsync(() -> embeddingService.embed(question))
             .thenCompose(vector -> qdrantClient.searchWithPayload(QdrantCollections.TEST, vector, 10, 0.3).toFuture())
@@ -98,84 +167,18 @@ public class LlmService {
             })
             .thenApply(result -> {
                 long endTime = System.nanoTime();
-                log.info("\u2705 GPT 응답 완료 ({}ms)", (endTime - startTime) / 1_000_000);
+                logger.info("\u2705 GPT 응답 완료 ({}ms)", (endTime - startTime) / 1_000_000);
                 return result;
             })
             .exceptionally(e -> {
-                log.error("\u274C GPT 처리 중 오류", e);
+                logger.error("\u274C GPT 처리 중 오류", e);
                 return "GPT 응답 중 오류가 발생했습니다.";
             });
     }
 
-    // 주요 토픽별로 자막을 나누어 요약 요청을 보내는 함수
-    @Async
-    private CompletableFuture<String> summarizeByChunks(List<MajorTopic> topics, List<String> scriptLines) {
-        List<CompletableFuture<String>> futures = new ArrayList<>();
+    
 
-        for (int i = 0; i < topics.size() - 1; i++) {
-            MajorTopic topicA = topics.get(i);
-            MajorTopic topicB = topics.get(i + 1);
-            String start = topicA.getTime();
-            String end = topicB.getTime();
-
-            String rawText = ScriptUtils.extractChunkText(scriptLines, start, end);
-
-            if (rawText.strip().isEmpty()) {
-                log.warn("⚠️ {}~{} 범위에 자막이 없습니다. 건너뜀", start, end);
-                continue;
-            }
-
-            String chunkText = String.format(
-                "[대주제]: %s\n[시작시각]: %s\n\n%s",
-                topicA.getMajorTopic(), start, rawText
-            );
-
-            String instruction = summaryPrompt.createInstruction2();
-            futures.add(openAiClient.getChatCompletionAsync(instruction, chunkText, ModelType.SUMMARY));
-        }
-
-        // 마지막 구간 (끝까지)
-        if (!topics.isEmpty()) {
-            MajorTopic lastTopic = topics.get(topics.size() - 1);
-            String start = lastTopic.getTime();
-            String end = "99999";
-            String rawText = ScriptUtils.extractChunkText(scriptLines, start, end);
-
-            if (!rawText.strip().isEmpty()) {
-                String chunkText = String.format(
-                    "[대주제]: %s\n[시작시각]: %s\n\n%s",
-                    lastTopic.getMajorTopic(), start, rawText
-                );
-                futures.add(openAiClient.getChatCompletionAsync(summaryPrompt.createInstruction2(), chunkText, ModelType.SUMMARY));
-            }
-        }
-
-        return CompletableFuture
-            .allOf(futures.toArray(new CompletableFuture[0]))
-            .thenApply(v -> futures.stream()
-                .map(CompletableFuture::join)
-                .collect(Collectors.joining(",\n", "[", "]")));
-    }
-
-
-    // 전체 자막 텍스트에서 주요 대주제를 추출하는 함수
-    @Async
-    private CompletableFuture<List<MajorTopic>> extractMajorTopics(String content) {
-        String instruction = summaryPrompt.createInstruction();
-
-        return openAiClient.getChatCompletionAsync(instruction, content, ModelType.TIMELINE)
-            .thenApply(response -> {
-                try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    String cleaned = ScriptUtils.extractJsonOnly(response);
-                    log.info(cleaned);
-                    return mapper.readValue(cleaned, new TypeReference<List<MajorTopic>>() {});
-                } catch (Exception e) {
-                    log.error("\u274C 대주제 JSON 파싱 실패: {}", response, e);
-                    throw new RuntimeException("대주제 파싱 실패", e);
-                }
-            });
-    }
+    
 
     // 새 콘텐츠를 벡터화하고 Qdrant 및 DB에 저장
     public void register(Integer id, String content) {
@@ -189,7 +192,7 @@ public class LlmService {
 
         vector.forEach(v -> {
             if (v == null || v.isNaN() || v.isInfinite()) {
-                log.error("\u274C 벡터 값 오류: {}", v);
+                logger.error("\u274C 벡터 값 오류: {}", v);
             }
         });
 
