@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ChatMapper">
+
+	<!-- 채팅 저장 -->
+	<insert id="insertChat" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="chatSeq">
+		INSERT INTO fb_ai_chats (
+			content_seq,
+			user_seq,
+			question,
+			answer,
+			seq,
+			indate
+		) VALUES (
+			#{contentSeq},
+			get_user_seq_by_uuid(#{uuid}),
+			#{question},
+			#{answer},
+			#{seq},
+			#{indate}
+		)
+		<selectKey keyProperty="chatSeq" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+</mapper>
