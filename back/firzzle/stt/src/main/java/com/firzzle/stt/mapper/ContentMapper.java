@@ -7,8 +7,8 @@ import java.util.Optional;
 
 @Mapper
 public interface ContentMapper {
-
     // 콘텐츠 삽입
     int insertContent(ContentDTO contentDTO);
+    // 콘텐츠 조회 
     Long existsByVideoId(String videoId);
 }

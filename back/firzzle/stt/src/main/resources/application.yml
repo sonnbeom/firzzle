@@ -17,14 +17,6 @@ spring:
 #   working:
 #     dir: ${WHISPER_WORKING_DIR}
 
-# 파일 저장 경로
-app:
-  file-storage:
-    upload-dir: /data/firzzle/uploads
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic
-
 # Swagger 설정
 springdoc:
   api-docs:
@@ -96,6 +88,14 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: C:\SSAFY\uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+
 server:
   port: 8080
 
@@ -130,6 +130,14 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
 
 server:
   port: 8080
@@ -174,6 +182,14 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
 
 server:
   port: 8080

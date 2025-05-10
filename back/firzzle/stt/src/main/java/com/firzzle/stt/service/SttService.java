@@ -48,9 +48,9 @@ public class SttService {
     public String transcribeFromYoutube(String url) throws Exception {
         String videoId = contentService.extractYoutubeId(url);
 
-        // 중복 콘텐츠 방지
-        if (contentService.isContentExistsByVideoId(videoId)) 
-            return null;
+//        // 중복 콘텐츠 방지
+//        if (contentService.isContentExistsByVideoId(videoId)) 
+//            return null;
 
         // (1) 자막 다운로드
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
@@ -117,7 +117,7 @@ public class SttService {
         contentDTO.setThumbnailUrl(thumbnail);
         contentDTO.setDuration(Long.parseLong(durationStr));
 
-        contentService.insertContent(contentDTO);
+//        contentService.insertContent(contentDTO);
 
         return scripts;
     }
