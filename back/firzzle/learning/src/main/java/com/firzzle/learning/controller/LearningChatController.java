@@ -213,146 +213,159 @@ public class LearningChatController {
 
     /**
      * DataBox를 LearningChatResponseDTO로 변환
+     * @param dataBox 변환할 DataBox
+     * @return 변환된 LearningChatResponseDTO
+     * @throws BusinessException 변환 중 오류 발생 시
      */
     private LearningChatResponseDTO convertToLearningChatResponseDTO(DataBox dataBox) {
         if (dataBox == null) {
             logger.error("변환할 DataBox가 null입니다");
-            return new LearningChatResponseDTO();
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "응답 데이터가 존재하지 않습니다.");
         }
 
-        try {
-            Long chatSeq = dataBox.getLong2("d_chat_seq");
-            String answer = dataBox.getString("d_answer");
+        Long chatSeq = dataBox.getLong2("d_chat_seq");
+        String answer = dataBox.getString("d_answer");
 
-            // 값 검증 및 로깅
-            if (chatSeq == null || chatSeq == 0) {
-                logger.warn("chatSeq가 null 또는 0입니다: {}", chatSeq);
-            }
-
-            if (StringUtils.isBlank(answer)) {
-                logger.warn("answer가 비어있습니다");
-                answer = "죄송합니다. 답변을 생성하는 중 오류가 발생했습니다.";
-            }
-
-            LearningChatResponseDTO responseDTO = LearningChatResponseDTO.builder()
-                    .chatSeq(chatSeq)
-                    .answer(answer)
-                    .build();
-
-            logger.debug("LearningChatResponseDTO 변환 완료: chatSeq={}, 응답길이={}",
-                    responseDTO.getChatSeq(), responseDTO.getAnswer().length());
-
-            return responseDTO;
-        } catch (Exception e) {
-            logger.error("LearningChatResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
-            return LearningChatResponseDTO.builder()
-                    .chatSeq(0L)
-                    .answer("응답 데이터 처리 중 오류가 발생했습니다.")
-                    .build();
+        // 값 검증
+        if (chatSeq == null || chatSeq == 0) {
+            logger.warn("chatSeq 값이 유효하지 않습니다: {}", chatSeq);
+            // 경고만 하고 진행 (chatSeq가 0이어도 응답은 가능)
         }
+
+        if (StringUtils.isBlank(answer)) {
+            logger.error("answer 값이 비어있습니다");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "생성된 답변이 없습니다.");
+        }
+
+        LearningChatResponseDTO responseDTO = LearningChatResponseDTO.builder()
+                .chatSeq(chatSeq != null ? chatSeq : 0L)
+                .answer(answer)
+                .build();
+
+        logger.debug("LearningChatResponseDTO 변환 완료: chatSeq={}, 응답길이={}",
+                responseDTO.getChatSeq(), responseDTO.getAnswer().length());
+
+        return responseDTO;
     }
 
     /**
      * DataBox를 ExamQuestionResponseDTO로 변환
+     * @param dataBox 변환할 DataBox
+     * @return 변환된 ExamQuestionResponseDTO
+     * @throws BusinessException 변환 중 오류 발생 시
      */
     private ExamQuestionResponseDTO convertToExamQuestionResponseDTO(DataBox dataBox) {
         if (dataBox == null) {
             logger.error("변환할 DataBox가 null입니다");
-            return new ExamQuestionResponseDTO();
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "응답 데이터가 존재하지 않습니다.");
         }
 
-        try {
-            String status = dataBox.getString("d_status");
-            Boolean isLastQuestion = dataBox.getBoolean("d_is_last_question");
-
-            if (isLastQuestion == null) {
-                logger.error("DataBox에 d_is_last_question 값이 없습니다. 기본값 false 설정");
-                isLastQuestion = false;
-            }
-
-            logger.debug("DataBox status: {}", status);
-
-            ExamQuestionResponseDTO responseDTO = ExamQuestionResponseDTO.builder()
-                    .status(status)
-                    .isLastQuestion(isLastQuestion)
-                    .build();
-
-            if ("success".equals(status)) {
-                responseDTO.setQuestionNumber(dataBox.getInt2("d_question_number"));
-                responseDTO.setTotalQuestions(dataBox.getInt2("d_total_questions"));
-                responseDTO.setQuestion(dataBox.getString("d_question"));
-                logger.debug("success 응답 생성: 문제번호={}, 총문제수={}, 문제={}",
-                        responseDTO.getQuestionNumber(), responseDTO.getTotalQuestions(), responseDTO.getQuestion());
-            } else if ("pending".equals(status)) {
-                responseDTO.setQuestionNumber(dataBox.getInt2("d_question_number"));
-                responseDTO.setTotalQuestions(dataBox.getInt2("d_total_questions"));
-                responseDTO.setQuestion(dataBox.getString("d_question"));
-                logger.debug("pending 응답 생성: 문제번호={}, 총문제수={}, 문제={}",
-                        responseDTO.getQuestionNumber(), responseDTO.getTotalQuestions(), responseDTO.getQuestion());
-            }
-            // completed 상태는 여기서는 빈 DTO만 반환 (메시지는 Response에 담김)
-
-            return responseDTO;
-        } catch (Exception e) {
-            logger.error("ExamQuestionResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
-            return new ExamQuestionResponseDTO();
+        String status = dataBox.getString("d_status");
+        if (StringUtils.isBlank(status)) {
+            logger.error("status 값이 비어있습니다");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "응답 상태 정보가 없습니다.");
         }
+
+        Boolean isLastQuestion = dataBox.getBoolean("d_is_last_question");
+        if (isLastQuestion == null) {
+            logger.warn("isLastQuestion 값이 null입니다. 기본값 false를 사용합니다.");
+            isLastQuestion = false;
+        }
+
+        ExamQuestionResponseDTO responseDTO = ExamQuestionResponseDTO.builder()
+                .status(status)
+                .isLastQuestion(isLastQuestion)
+                .build();
+
+        // success와 pending 상태일 때만 추가 데이터 설정
+        if ("success".equals(status) || "pending".equals(status)) {
+            Integer questionNumber = dataBox.getInt2("d_question_number");
+            Integer totalQuestions = dataBox.getInt2("d_total_questions");
+            String question = dataBox.getString("d_question");
+
+            if (questionNumber == null || questionNumber <= 0) {
+                logger.error("questionNumber 값이 유효하지 않습니다: {}", questionNumber);
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "문제 번호 정보가 유효하지 않습니다.");
+            }
+
+            if (totalQuestions == null || totalQuestions <= 0) {
+                logger.error("totalQuestions 값이 유효하지 않습니다: {}", totalQuestions);
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "총 문제수 정보가 유효하지 않습니다.");
+            }
+
+            if (StringUtils.isBlank(question)) {
+                logger.error("question 값이 비어있습니다");
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "문제 내용이 없습니다.");
+            }
+
+            responseDTO.setQuestionNumber(questionNumber);
+            responseDTO.setTotalQuestions(totalQuestions);
+            responseDTO.setQuestion(question);
+
+            logger.debug("{} 응답 생성: 문제번호={}, 총문제수={}",
+                    status, responseDTO.getQuestionNumber(), responseDTO.getTotalQuestions());
+        }
+
+        return responseDTO;
     }
 
     /**
      * DataBox를 ExamEvaluationResponseDTO로 변환
+     * @param dataBox 변환할 DataBox
+     * @return 변환된 ExamEvaluationResponseDTO
+     * @throws BusinessException 변환 중 오류 발생 시
      */
     private ExamEvaluationResponseDTO convertToExamEvaluationResponseDTO(DataBox dataBox) {
         if (dataBox == null) {
             logger.error("변환할 DataBox가 null입니다");
-            return new ExamEvaluationResponseDTO();
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "응답 데이터가 존재하지 않습니다.");
         }
 
-        try {
-            String result = dataBox.getString("d_result");
-            String feedback = dataBox.getString("d_feedback");
-            Boolean isLastQuestion = dataBox.getBoolean("d_is_last_question");
+        String result = dataBox.getString("d_result");
+        String feedback = dataBox.getString("d_feedback");
+        Boolean isLastQuestion = dataBox.getBoolean("d_is_last_question");
 
-            // 값 검증 및 기본값 설정
-            if (StringUtils.isBlank(result)) {
-                logger.error("DataBox에 d_result 값이 없습니다. 기본값 'incorrect' 설정");
-                result = "incorrect";
-            }
-
-            if (StringUtils.isBlank(feedback)) {
-                logger.error("DataBox에 d_feedback 값이 없습니다. 기본값 설정");
-                feedback = "incorrect".equals(result) ? "조금 아쉬워요. 다시 생각해보세요!" :
-                        "irrelevant".equals(result) ? "질문에 벗어난 내용이에요. 다시 입력하세요." :
-                                "정답입니다! 잘 이해하고 있어요.";
-            }
-
-            if (isLastQuestion == null) {
-                logger.error("DataBox에 d_is_last_question 값이 없습니다. 기본값 false 설정");
-                isLastQuestion = false;
-            }
-
-            ExamEvaluationResponseDTO responseDTO = ExamEvaluationResponseDTO.builder()
-                    .result(result)
-                    .feedback(feedback)
-                    .isLastQuestion(isLastQuestion)
-                    .build();
-
-            if (!"correct".equals(result) && dataBox.getString("d_model_answer") != null) {
-                responseDTO.setModelAnswer(dataBox.getString("d_model_answer"));
-            }
-
-            logger.debug("ExamEvaluationResponseDTO 변환 완료: result={}, feedback={}, isLastQuestion={}, modelAnswer={}",
-                    responseDTO.getResult(), responseDTO.getFeedback(), responseDTO.getIsLastQuestion(),
-                    responseDTO.getModelAnswer());
-
-            return responseDTO;
-        } catch (Exception e) {
-            logger.error("ExamEvaluationResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
-            return ExamEvaluationResponseDTO.builder()
-                    .result("incorrect")
-                    .feedback("평가 결과 변환 중 오류가 발생했습니다.")
-                    .isLastQuestion(false)
-                    .build();
+        // 필수 값 검증
+        if (StringUtils.isBlank(result)) {
+            logger.error("result 값이 비어있습니다");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "평가 결과가 없습니다.");
         }
+
+        if (StringUtils.isBlank(feedback)) {
+            logger.error("feedback 값이 비어있습니다");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "피드백 내용이 없습니다.");
+        }
+
+        if (isLastQuestion == null) {
+            logger.warn("isLastQuestion 값이 null입니다. 기본값 false를 사용합니다.");
+            isLastQuestion = false;
+        }
+
+        // 평가 결과 값 검증
+        if (!("correct".equals(result) || "incorrect".equals(result) || "irrelevant".equals(result))) {
+            logger.error("result 값이 유효하지 않습니다: {}", result);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "유효하지 않은 평가 결과입니다.");
+        }
+
+        ExamEvaluationResponseDTO responseDTO = ExamEvaluationResponseDTO.builder()
+                .result(result)
+                .feedback(feedback)
+                .isLastQuestion(isLastQuestion)
+                .build();
+
+        // incorrect 또는 irrelevant인 경우에만 모범답안 추가
+        if (!"correct".equals(result)) {
+            String modelAnswer = dataBox.getString("d_model_answer");
+            if (StringUtils.isBlank(modelAnswer)) {
+                logger.error("modelAnswer 값이 비어있습니다");
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "모범답안이 없습니다.");
+            }
+            responseDTO.setModelAnswer(modelAnswer);
+        }
+
+        logger.debug("ExamEvaluationResponseDTO 변환 완료: result={}, isLastQuestion={}, 모범답안제공={}",
+                responseDTO.getResult(), responseDTO.getIsLastQuestion(), responseDTO.getModelAnswer() != null);
+
+        return responseDTO;
     }
 }

@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * @Class Name : ExamDAO.java
  * @Description : 시험 데이터 접근 객체
@@ -50,6 +52,15 @@ public class ExamDAO extends MyBatisSupport {
         logger.debug("시험 문제 정보 조회 DAO - 사용자: {}, 콘텐츠: {}, 문제번호: {}",
                 uuid, contentSeq, questionNumber);
         return sqlSession.selectDataBox(NAMESPACE + ".selectExam", box);
+    }
+
+    /**
+     * 이전 시험 질문/응답 이력 조회
+     */
+    public List<DataBox> selectRecentExams(RequestBox box) {
+        logger.debug("최근 시험 응답 조회 - 사용자: {}, 콘텐츠: {}, 개수: {}",
+                box.getString("uuid"), box.getLong("contentSeq"), box.getInt("limit"));
+        return sqlSession.selectList(NAMESPACE + ".selectRecentExams", box);
     }
 
     /**
