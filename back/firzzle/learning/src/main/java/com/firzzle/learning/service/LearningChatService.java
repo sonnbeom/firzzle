@@ -10,20 +10,18 @@ import com.firzzle.common.library.RequestBox;
 import com.firzzle.learning.dao.ChatDAO;
 import com.firzzle.learning.dao.ExamDAO;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,8 +42,13 @@ public class LearningChatService {
     private final ChatDAO chatDAO;
     private final ExamDAO examDAO;
 
-    // 임시로 모범답안을 저장하기 위한 맵 (examSeq -> modelAnswer)
-    private Map<Long, String> pendingModelAnswer = new ConcurrentHashMap<>();
+    // 설정 값은 상수로 정의
+    private static final int MAX_QUESTION_COUNT = 3;
+    private static final int MAX_QUESTION_LENGTH = 200;
+    private static final String PROMPT_LEARNING_MODE = "AIQ001";
+    private static final String PROMPT_EXAM_QUESTION = "AIQ002";
+    private static final String PROMPT_EXAM_EVALUATION = "AIQ003";
+    private static final int MAX_CHAT_HISTORY = 3;
 
     @Value("${openai.api.key}")
     private String apiKey;
@@ -53,172 +56,281 @@ public class LearningChatService {
     @Value("${openai.api.url}")
     private String openAiApiUrl;
 
+    /**
+     * 학습모드 질문 처리
+     * @param box 요청 파라미터가 담긴 RequestBox
+     * @return 처리 결과가 담긴 DataBox
+     * @throws BusinessException 비즈니스 예외 발생 시
+     */
     public DataBox processLearningModeQuestion(RequestBox box) {
-        try {
-            Long userContentSeq = box.getLong("userContentSeq");
-            String question = box.getString("question");
-            String uuid = box.getString("uuid"); // HTTP 요청에서 가져온 uuid
+        Long userContentSeq = box.getLong("userContentSeq");
+        String question = box.getString("question");
+        String uuid = box.getString("uuid");
 
-            logger.debug("학습모드 질문 처리 - 사용자 콘텐츠 일련번호: {}, 질문: {}, UUID: {}",
-                    userContentSeq, question, uuid);
+        logger.debug("학습모드 질문 처리 시작 - 사용자 콘텐츠 일련번호: {}, 질문: {}, UUID: {}",
+                userContentSeq, question, uuid);
 
-            // 1. 입력값 검증
-            if (question.length() > 200) {
-                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "질문은 200자 이내로 입력해주세요.");
-            }
+        // 1. 입력값 검증
+        validateQuestionInput(question);
 
-            // 2. 사용자-콘텐츠 정보 조회
-            RequestBox contentBox = new RequestBox("contentBox");
-            contentBox.put("userContentSeq", userContentSeq);
-            contentBox.put("uuid", uuid); // uuid 설정
+        // 2. 사용자-콘텐츠 정보 조회
+        DataBox userContentInfo = getUserContentInfo(userContentSeq, uuid);
+        Long contentSeq = userContentInfo.getLong2("d_content_seq");
 
-            DataBox userContentInfo = contentService.selectContent(contentBox);
+        // 3. 벡터 DB 검색 호출 (RAG)
+        String retrievedDocuments = retrieveDocumentsFromVectorDB(userContentSeq, question);
 
-            if (userContentInfo == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "콘텐츠 정보를 찾을 수 없습니다.");
-            }
+        // 4. 프롬프트 조회 및 변수 설정
+        DataBox promptInfo = getPromptInfo(PROMPT_LEARNING_MODE);
+        DataBox processedPrompt = preparePromptForLearningMode(promptInfo, userContentInfo, question, retrievedDocuments);
 
-            // 3. 벡터 DB 검색 호출 (RAG)
-            // TODO: 추후 벡터 DB 연동 구현 예정
-            String retrievedDocuments = retrieveDocumentsFromVectorDB(userContentSeq, question);
+        // 5. GPT API 호출 (대화 이력 활용)
+        String gptResponse = callGptApi(processedPrompt, uuid, contentSeq, "learning");
 
-            // 4. 프롬프트 조회
-            RequestBox promptBox = new RequestBox("promptBox");
-            promptBox.put("p_seq", "AIQ001");
-            DataBox promptInfo = aiService.selectAiPrompt(promptBox);
+        // 6. 채팅 저장
+        Long chatSeq = saveChat(contentSeq, uuid, question, gptResponse);
 
-            if (promptInfo == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "프롬프트 정보를 찾을 수 없습니다.");
-            }
+        // 7. 결과 DataBox 구성
+        DataBox resultDataBox = new DataBox();
+        resultDataBox.put("d_chat_seq", chatSeq != null ? chatSeq : 0L);
+        resultDataBox.put("d_answer", gptResponse);
 
-            // 5. 프롬프트 변수 설정 및 치환
-            DataBox processedPrompt = new DataBox();
-            processedPrompt.put("d_system", promptInfo.getString("d_system"));
-            processedPrompt.put("d_user", promptInfo.getString("d_user"));
-            processedPrompt.put("d_assistant", promptInfo.getString("d_assistant"));
+        logger.debug("학습모드 질문 처리 완료 - chatSeq: {}, 응답길이: {}",
+                chatSeq, gptResponse != null ? gptResponse.length() : 0);
 
-            Map<String, Object> placeholders = new HashMap<>();
-            Map<String, Object> userPlaceholders = new HashMap<>();
-            userPlaceholders.put("learningContent", userContentInfo.getString("d_title") + "\n" + userContentInfo.getString("d_description"));
-            userPlaceholders.put("userQuestion", question);
-            userPlaceholders.put("retrievedDocuments", retrievedDocuments);
-            placeholders.put("user", userPlaceholders);
-
-            logger.debug("placeholders : {}", placeholders.toString());
-            logger.debug("userPlaceholders : {}", userPlaceholders.toString());
-
-            processTemplate(processedPrompt, placeholders);
-
-            // 6. GPT API 호출
-            String gptResponse = callGptApi(processedPrompt);
-            logger.debug("GPT 응답: {}", gptResponse);
-
-            // 7. 채팅 저장 - uuid 사용하도록 수정
-            Long contentSeq = userContentInfo.getLong2("d_content_seq");
-
-            Long chatSeq = null;
-            try {
-                chatSeq = saveChat(contentSeq, uuid, question, gptResponse, "AIQ001");
-                logger.debug("채팅 저장 완료 - chatSeq: {}", chatSeq);
-            } catch (Exception e) {
-                logger.error("채팅 저장 중 오류 발생: {}", e.getMessage(), e);
-                // 채팅 저장 실패는 비즈니스 로직에 영향을 주지 않도록 예외를 던지지 않음
-            }
-
-            // 8. 결과 DataBox 구성
-            DataBox resultDataBox = new DataBox();
-            resultDataBox.put("d_chat_seq", chatSeq != null ? chatSeq : 0L);
-            resultDataBox.put("d_answer", gptResponse);
-
-            logger.debug("학습모드 질문 처리 결과: chatSeq={}, 응답길이={}",
-                    chatSeq, gptResponse != null ? gptResponse.length() : 0);
-
-            return resultDataBox;
-
-        } catch (BusinessException e) {
-            logger.error("학습모드 처리 중 비즈니스 예외 발생: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            logger.error("학습모드 처리 중 예외 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "학습모드 처리 중 오류가 발생했습니다.");
-        }
+        return resultDataBox;
     }
 
     /**
      * 시험모드 문제 생성
      * @param box 요청 파라미터가 담긴 RequestBox
      * @return 생성된 문제 정보가 담긴 DataBox
+     * @throws BusinessException 비즈니스 예외 발생 시
      */
     public DataBox generateExamQuestion(RequestBox box) {
-        try {
-            Long userContentSeq = box.getLong("userContentSeq");
-            String uuid = box.getString("uuid");
+        Long userContentSeq = box.getLong("userContentSeq");
+        String uuid = box.getString("uuid");
 
-            logger.debug("시험모드 문제 생성 - 사용자 콘텐츠 일련번호: {}, UUID: {}", userContentSeq, uuid);
+        logger.debug("시험모드 문제 생성 시작 - 사용자 콘텐츠 일련번호: {}, UUID: {}", userContentSeq, uuid);
 
-            // 사용자-콘텐츠 정보 조회
-            RequestBox contentBox = new RequestBox("contentBox");
-            contentBox.put("userContentSeq", userContentSeq);
-            contentBox.put("uuid", uuid);
+        // 1. 사용자-콘텐츠 정보 조회
+        DataBox userContentInfo = getUserContentInfo(userContentSeq, uuid);
+        Long contentSeq = userContentInfo.getLong2("d_content_seq");
 
-            DataBox userContentInfo = contentService.selectContent(contentBox);
+        // 2. 미답변 문제 확인
+        DataBox pendingQuestion = checkPendingQuestion(uuid, contentSeq);
+        if (pendingQuestion != null) {
+            return pendingQuestion;
+        }
 
-            if (userContentInfo == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "콘텐츠 정보를 찾을 수 없습니다.");
-            }
+        // 3. 문제 개수 확인
+        int questionCount = examDAO.selectExamCount(uuid, contentSeq);
+        if (questionCount >= MAX_QUESTION_COUNT) {
+            logger.debug("최대 문제 수 도달 - 현재 문제 수: {}, 최대 문제 수: {}", questionCount, MAX_QUESTION_COUNT);
 
-            Long contentSeq = userContentInfo.getLong2("d_content_seq");
+            DataBox resultDataBox = new DataBox();
+            resultDataBox.put("d_status", "completed");
+            resultDataBox.put("d_message", "문제가 모두 생성되었습니다! 다음 탭으로 이동해 학습을 이어서 진행하세요!");
+            return resultDataBox;
+        }
 
-            // 1. 미답변 문제가 있는지 확인
-            boolean hasUnansweredQuestions = examDAO.hasUnansweredQuestions(uuid, contentSeq);
+        // 4. 문제 생성 로직 준비
+        int currentQuestionNumber = questionCount + 1;
+        boolean isLastQuestion = (questionCount >= MAX_QUESTION_COUNT - 1);
+        String question = generateQuestion(userContentInfo, currentQuestionNumber, uuid, contentSeq);
 
-            if (hasUnansweredQuestions) {
-                // 미답변 문제가 있다면 해당 문제 정보 반환
-                int latestQuestion = examDAO.getLatestQuestionNumber(uuid, contentSeq);
-                DataBox questionStatus = examDAO.checkQuestionStatus(uuid, contentSeq, latestQuestion);
+        // 5. DB에 문제 저장
+        Long examSeq = saveExam(contentSeq, uuid, question);
 
-                if (questionStatus != null &&
-                        StringUtils.isBlank(questionStatus.getString("d_answer_content")) && StringUtils.isBlank(questionStatus.getString("d_model_answer"))) {
+        // 6. 응답 구성
+        DataBox resultDataBox = new DataBox();
+        resultDataBox.put("d_status", "success");
+        resultDataBox.put("d_question_number", currentQuestionNumber);
+        resultDataBox.put("d_total_questions", MAX_QUESTION_COUNT);
+        resultDataBox.put("d_question", question);
+        resultDataBox.put("d_is_last_question", isLastQuestion);
 
-                    logger.debug("미답변 문제 발견 - 문제 번호: {}, 내용: {}",
-                            latestQuestion, questionStatus.getString("d_question_content"));
+        logger.debug("시험모드 문제 생성 완료 - 문제번호: {}/{}, 마지막문제: {}",
+                currentQuestionNumber, MAX_QUESTION_COUNT, isLastQuestion);
 
-                    DataBox resultDataBox = new DataBox();
-                    resultDataBox.put("d_status", "pending");
-                    resultDataBox.put("d_message", "이전 문제에 먼저 답변해주세요!");
-                    resultDataBox.put("d_question_number", latestQuestion);
-                    resultDataBox.put("d_total_questions", 3);
-                    resultDataBox.put("d_question", questionStatus.getString("d_question_content"));
-                    return resultDataBox;
-                }
-            }
+        return resultDataBox;
+    }
 
-            // 2. 이미 생성된 문제 개수 확인 (한 콘텐츠당 최대 3문제)
-            int questionCount = examDAO.selectExamCount(uuid, contentSeq);
-            int maxQuestionCount = 3;
-            boolean responseIsLastQuestion = (questionCount >= maxQuestionCount-1);
+    /**
+     * 시험모드에서 사용자 답변을 평가하는 메서드
+     * @param box 요청 파라미터가 담긴 RequestBox
+     * @return 평가 결과가 담긴 DataBox
+     * @throws BusinessException 비즈니스 예외 발생 시
+     */
+    public DataBox evaluateAnswer(RequestBox box) {
+        Long userContentSeq = box.getLong("userContentSeq");
+        int questionNumber = box.getInt("questionNumber");
+        String userAnswer = box.getString("answer");
+        String uuid = box.getString("uuid");
+        boolean isDontKnow = box.getBoolean("isDontKnow");
 
-            if (questionCount >= maxQuestionCount) {
-                logger.debug("최대 문제 수 도달 - 현재 문제 수: {}, 최대 문제 수: {}", questionCount, maxQuestionCount);
+        logger.debug("답변 평가 시작 - 사용자 콘텐츠 일련번호: {}, 문제 번호: {}, 모르겠어요: {}",
+                userContentSeq, questionNumber, isDontKnow);
+
+        // 1. 사용자-콘텐츠 정보 조회
+        DataBox userContentInfo = getUserContentInfo(userContentSeq, uuid);
+        Long contentSeq = userContentInfo.getLong2("d_content_seq");
+
+        // 2. 문제 정보 조회
+        DataBox examInfo = getExamInfo(uuid, contentSeq, questionNumber);
+
+        // 3. 이미 답변한 문제인지 확인
+        if (!StringUtils.isBlank(examInfo.getString("d_answer_content"))) {
+            logger.debug("이미 답변한 문제 - 문제번호: {}", questionNumber);
+
+            DataBox resultDataBox = new DataBox();
+            resultDataBox.put("d_status", "already_answered");
+            resultDataBox.put("d_message", "이미 답변한 문제입니다. 다음 문제로 진행해주세요.");
+            return resultDataBox;
+        }
+
+        // 4. 답변 평가
+        Map<String, String> evaluationResult = evaluateUserAnswer(examInfo, userAnswer, isDontKnow, uuid, contentSeq);
+
+        // 5. 답변 및 평가 결과 저장
+        updateExamWithEvaluation(examInfo.getLong2("d_exam_seq"), userAnswer,
+                evaluationResult.get("modelAnswer"), evaluationResult.get("evaluation"));
+
+        // 6. 응답 구성
+        DataBox resultDataBox = new DataBox();
+        resultDataBox.put("d_result", evaluationResult.get("result"));
+        resultDataBox.put("d_feedback", evaluationResult.get("feedback"));
+        resultDataBox.put("d_is_last_question", Boolean.parseBoolean(evaluationResult.get("isLastQuestion")));
+        resultDataBox.put("d_model_answer", evaluationResult.get("modelAnswer"));
+
+        logger.debug("답변 평가 완료 - 문제번호: {}, 결과: {}", questionNumber, evaluationResult.get("result"));
+
+        return resultDataBox;
+    }
+
+    /**
+     * 질문 입력값 검증
+     * @param question 사용자 질문
+     * @throws BusinessException 입력값이 유효하지 않을 경우
+     */
+    private void validateQuestionInput(String question) {
+        if (StringUtils.isBlank(question)) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "질문을 입력해주세요.");
+        }
+
+        if (question.length() > MAX_QUESTION_LENGTH) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "질문은 " + MAX_QUESTION_LENGTH + "자 이내로 입력해주세요.");
+        }
+    }
+
+    /**
+     * 사용자-콘텐츠 정보 조회
+     * @param userContentSeq 사용자 콘텐츠 일련번호
+     * @param uuid 사용자 UUID
+     * @return 사용자-콘텐츠 정보
+     * @throws BusinessException 콘텐츠를 찾을 수 없는 경우
+     */
+    private DataBox getUserContentInfo(Long userContentSeq, String uuid) {
+        RequestBox contentBox = new RequestBox("contentBox");
+        contentBox.put("userContentSeq", userContentSeq);
+        contentBox.put("uuid", uuid);
+
+        DataBox userContentInfo = contentService.selectContent(contentBox);
+
+        if (userContentInfo == null) {
+            logger.error("콘텐츠 정보를 찾을 수 없음 - 사용자 콘텐츠 일련번호: {}, UUID: {}", userContentSeq, uuid);
+            throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "콘텐츠 정보를 찾을 수 없습니다.");
+        }
+
+        return userContentInfo;
+    }
+
+    /**
+     * 프롬프트 정보 조회
+     * @param promptSeq 프롬프트 시퀀스
+     * @return 프롬프트 정보
+     * @throws BusinessException 프롬프트를 찾을 수 없는 경우
+     */
+    private DataBox getPromptInfo(String promptSeq) {
+        RequestBox promptBox = new RequestBox("promptBox");
+        promptBox.put("p_seq", promptSeq);
+        DataBox promptInfo = aiService.selectAiPrompt(promptBox);
+
+        if (promptInfo == null) {
+            logger.error("프롬프트 정보를 찾을 수 없음 - 프롬프트 시퀀스: {}", promptSeq);
+            throw new BusinessException(ErrorCode.AI_PROMPT_NOT_FOUND, "요청한 프롬프트를 찾을 수 없습니다.");
+        }
+
+        return promptInfo;
+    }
+
+    /**
+     * 학습모드를 위한 프롬프트 준비
+     */
+    private DataBox preparePromptForLearningMode(DataBox promptInfo, DataBox userContentInfo,
+                                                 String question, String retrievedDocuments) {
+        DataBox processedPrompt = new DataBox();
+        processedPrompt.put("d_system", promptInfo.getString("d_system"));
+        processedPrompt.put("d_user", promptInfo.getString("d_user"));
+        processedPrompt.put("d_assistant", promptInfo.getString("d_assistant"));
+
+        Map<String, Object> placeholders = new HashMap<>();
+        Map<String, Object> userPlaceholders = new HashMap<>();
+        userPlaceholders.put("learningContent", userContentInfo.getString("d_title") + "\n" + userContentInfo.getString("d_description"));
+        userPlaceholders.put("userQuestion", question);
+        userPlaceholders.put("retrievedDocuments", retrievedDocuments);
+        placeholders.put("user", userPlaceholders);
+
+        processTemplate(processedPrompt, placeholders);
+        return processedPrompt;
+    }
+
+    /**
+     * 미답변 문제 확인
+     * @param uuid 사용자 UUID
+     * @param contentSeq 콘텐츠 일련번호
+     * @return 미답변 문제 정보 또는 null
+     */
+    private DataBox checkPendingQuestion(String uuid, Long contentSeq) {
+        boolean hasUnansweredQuestions = examDAO.hasUnansweredQuestions(uuid, contentSeq);
+
+        if (hasUnansweredQuestions) {
+            int latestQuestion = examDAO.getLatestQuestionNumber(uuid, contentSeq);
+            DataBox questionStatus = examDAO.checkQuestionStatus(uuid, contentSeq, latestQuestion);
+
+            if (questionStatus != null &&
+                    StringUtils.isBlank(questionStatus.getString("d_answer_content")) &&
+                    StringUtils.isBlank(questionStatus.getString("d_model_answer"))) {
+
+                logger.debug("미답변 문제 발견 - 문제 번호: {}", latestQuestion);
+
                 DataBox resultDataBox = new DataBox();
-                resultDataBox.put("d_status", "completed");
-                resultDataBox.put("d_message", "문제가 모두 생성되었습니다! 다음 탭으로 이동해 학습을 이어서 진행하세요!");
+                resultDataBox.put("d_status", "pending");
+                resultDataBox.put("d_message", "이전 문제에 먼저 답변해주세요!");
+                resultDataBox.put("d_question_number", latestQuestion);
+                resultDataBox.put("d_total_questions", MAX_QUESTION_COUNT);
+                resultDataBox.put("d_question", questionStatus.getString("d_question_content"));
                 return resultDataBox;
             }
+        }
 
-            // 현재 문제 번호 계산
-            int currentQuestionNumber = questionCount + 1;
+        return null;
+    }
 
-            // 3. 프롬프트 조회
-            RequestBox promptBox = new RequestBox("promptBox");
-            promptBox.put("p_seq", "AIQ002");
-            DataBox promptInfo = aiService.selectAiPrompt(promptBox);
+    /**
+     * 시험 문제 생성
+     * @param userContentInfo 사용자-콘텐츠 정보
+     * @param questionNumber 문제 번호
+     * @param uuid 사용자 UUID
+     * @param contentSeq 콘텐츠 일련번호
+     * @return 생성된 문제
+     * @throws BusinessException 문제 생성 중 오류 발생 시
+     */
+    private String generateQuestion(DataBox userContentInfo, int questionNumber, String uuid, Long contentSeq) {
+        try {
+            // 1. 프롬프트 조회 및 준비
+            DataBox promptInfo = getPromptInfo(PROMPT_EXAM_QUESTION);
 
-            if (promptInfo == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "프롬프트 정보를 찾을 수 없습니다.");
-            }
-
-            // 4. 프롬프트 변수 설정 및 치환
             DataBox processedPrompt = new DataBox();
             processedPrompt.put("d_system", promptInfo.getString("d_system"));
             processedPrompt.put("d_user", promptInfo.getString("d_user"));
@@ -227,115 +339,76 @@ public class LearningChatService {
             Map<String, Object> placeholders = new HashMap<>();
             Map<String, Object> userPlaceholders = new HashMap<>();
             userPlaceholders.put("learningContent", userContentInfo.getString("d_title") + "\n" + userContentInfo.getString("d_description"));
-            userPlaceholders.put("currentQuestionNumber", String.valueOf(currentQuestionNumber));
+            userPlaceholders.put("currentQuestionNumber", String.valueOf(questionNumber));
             placeholders.put("user", userPlaceholders);
 
             processTemplate(processedPrompt, placeholders);
 
-            // 5. GPT API 호출
-            String gptResponse = callGptApi(processedPrompt);
-            logger.debug("GPT 응답: {}", gptResponse);
+            // 2. GPT API 호출 (대화 이력 활용)
+            String gptResponse = callGptApi(processedPrompt, uuid, contentSeq, "exam");
 
-            // 6. JSON 응답 파싱
+            // 3. JSON 응답 파싱
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode;
             try {
                 rootNode = mapper.readTree(gptResponse);
             } catch (Exception e) {
-                logger.error("GPT 응답 JSON 파싱 오류: {}", e.getMessage());
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "AI 응답 처리 중 오류가 발생했습니다.");
+                logger.error("GPT 응답 JSON 파싱 오류: {}", e.getMessage(), e);
+                throw new BusinessException(ErrorCode.AI_RESPONSE_PARSING_FAILED, "AI 응답 형식이 유효하지 않습니다.");
             }
 
             String question = rootNode.path("question").asText();
-            if (question == null || question.isEmpty()) {
-                logger.error("GPT 응답에서 문제를 찾을 수 없습니다: {}", gptResponse);
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "AI 응답에서 문제를 생성할 수 없습니다.");
+            if (StringUtils.isBlank(question)) {
+                logger.error("GPT 응답에서 문제를 찾을 수 없음: {}", gptResponse);
+                throw new BusinessException(ErrorCode.AI_RESPONSE_INVALID, "AI가 문제를 생성하지 못했습니다. 다시 시도해주세요.");
             }
 
-            // 7. DB에 문제만 저장 (모범답안 제외)
-            Long examSeq;
-            try {
-                examSeq = saveExam(contentSeq, uuid, question);
-                logger.debug("시험 문제 저장 완료 - examSeq: {}", examSeq);
-            } catch (Exception e) {
-                logger.error("시험 문제 저장 중 오류 발생: {}", e.getMessage(), e);
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "시험 문제 저장 중 오류가 발생했습니다.");
-            }
-
-            // 8. 응답 구성
-            DataBox resultDataBox = new DataBox();
-            resultDataBox.put("d_status", "success");
-            resultDataBox.put("d_question_number", currentQuestionNumber);
-            resultDataBox.put("d_total_questions", maxQuestionCount);
-            resultDataBox.put("d_question", question);
-            resultDataBox.put("d_is_last_question", responseIsLastQuestion);
-
-            logger.debug("결과 DataBox: {}", resultDataBox.toString());
-            return resultDataBox;
+            return question;
 
         } catch (BusinessException e) {
-            logger.error("시험 문제 생성 중 비즈니스 예외 발생: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("시험 문제 생성 중 예외 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "시험 문제 생성 중 오류가 발생했습니다.");
+            logger.error("문제 생성 중 오류 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.AI_REQUEST_FAILED, "문제 생성 중 오류가 발생했습니다.");
         }
     }
 
     /**
-     * 시험모드에서 사용자 답변을 평가하는 메서드 (모르겠어요 기능 포함)
-     * @param box 요청 파라미터가 담긴 RequestBox
-     * @return 평가 결과가 담긴 DataBox
+     * 시험 문제 정보 조회
+     * @param uuid 사용자 UUID
+     * @param contentSeq 콘텐츠 일련번호
+     * @param questionNumber 문제 번호
+     * @return 문제 정보
+     * @throws BusinessException 문제를 찾을 수 없는 경우
      */
-    public DataBox evaluateAnswer(RequestBox box) {
+    private DataBox getExamInfo(String uuid, Long contentSeq, int questionNumber) {
+        DataBox examInfo = examDAO.selectExam(uuid, contentSeq, questionNumber);
+
+        if (examInfo == null) {
+            logger.error("문제 정보를 찾을 수 없음 - 사용자: {}, 콘텐츠: {}, 문제번호: {}",
+                    uuid, contentSeq, questionNumber);
+            throw new BusinessException(ErrorCode.QUESTION_NOT_FOUND, "문제 정보를 찾을 수 없습니다.");
+        }
+
+        return examInfo;
+    }
+
+    /**
+     * 사용자 답변 평가
+     * @param examInfo 문제 정보
+     * @param userAnswer 사용자 답변
+     * @param isDontKnow "모르겠어요" 여부
+     * @param uuid 사용자 UUID
+     * @param contentSeq 콘텐츠 일련번호
+     * @return 평가 결과
+     * @throws BusinessException 평가 중 오류 발생 시
+     */
+    private Map<String, String> evaluateUserAnswer(DataBox examInfo, String userAnswer,
+                                                   boolean isDontKnow, String uuid, Long contentSeq) {
         try {
-            Long userContentSeq = box.getLong("userContentSeq");
-            int questionNumber = box.getInt("questionNumber");
-            String userAnswer = box.getString("answer");
-            String uuid = box.getString("uuid");
-            boolean isDontKnow = box.getBoolean("isDontKnow");
+            // 1. 프롬프트 조회 및 준비
+            DataBox promptInfo = getPromptInfo(PROMPT_EXAM_EVALUATION);
 
-            logger.debug("답변 평가 - 사용자 콘텐츠 일련번호: {}, 문제 번호: {}, 답변: {}, 모르겠어요: {}, UUID: {}",
-                    userContentSeq, questionNumber, userAnswer, isDontKnow, uuid);
-
-            // 1. 사용자-콘텐츠 정보 조회
-            RequestBox contentBox = new RequestBox("contentBox");
-            contentBox.put("userContentSeq", userContentSeq);
-            contentBox.put("uuid", uuid);
-
-            DataBox userContentInfo = contentService.selectContent(contentBox);
-
-            if (userContentInfo == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "콘텐츠 정보를 찾을 수 없습니다.");
-            }
-
-            Long contentSeq = userContentInfo.getLong2("d_content_seq");
-
-            // 2. 해당 문제 정보 조회
-            DataBox examInfo = examDAO.selectExam(uuid, contentSeq, questionNumber);
-
-            if (examInfo == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "문제 정보를 찾을 수 없습니다.");
-            }
-
-            // 이미 답변한 문제인 경우
-            if (!StringUtils.isBlank(examInfo.getString("d_answer_content"))) {
-                DataBox resultDataBox = new DataBox();
-                resultDataBox.put("d_status", "already_answered");
-                resultDataBox.put("d_message", "이미 답변한 문제입니다. 다음 문제로 진행해주세요.");
-                return resultDataBox;
-            }
-
-            // 3. 프롬프트 조회 - 통합된 프롬프트 AIQ003 사용
-            RequestBox promptBox = new RequestBox("promptBox");
-            promptBox.put("p_seq", "AIQ003");
-            DataBox promptInfo = aiService.selectAiPrompt(promptBox);
-
-            if (promptInfo == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "프롬프트 정보를 찾을 수 없습니다.");
-            }
-
-            // 4. 프롬프트 변수 설정 및 치환
             DataBox processedPrompt = new DataBox();
             processedPrompt.put("d_system", promptInfo.getString("d_system"));
             processedPrompt.put("d_user", promptInfo.getString("d_user"));
@@ -344,83 +417,82 @@ public class LearningChatService {
             Map<String, Object> placeholders = new HashMap<>();
             Map<String, Object> userPlaceholders = new HashMap<>();
 
-            // 모든 필요한 변수 설정 (통합 프롬프트용)
-            userPlaceholders.put("questionNumber", String.valueOf(questionNumber));
             userPlaceholders.put("question", examInfo.getString("d_question_content"));
             userPlaceholders.put("userAnswer", userAnswer);
             userPlaceholders.put("isDontKnow", String.valueOf(isDontKnow));
 
             // 마지막 문제인지 확인
-            int totalQuestions = 3;
             int questionCount = examDAO.selectExamCount(uuid, contentSeq);
-            boolean isLastQuestion = questionCount >= totalQuestions;
+            boolean isLastQuestion = questionCount >= MAX_QUESTION_COUNT;
             userPlaceholders.put("isLastQuestion", String.valueOf(isLastQuestion));
+            userPlaceholders.put("questionNumber", String.valueOf(questionCount+1));
 
             placeholders.put("user", userPlaceholders);
             processTemplate(processedPrompt, placeholders);
 
-            // 5. GPT API 호출
-            String gptResponse = callGptApi(processedPrompt);
-            logger.debug("GPT API 응답: {}", gptResponse);
+            // 2. GPT API 호출 (대화 이력 활용)
+            String gptResponse = callGptApi(processedPrompt, uuid, contentSeq, "exam");
 
-            // 6. JSON 응답 파싱
+            // 3. JSON 응답 파싱
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode;
             try {
                 rootNode = mapper.readTree(gptResponse);
             } catch (Exception e) {
                 logger.error("GPT 응답 JSON 파싱 오류: {}", e.getMessage(), e);
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "AI 응답 처리 중 오류가 발생했습니다.");
+                throw new BusinessException(ErrorCode.AI_RESPONSE_PARSING_FAILED, "AI 응답을 처리할 수 없습니다.");
             }
 
-            // 7. 응답 처리
-            String result = rootNode.path("result").asText();
-            String feedback = rootNode.path("feedback").asText();
-            boolean responseIsLastQuestion = rootNode.path("is_last_question").asBoolean();
-            String modelAnswer = rootNode.path("model_answer").asText();
+            Map<String, String> result = new HashMap<>();
+            result.put("result", rootNode.path("result").asText());
+            result.put("feedback", rootNode.path("feedback").asText());
+            result.put("isLastQuestion", String.valueOf(rootNode.path("is_last_question").asBoolean()));
+            result.put("modelAnswer", rootNode.path("model_answer").asText());
 
-            // 8. 사용자 답변 및 평가 결과 저장
-            try {
-                // 평가 결과 설정
-                String evaluation;
-                if (isDontKnow) {
-                    evaluation = "P"; // Poor - 모르겠어요
-                } else if ("correct".equals(result)) {
-                    evaluation = "E"; // Excellent
-                } else if ("incorrect".equals(result)) {
-                    evaluation = "F"; // Fair
-                } else {
-                    evaluation = "P"; // Poor - irrelevant
-                }
-
-                updateExam(examInfo.getLong2("d_exam_seq"), userAnswer, modelAnswer, evaluation);
-                logger.debug("답변 평가 결과 DB 업데이트 완료 - examSeq: {}, result: {}, evaluation: {}",
-                        examInfo.getLong2("d_exam_seq"), result, evaluation);
-            } catch (Exception e) {
-                logger.error("시험 응답 업데이트 중 오류 발생: {}", e.getMessage(), e);
-                // 업데이트 실패는 비즈니스 로직에 영향을 주지 않도록 예외를 던지지 않음
+            // 평가 결과 코드 설정
+            if (isDontKnow) {
+                result.put("evaluation", "P"); // Poor - 모르겠어요
+            } else if ("correct".equals(result.get("result"))) {
+                result.put("evaluation", "E"); // Excellent
+            } else if ("incorrect".equals(result.get("result"))) {
+                result.put("evaluation", "F"); // Fair
+            } else {
+                result.put("evaluation", "P"); // Poor - irrelevant
             }
 
-            // 9. 응답 구성
-            DataBox resultDataBox = new DataBox();
-            resultDataBox.put("d_result", result);
-            resultDataBox.put("d_feedback", feedback);
-            resultDataBox.put("d_is_last_question", responseIsLastQuestion);
-            resultDataBox.put("d_model_answer", modelAnswer);
-
-            logger.debug("답변 평가 결과: result={}, feedback={}, isLastQuestion={}, 모범답안제공={}, 추가설명={}",
-                    result, feedback, responseIsLastQuestion,
-                    resultDataBox.containsKey("d_model_answer"),
-                    resultDataBox.containsKey("d_additional_explanation"));
-
-            return resultDataBox;
+            validateEvaluationResult(result);
+            return result;
 
         } catch (BusinessException e) {
-            logger.error("답변 평가 중 비즈니스 예외 발생: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("답변 평가 중 예외 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "답변 평가 중 오류가 발생했습니다.");
+            logger.error("답변 평가 중 오류 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.AI_REQUEST_FAILED, "답변 평가 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 평가 결과 유효성 검증
+     * @param result 평가 결과
+     * @throws BusinessException 검증 실패 시
+     */
+    private void validateEvaluationResult(Map<String, String> result) {
+        if (StringUtils.isBlank(result.get("result")) ||
+                StringUtils.isBlank(result.get("feedback")) ||
+                StringUtils.isBlank(result.get("modelAnswer"))) {
+
+            logger.error("답변 평가 결과 검증 실패 - 필수 필드 누락: {}", result);
+            throw new BusinessException(ErrorCode.AI_RESPONSE_INVALID, "답변 평가 결과가 유효하지 않습니다.");
+        }
+
+        // 평가 결과 값 검증
+        String evaluationResult = result.get("result");
+        if (!("correct".equals(evaluationResult) ||
+                "incorrect".equals(evaluationResult) ||
+                "irrelevant".equals(evaluationResult))) {
+
+            logger.error("답변 평가 결과 검증 실패 - 유효하지 않은 평가 결과: {}", evaluationResult);
+            throw new BusinessException(ErrorCode.AI_RESPONSE_INVALID, "유효하지 않은 평가 결과입니다.");
         }
     }
 
@@ -431,21 +503,10 @@ public class LearningChatService {
     private void processTemplate(DataBox dboxPrompt, Map<String, Object> placeholders) {
         String[] roleArr = {"system", "user", "assistant"};
 
-        // 전체 placeholders 키 집합 로깅
-        logger.debug("processTemplate 시작 - 전체 placeholders 키: {}", placeholders.keySet());
-
         for (String role : roleArr) {
-            logger.debug("현재 처리 중인 role: {}", role);
-
             if (placeholders.containsKey(role)) {
                 Map<String, Object> getPlaceholders = (Map<String, Object>) placeholders.get(role);
                 String template = dboxPrompt.getString("d_" + role);
-
-                // role에 대한 placeholders 키 집합 로깅
-                logger.debug("{} role의 placeholders 키: {}", role, getPlaceholders.keySet());
-
-                // 템플릿 원본 내용 로깅
-                logger.debug("{} role의 처리 전 템플릿: {}", role, template);
 
                 if (template != null && !StringUtils.isBlank(template)) {
                     // 템플릿에서 `${key}` 형식으로 변수를 찾기 위한 정규식
@@ -453,68 +514,42 @@ public class LearningChatService {
                     Matcher matcher = pattern.matcher(template);
                     StringBuffer result = new StringBuffer();
 
-                    // 발견된 모든 변수 로깅
-                    List<String> foundPlaceholders = new ArrayList<>();
-                    Matcher preCheckMatcher = pattern.matcher(template);
-                    while (preCheckMatcher.find()) {
-                        foundPlaceholders.add(preCheckMatcher.group(1));
-                    }
-                    logger.debug("{} role의 템플릿에서 발견된 변수: {}", role, foundPlaceholders);
-
                     while (matcher.find()) {
                         String placeholder = matcher.group(1);
                         String replacement = null;
 
-                        // 현재 처리 중인 변수 로깅
-                        logger.debug("현재 처리 중인 변수: {}", placeholder);
-
                         // placeholders에서 key에 해당하는 값을 찾아 대체
                         if (getPlaceholders.containsKey(placeholder)) {
                             replacement = String.valueOf(getPlaceholders.get(placeholder));
-                            logger.debug("변수 {}의 값: {}", placeholder, replacement);
                         } else {
-                            logger.warn("변수 {}에 해당하는 값을 찾을 수 없습니다!", placeholder);
+                            // 변수가 없을 경우 원본 유지
+                            replacement = matcher.group(0);
+                            logger.warn("변수 {}에 해당하는 값을 찾을 수 없습니다.", placeholder);
                         }
 
-                        // 치환할 값 로깅
-                        String finalReplacement = replacement != null ? replacement : matcher.group(0);
-                        logger.debug("변수 {}를 {}로 치환합니다", placeholder, finalReplacement);
-
                         // 치환할 때 replacement 문자열에 Matcher.quoteReplacement를 적용
-                        matcher.appendReplacement(result, Matcher.quoteReplacement(finalReplacement));
+                        matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
                     }
 
                     matcher.appendTail(result);
 
-                    // 치환된 결과 로깅
-                    logger.debug("{} role의 처리 후 템플릿: {}", role, result.toString());
-
                     // 치환된 템플릿을 dboxPrompt에 다시 설정
                     dboxPrompt.put("d_" + role, result.toString());
-                } else {
-                    logger.warn("{} role의 템플릿이 null이거나 비어 있습니다!", role);
                 }
-            } else {
-                logger.warn("placeholders에 {} role이 포함되어 있지 않습니다!", role);
-            }
-        }
-
-        // 최종 처리 결과 요약 로깅
-        logger.debug("processTemplate 완료 - 최종 처리된 템플릿:");
-        for (String role : roleArr) {
-            if (dboxPrompt.containsKey("d_" + role)) {
-                logger.debug("{} role의 최종 템플릿: {}", role, dboxPrompt.getString("d_" + role));
             }
         }
     }
 
     /**
-     * GPT API 호출
-     *
+     * GPT API 호출 - 이전 대화 이력 활용
      * @param promptData 프롬프트 데이터
+     * @param uuid 사용자 UUID
+     * @param contentSeq 콘텐츠 일련번호
+     * @param mode 대화 모드 ("learning" 또는 "exam")
      * @return API 응답
+     * @throws BusinessException API 호출 중 오류 발생 시
      */
-    private String callGptApi(DataBox promptData) {
+    private String callGptApi(DataBox promptData, String uuid, Long contentSeq, String mode) {
         try {
             // OpenAI API URL
             String url = openAiApiUrl + "/v1/chat/completions";
@@ -536,15 +571,53 @@ public class LearningChatService {
                 messages.add(systemMessage);
             }
 
-            // Assistant 메시지 추가
-            if (StringUtils.isNotBlank(promptData.getString("d_assistant"))) {
-                Map<String, String> assistantMessage = new HashMap<>();
-                assistantMessage.put("role", "assistant");
-                assistantMessage.put("content", promptData.getString("d_assistant"));
-                messages.add(assistantMessage);
+            // 대화 이력 포함
+            List<DataBox> chatHistory = new ArrayList<>();
+            if (StringUtils.isNotBlank(mode)) {
+                // 대화 이력 조회를 위한 RequestBox 구성
+                RequestBox historyBox = new RequestBox("historyBox");
+                historyBox.put("uuid", uuid);
+                historyBox.put("contentSeq", contentSeq);
+                historyBox.put("limit", MAX_CHAT_HISTORY);
+
+                // 모드에 따라 적절한 대화 이력 조회
+                if ("learning".equals(mode)) {
+                    chatHistory = chatDAO.selectRecentChats(historyBox);
+                } else if ("exam".equals(mode)) {
+                    chatHistory = examDAO.selectRecentExams(historyBox);
+                }
+
+                // 이전 대화 내역을 메시지에 추가 (오래된 것부터)
+                for (DataBox chat : chatHistory) {
+                    // 사용자 질문 추가
+                    if (StringUtils.isNotBlank(chat.getString("question"))) {
+                        Map<String, String> userMessage = new HashMap<>();
+                        userMessage.put("role", "user");
+                        userMessage.put("content", chat.getString("question"));
+                        messages.add(userMessage);
+                    }
+
+                    // 시스템 응답 추가
+                    if (StringUtils.isNotBlank(chat.getString("answer"))) {
+                        Map<String, String> assistantMessage = new HashMap<>();
+                        assistantMessage.put("role", "assistant");
+                        assistantMessage.put("content", chat.getString("answer"));
+                        messages.add(assistantMessage);
+                    }
+                }
+
+                logger.debug("대화 이력을 포함한 GPT API 호출 - 모드: {}, 이력 개수: {}", mode, chatHistory.size());
+            } else {
+                // 대화 이력이 없는 경우 assistant 메시지 추가 (필요시)
+                if (StringUtils.isNotBlank(promptData.getString("d_assistant"))) {
+                    Map<String, String> assistantMessage = new HashMap<>();
+                    assistantMessage.put("role", "assistant");
+                    assistantMessage.put("content", promptData.getString("d_assistant"));
+                    messages.add(assistantMessage);
+                }
             }
 
-            // User 메시지 추가
+            // 현재 사용자 메시지 추가
             if (StringUtils.isNotBlank(promptData.getString("d_user"))) {
                 Map<String, String> userMessage = new HashMap<>();
                 userMessage.put("role", "user");
@@ -559,27 +632,69 @@ public class LearningChatService {
             requestBody.put("temperature", 0.7);
             requestBody.put("max_tokens", 1000);
 
-            logger.debug("requestBody : {}", messages.toString());
+            logger.debug("GPT API 요청 메시지 수: {}", messages.size());
+            logger.debug("requestBody : {}", requestBody.toString());
 
             // RestTemplate으로 API 호출
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Map.class);
 
-            logger.debug("response.getBody().toString() : {}", response.getBody().toString());
+            logger.debug("responseBody : {}", response.getBody().toString());
 
             // 응답에서 내용 추출
             Map<String, Object> responseBody = response.getBody();
             List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
+            if (choices == null || choices.isEmpty()) {
+                logger.error("GPT API 응답에 choices가 없음: {}", responseBody);
+                throw new BusinessException(ErrorCode.AI_RESPONSE_INVALID, "AI 응답이 유효하지 않습니다.");
+            }
+
             Map<String, Object> choice = choices.get(0);
             Map<String, Object> message = (Map<String, Object>) choice.get("message");
+            if (message == null) {
+                logger.error("GPT API 응답에 message가 없음: {}", choice);
+                throw new BusinessException(ErrorCode.AI_RESPONSE_INVALID, "AI 응답이 유효하지 않습니다.");
+            }
+
             String content = (String) message.get("content");
+            if (StringUtils.isBlank(content)) {
+                logger.error("GPT API 응답 content가 비어있음: {}", message);
+                throw new BusinessException(ErrorCode.AI_RESPONSE_INVALID, "AI가 응답을 생성하지 못했습니다.");
+            }
 
             return content;
 
+        } catch (HttpClientErrorException e) {
+            int statusCode = e.getStatusCode().value();
+            String responseBody = e.getResponseBodyAsString();
+            logger.error("GPT API 클라이언트 오류: 상태 코드={}, 응답={}", statusCode, responseBody, e);
+
+            // HTTP 상태 코드에 따른 세분화된 예외 처리
+            if (statusCode == 401) {
+                throw new BusinessException(ErrorCode.AI_REQUEST_FAILED, "AI 서비스 인증에 실패했습니다.");
+            } else if (statusCode == 429) {
+                throw new BusinessException(ErrorCode.AI_QUOTA_EXCEEDED, "AI 서비스 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.");
+            } else if (statusCode == 400) {
+                if (responseBody.contains("content_filter") || responseBody.contains("moderation")) {
+                    throw new BusinessException(ErrorCode.AI_CONTENT_MODERATION_FAILED, "콘텐츠 검수에 실패했습니다.");
+                } else if (responseBody.contains("context_length") || responseBody.contains("token")) {
+                    throw new BusinessException(ErrorCode.AI_CONTEXT_TOO_LARGE, "입력 데이터가 너무 큽니다.");
+                }
+                throw new BusinessException(ErrorCode.AI_REQUEST_FAILED, "AI 요청 처리에 실패했습니다.");
+            } else {
+                throw new BusinessException(ErrorCode.AI_REQUEST_FAILED, "AI 서비스 호출 중 오류가 발생했습니다.");
+            }
+        } catch (HttpServerErrorException e) {
+            logger.error("GPT API 서버 오류: 상태 코드={}, 응답={}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            throw new BusinessException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI 서비스에 일시적인 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        } catch (BusinessException e) {
+            // 이미 적절한 BusinessException이므로 그대로 전파
+            throw e;
         } catch (Exception e) {
             logger.error("GPT API 호출 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.EXTERNAL_API_ERROR, "GPT API 호출 중 오류가 발생했습니다.");
+            throw new BusinessException(ErrorCode.AI_SERVICE_UNAVAILABLE, "AI 서비스 연결에 실패했습니다.");
         }
     }
 
@@ -590,8 +705,8 @@ public class LearningChatService {
      * @return 검색된 문서 내용
      */
     private String retrieveDocumentsFromVectorDB(Long userContentSeq, String question) {
-        // TODO: 추후 벡터 DB 검색 기능 구현 예정
-        // 현재는 임시 데이터 반환
+        // TODO: 벡터 DB 검색 기능 구현
+        logger.debug("벡터 DB 검색 요청 - userContentSeq: {}, question: {}", userContentSeq, question);
         return "검색된 관련 문서 내용입니다. 실제 구현 시 벡터 DB에서 검색된 결과가 제공됩니다.";
     }
 
@@ -601,33 +716,26 @@ public class LearningChatService {
      * @param uuid 사용자 UUID
      * @param question 질문
      * @param answer 답변
-     * @param seq 시퀀스 번호
      * @return 생성된 채팅 일련번호
-     * @throws BusinessException 비즈니스 예외 발생 시
      */
-    private Long saveChat(Long contentSeq, String uuid, String question, String answer, String seq) {
+    private Long saveChat(Long contentSeq, String uuid, String question, String answer) {
         try {
             String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
 
             RequestBox box = new RequestBox("chatBox");
             box.put("contentSeq", contentSeq);
-            box.put("uuid", uuid); // userSeq 대신 uuid 사용
+            box.put("uuid", uuid);
             box.put("question", question);
             box.put("answer", answer);
-            box.put("seq", seq);
             box.put("indate", currentDateTime);
 
-            // fb_ai_chats 테이블에 저장
             chatDAO.insertChat(box);
-            Long chatSeq = box.getLong("chatSeq");
-
-            // TODO: 추후 사용자 질문-답변 이력 분석 기능 구현 예정
-
-            return chatSeq;
+            return box.getLong("chatSeq");
 
         } catch (Exception e) {
             logger.error("채팅 저장 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "채팅 저장 중 오류가 발생했습니다.");
+            // 저장 실패는 비즈니스 로직에 영향을 주지 않도록 예외를 던지지 않음
+            return 0L;
         }
     }
 
@@ -637,7 +745,7 @@ public class LearningChatService {
      * @param uuid 사용자 UUID
      * @param question 문제
      * @return 생성된 시험 일련번호
-     * @throws BusinessException 비즈니스 예외 발생 시
+     * @throws BusinessException 저장 중 오류 발생 시
      */
     private Long saveExam(Long contentSeq, String uuid, String question) {
         try {
@@ -654,8 +762,13 @@ public class LearningChatService {
             examDAO.insertExam(box);
             Long examSeq = box.getLong("examSeq");
 
-            return examSeq;
+            if (examSeq == null || examSeq == 0) {
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "시험 문제 저장 결과가 유효하지 않습니다.");
+            }
 
+            return examSeq;
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
             logger.error("시험 문제 저장 중 오류 발생: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "시험 문제 저장 중 오류가 발생했습니다.");
@@ -663,45 +776,37 @@ public class LearningChatService {
     }
 
     /**
-     * 사용자 답변 및 평가 결과를 업데이트하는 메서드 (모범답안 포함)
-     * @throws BusinessException 비즈니스 예외 발생 시
+     * 시험 정보 업데이트 (사용자 답변, 평가 결과, 모범답안)
+     * @param examSeq 시험 일련번호
+     * @param userAnswer 사용자 답변
+     * @param modelAnswer 모범 답안
+     * @param evaluationResult 평가 결과
+     * @throws BusinessException 업데이트 중 오류 발생 시
      */
-    private void updateExam(Long examSeq, String userAnswer, String modelAnswer, String evaluationResult) {
+    private void updateExamWithEvaluation(Long examSeq, String userAnswer, String modelAnswer, String evaluationResult) {
         try {
             String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
 
             RequestBox box = new RequestBox("examUpdateBox");
             box.put("examSeq", examSeq);
             box.put("answerContent", userAnswer);
-
-            // 모범답안 설정
-            if (StringUtils.isBlank(modelAnswer)) {
-                // 임시 저장된 모범답안 사용
-                modelAnswer = pendingModelAnswer.getOrDefault(examSeq, "");
-                pendingModelAnswer.remove(examSeq); // 사용 후 제거
-            }
             box.put("modelAnswer", modelAnswer);
-
-            // 평가 결과에 따른 등급 설정
-            String evaluation = "F"; // 기본값 Fair
-            if ("correct".equals(evaluationResult)) {
-                evaluation = "E"; // Excellent
-            } else if ("incorrect".equals(evaluationResult)) {
-                evaluation = "F"; // Fair
-            } else if ("irrelevant".equals(evaluationResult)) {
-                evaluation = "P"; // Poor
-            }
-
-            box.put("evaluation", evaluation);
+            box.put("evaluation", evaluationResult);
             box.put("ldate", currentDateTime);
 
-            // fb_ai_exams 테이블 업데이트
-            examDAO.updateExam(box);
-            logger.debug("답변 평가 - examSeq: {}, 답변 및 모범답안 저장", examSeq);
+            int updateCount = examDAO.updateExam(box);
 
+            if (updateCount < 1) {
+                throw new BusinessException(ErrorCode.UPDATE_FAILED, "시험 정보 업데이트에 실패했습니다.");
+            }
+
+            logger.debug("시험 정보 업데이트 완료 - examSeq: {}, 결과: {}", examSeq, evaluationResult);
+
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
-            logger.error("시험 응답 업데이트 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "시험 응답 업데이트 중 오류가 발생했습니다.");
+            logger.error("시험 정보 업데이트 중 오류 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.UPDATE_FAILED, "시험 정보 업데이트 중 오류가 발생했습니다.");
         }
     }
 }

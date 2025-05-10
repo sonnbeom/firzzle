@@ -60,6 +60,31 @@
 			LIMIT ${(questionNumber-1)}, 1
 	</select>
 
+	<!-- 최근 시험 질문/응답 이력 조회 -->
+	<select id="selectRecentExams" resultType="DataBox" parameterType="RequestBox">
+		SELECT
+			exam_seq,
+			content_seq,
+			question_content as question,
+			answer_content as answer,
+			model_answer,
+			evaluation,
+			E.indate
+		FROM
+			fb_ai_exams E
+				JOIN
+			fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			E.content_seq = #{contentSeq}
+		  AND
+			E.answer_content IS NOT NULL
+		ORDER BY
+			E.exam_seq DESC
+			LIMIT #{limit}
+	</select>
+
 	<!-- 시험 정보 업데이트 (사용자 답변, 평가 결과, 모범답안 포함) -->
 	<update id="updateExam" parameterType="RequestBox">
 		UPDATE

@@ -23,4 +23,25 @@
 			SELECT LAST_INSERT_ID()
 		</selectKey>
 	</insert>
+
+	<!-- 최근 대화 내역 조회 -->
+	<select id="selectRecentChats" resultType="DataBox" parameterType="RequestBox">
+		SELECT
+			chat_seq,
+			content_seq,
+			question,
+			answer,
+			C.indate
+		FROM
+			fb_ai_chats C
+				JOIN
+			fb_ai_users U ON C.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			C.content_seq = #{contentSeq}
+		ORDER BY
+			C.chat_seq DESC
+			LIMIT #{limit}
+	</select>
 </mapper>
