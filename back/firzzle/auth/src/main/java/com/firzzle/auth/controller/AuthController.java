@@ -401,6 +401,12 @@ public class AuthController {
         response.addCookie(refreshTokenCookie);
     }
 
+    // /api/v1/auth/me
+//    현재 로그인한 사용자 정보 조회
+//
+//    토큰에서 사용자 정보를 추출하여 반환
+//    프로필 표시, 개인화된 UI 등에 필요
+
     /**
      * DataBox를 TokenResponseDTO로 변환
      * @param dataBox 데이터 박스
