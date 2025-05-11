@@ -70,12 +70,6 @@ public class SttService {
         // (2) 자막 파일 읽기
         String scripts = printDownloadedFiles(videoId);
 
-        if (scripts != null) {
-            sttConvertedProducer.sendSttResult(scripts); // Kafka 전송
-        } else {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-        }
-
         // (3) 메타데이터 추출 (제목, 설명, 카테고리 등)
         ProcessBuilder metadataExtractor = new ProcessBuilder(
             "yt-dlp",
@@ -117,7 +111,13 @@ public class SttService {
         contentDTO.setThumbnailUrl(thumbnail);
         contentDTO.setDuration(Long.parseLong(durationStr));
 
-//        contentService.insertContent(contentDTO);
+        contentService.insertContent(contentDTO);
+        Long contentSeq = contentDTO.getContentSeq();
+        if (scripts != null) {
+            sttConvertedProducer.sendSttResult(contentSeq, scripts); // Kafka 전송
+        } else {
+            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+        }
 
         return scripts;
     }

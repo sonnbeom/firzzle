@@ -39,7 +39,7 @@ public class LlmController {
      * @return 요약 결과 (LLM 기반 처리)
      */
     @PostMapping("/summary")
-    public CompletableFuture<ResponseEntity<String>> postSummary(@RequestBody SummaryRequest request) {
+    public CompletableFuture<ResponseEntity<String>> postSummary(@RequestBody LlmRequest request) {
         return llmService.summarizeContents(request)
                 .thenApply(ResponseEntity::ok)
                 .exceptionally(e -> {

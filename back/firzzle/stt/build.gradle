@@ -62,6 +62,8 @@ dependencies {
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
     // implementation project(':user-domain') // 필요시 주석 해제
     
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    
     //implementation("io.netty:netty-resolver-dns:4.1.100.Final")
 
     // === 테스트 ===

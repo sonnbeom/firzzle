@@ -1,6 +1,8 @@
 package com.firzzle.llm;
 
 import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
+
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -19,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "com.firzzle.llm",  // 현재 모듈의 패키지
         "com.firzzle.common",  // common 모듈의 설정 패키지
 })
+@MapperScan("com.firzzle.llm.mapper")
 @EnableDiscoveryClient
 public class LlmApplication {
 
