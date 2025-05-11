@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class LlmService {
+public class RegistrationService {
 
     private final OpenAiClient openAiClient;
     private final QdrantClient qdrantClient;
@@ -40,7 +40,8 @@ public class LlmService {
     private final DescriptiveQuiz descriptiveQuiz;
     private final TestRepository testRepository;
 
-    private static final Logger logger = LoggerFactory.getLogger(LlmService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
+    
     // 전체 자막 콘텐츠를 요약하는 비동기 함수
     @Async
     public CompletableFuture<String> summarizeContents(LlmRequest request) {
@@ -53,7 +54,7 @@ public class LlmService {
             .thenCompose(timelines -> summarizeByChunks(timelines, scriptLines)) // List<ContentBlock>
             .thenApply(blocks -> {
                 blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
-                saveBlock(request.getContentSeq(), blocks); // ✅ List<ContentBlock> 저장
+                saveBlock(request.getContentSeq(), blocks, scriptLines); // ✅ List<ContentBlock> 저장
                 return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
             })
             .exceptionally(e -> {
@@ -116,7 +117,7 @@ public class LlmService {
     }
     
     @Async
-    public CompletableFuture<Void> saveBlock(long contentSeq, List<ContentBlock> blocks) {
+    public CompletableFuture<Void> saveBlock(long contentSeq, List<ContentBlock> blocks, List<String> scriptLines) {
         try {
             Map<String, List<SectionDTO>> levelToSections = new HashMap<>();
             List<OxQuizDTO> oxQuizList = new ArrayList<>();
@@ -132,6 +133,25 @@ public class LlmService {
                     section.setStartTime(startTime);
                     section.setDetails(block.getSummary_Easy());
                     levelToSections.computeIfAbsent("E", k -> new ArrayList<>()).add(section);
+                    
+                    // ✅ 벡터 DB 저장용 추가 처리
+                    try {
+                        List<Float> vector = embeddingService.embed(block.getSummary_Easy());
+                        String originalScriptChunk = ScriptUtils.extractChunkText(scriptLines, block.getTime(), getNextBlockTime(blocks, block)); // 종료 시점 계산
+                        Map<String, Object> payload = Map.of(
+                        	    "contentSeq", contentSeq,
+                        	    "content", originalScriptChunk
+                        	);
+
+                        ragService.saveToVectorDb(
+                            QdrantCollections.SCRIPT,                      // 컬렉션명
+                            contentSeq * 100000 + startTime,               // ID 생성 규칙: contentSeq + startTime
+                            vector,
+                            payload
+                        );
+                    } catch (Exception e) {
+                        logger.error("❌ Qdrant 저장 중 오류 - summary_easy: {}", block.getSummary_Easy(), e);
+                    }
                 }
 
                 // 🔹 High summary
@@ -182,82 +202,15 @@ public class LlmService {
             failed.completeExceptionally(e);
             return failed;
         }
-    }
-
-    
-    
-
-    private void saveSummaryToDbAndVector(List<ContentBlock> blocks) {
-        // 벡터 저장
-//        List<Float> vector = embeddingService.embed(summary);
         
-//		qdrantClient.upsertVector(QdrantCollections.SCRIPT, uuid.hashCode(), vector, summary)
-//		    .doOnError(e -> logger.error("업서트 실패", e))
-//		    .subscribe(); // 비동기 처리
+        
     }
-
-
-    // RAG 기반 실시간 대화 응답 생성 (최근 대화 맥락 없이 context만 활용)
-    @Async
-    public CompletableFuture<String> runningChat(RunningChatRequest request) {
-        String question = request.getQuestion();
-        List<Float> vector = embeddingService.embed(question);
-        CompletableFuture<List<String>> contents = qdrantClient.searchWithPayload(QdrantCollections.SCRIPT, vector, 10, 0.3).toFuture();
-
-        String context = ((Collection<String>) contents).stream().limit(5).collect(Collectors.joining("\n"));
-        String Prompt = runningChatPrompt.createPrompt(question, "", context);
-        String instruction = runningChatPrompt.createInstruction();
-
-        // TODO: 실제 GPT 호출 필요
-        return null;
-    }
-
-    // TEST 컬렉션을 기반으로 GPT 답변을 생성하는 테스트용 비동기 함수
-    @Async
-    public CompletableFuture<String> testGptResponse(String question) {
-        long startTime = System.nanoTime();
-        logger.info("\uD83D\uDE80 GPT 질문 수신: {}", question);
-
-        return CompletableFuture.supplyAsync(() -> embeddingService.embed(question))
-            .thenCompose(vector -> qdrantClient.searchWithPayload(QdrantCollections.TEST, vector, 10, 0.3).toFuture())
-            .thenCompose(contents -> {
-                String context = contents.stream().limit(5).collect(Collectors.joining("\n"));
-                String prompt = "다음 문맥을 참고하여 질문에 답해주세요:\n" + context + "\n\n질문: " + question;
-                String instruction = "문맥을 기반으로 명확하고 간결하게 답변해주세요.";
-
-                return openAiClient.getChatCompletionAsync(instruction, prompt, ModelType.SUMMARY);
-            })
-            .thenApply(result -> {
-                long endTime = System.nanoTime();
-                logger.info("\u2705 GPT 응답 완료 ({}ms)", (endTime - startTime) / 1_000_000);
-                return result;
-            })
-            .exceptionally(e -> {
-                logger.error("\u274C GPT 처리 중 오류", e);
-                return "GPT 응답 중 오류가 발생했습니다.";
-            });
-    }
-
     
-
-    
-
-    // 새 콘텐츠를 벡터화하고 Qdrant 및 DB에 저장
-    public void register(Long id, String content) {
-        List<Float> vector = embeddingService.embed(content);
-
-        testRepository.save(TestEntity.builder()
-            .id(id)
-            .content(content)
-            .createdAt(LocalDateTime.now())
-            .build());
-
-        vector.forEach(v -> {
-            if (v == null || v.isNaN() || v.isInfinite()) {
-                logger.error("\u274C 벡터 값 오류: {}", v);
-            }
-        });
-
-        qdrantClient.upsertVector(QdrantCollections.TEST, id, vector, content).block();
+    private String getNextBlockTime(List<ContentBlock> blocks, ContentBlock current) {
+        int currentIndex = blocks.indexOf(current);
+        if (currentIndex >= 0 && currentIndex < blocks.size() - 1) {
+            return blocks.get(currentIndex + 1).getTime();
+        }
+        return "99999";
     }
 }

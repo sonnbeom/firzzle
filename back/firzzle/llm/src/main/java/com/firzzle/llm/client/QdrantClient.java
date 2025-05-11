@@ -70,6 +70,26 @@ public class QdrantClient {
                 }
             });
     }
+    
+    public Mono<Void> upsertVector(String collection, Long id, List<Float> vector, Map<String, Object> payload) {
+        Map<String, Object> requestBody = Map.of(
+            "points", List.of(Map.of(
+                "id", id,
+                "vector", vector,
+                "payload", payload
+            ))
+        );
+
+        log.info("📤 Qdrant 업서트 요청 본문: {}", requestBody);
+
+        return webClient.put()
+            .uri("/collections/{collection}/points", collection)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(Void.class)
+            .doOnSuccess(v -> log.info("✅ Qdrant 저장 완료: id={} collection={}", id, collection))
+            .doOnError(e -> log.error("❌ Qdrant 저장 실패", e));
+    }
 
     /**
      * Qdrant에서 유사 벡터를 검색합니다.
