@@ -1,14 +1,15 @@
-package com.firzzle.learning.controller;
+package com.firzzle.learning.ai.controller;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.response.CursorResponseDTO;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
-import com.firzzle.learning.dto.*;
-import com.firzzle.learning.service.LearningChatService;
+import com.firzzle.learning.ai.dto.*;
+import com.firzzle.learning.ai.service.LearningChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,6 +24,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Class Name : LearningChatController.java
@@ -39,6 +43,117 @@ public class LearningChatController {
     private static final Logger logger = LoggerFactory.getLogger(LearningChatController.class);
 
     private final LearningChatService learningChatService;
+
+
+    /**
+     * 학습모드 채팅 내역 조회
+     */
+    @GetMapping("/{contentSeq}/chats")
+    @Operation(summary = "학습모드 채팅 내역 조회", description = "학습모드 채팅 내역을 커서 기반 페이징으로 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<Response<CursorResponseDTO<ChatHistoryResponseDTO>>> getLearningModeChats(
+            @Parameter(description = "사용자 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
+            @Valid ChatSearchDTO searchDTO,
+            HttpServletRequest request) {
+
+        logger.info("학습모드 채팅 내역 조회 요청 - 사용자 콘텐츠 일련번호: {}, 커서: {}, 페이지 크기: {}",
+                userContentSeq, searchDTO.getCursor(), searchDTO.getSize());
+
+        try {
+            // RequestBox 생성 및 파라미터 설정
+            RequestBox box = RequestManager.getBox(request);
+            box.put("userContentSeq", userContentSeq);
+            box.put("cursor", searchDTO.getCursor() != null ? searchDTO.getCursor() : "");
+            box.put("size", searchDTO.getSize());
+            box.put("orderBy", searchDTO.getOrderBy());
+            box.put("direction", searchDTO.getDirection());
+
+            // 서비스 호출
+            DataBox resultDataBox = learningChatService.getLearningModeChats(box);
+
+            // DataBox를 ResponseDTO로 변환
+            CursorResponseDTO<ChatHistoryResponseDTO> responseDTO = convertToChatHistoryCursorDTO(resultDataBox);
+
+            // 비어 있는 결과 처리
+            if (responseDTO.getContent() == null || responseDTO.getContent() .isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+
+            // 응답 구성
+            Response<CursorResponseDTO<ChatHistoryResponseDTO>> response = Response.<CursorResponseDTO<ChatHistoryResponseDTO>>builder()
+                    .status(Status.OK)
+                    .data(responseDTO)
+                    .build();
+
+            return ResponseEntity.ok(response);
+
+        } catch (BusinessException e) {
+            logger.error("학습모드 채팅 내역 조회 중 비즈니스 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("학습모드 채팅 내역 조회 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "학습모드 채팅 내역 조회 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 시험모드 문제/답변 내역 조회
+     */
+    @GetMapping("/{contentSeq}/exams")
+    @Operation(summary = "시험모드 문제/답변 내역 조회", description = "시험모드 문제와 답변 내역을 커서 기반 페이징으로 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "500", description = "서버 오류")
+    })
+    public ResponseEntity<Response<CursorResponseDTO<ExamHistoryResponseDTO>>> getExamModeHistory(
+            @Parameter(description = "사용자 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
+            @Valid ExamSearchDTO searchDTO,
+            HttpServletRequest request) {
+
+        logger.info("시험모드 문제/답변 내역 조회 요청 - 사용자 콘텐츠 일련번호: {}, 커서: {}, 페이지 크기: {}",
+                userContentSeq, searchDTO.getCursor(), searchDTO.getSize());
+
+        try {
+            // RequestBox 생성 및 파라미터 설정
+            RequestBox box = RequestManager.getBox(request);
+            box.put("userContentSeq", userContentSeq);
+            box.put("cursor", searchDTO.getCursor() != null ? searchDTO.getCursor() : "");
+            box.put("size", searchDTO.getSize());
+            box.put("orderBy", searchDTO.getOrderBy());
+            box.put("direction", searchDTO.getDirection());
+
+            // 서비스 호출
+            DataBox resultDataBox = learningChatService.getExamModeHistory(box);
+
+            // DataBox를 ResponseDTO로 변환
+            CursorResponseDTO<ExamHistoryResponseDTO> responseDTO = convertToExamHistoryCursorDTO(resultDataBox);
+
+            // 비어 있는 결과 처리
+            if (responseDTO.getContent() == null || responseDTO.getContent() .isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+
+            // 응답 구성
+            Response<CursorResponseDTO<ExamHistoryResponseDTO>> response = Response.<CursorResponseDTO<ExamHistoryResponseDTO>>builder()
+                    .status(Status.OK)
+                    .data(responseDTO)
+                    .build();
+
+            return ResponseEntity.ok(response);
+
+        } catch (BusinessException e) {
+            logger.error("시험모드 문제/답변 내역 조회 중 비즈니스 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("시험모드 문제/답변 내역 조회 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "시험모드 문제/답변 내역 조회 중 오류가 발생했습니다.");
+        }
+    }
 
     /**
      * 학습모드 질문
@@ -208,6 +323,145 @@ public class LearningChatController {
         } catch (Exception e) {
             logger.error("시험모드 답변 평가 중 예외 발생: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "시험모드 답변 평가 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * DataBox를 CursorResponseDTO<ChatHistoryItemResponseDTO>로 변환
+     * @param dataBox 변환할 DataBox
+     * @return 변환된 CursorResponseDTO<ChatHistoryItemResponseDTO>
+     * @throws BusinessException 변환 중 오류 발생 시
+     */
+    private CursorResponseDTO<ChatHistoryResponseDTO> convertToChatHistoryCursorDTO(DataBox dataBox) {
+        if (dataBox == null) {
+            logger.error("변환할 DataBox가 null입니다");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "응답 데이터가 존재하지 않습니다.");
+        }
+
+        // DataBox에서 리스트 가져오기
+        List<DataBox> chatHistory = getListFromDataBox(dataBox, "d_chat_history");
+        boolean hasNextPage = dataBox.getBoolean("d_has_more");
+        Long nextCursor = dataBox.getLong2("d_next_cursor");
+
+        // 채팅 항목 변환
+        List<ChatHistoryResponseDTO> chatItems = new ArrayList<>();
+        for (DataBox chat : chatHistory) {
+            ChatHistoryResponseDTO chatItem = convertToChatHistoryItemResponseDTO(chat);
+            if (chatItem != null) {  // null 체크
+                chatItems.add(chatItem);
+            }
+        }
+
+        // 최종 응답 DTO 생성
+        return CursorResponseDTO.<ChatHistoryResponseDTO>builder()
+                .content(chatItems)
+                .hasNextPage(hasNextPage)
+                .nextCursor(nextCursor)
+                .build();
+    }
+
+    /**
+     * DataBox를 ChatHistoryItemResponseDTO로 변환
+     * @param dataBox 변환할 DataBox
+     * @return 변환된 ChatHistoryItemResponseDTO 또는 null (변환 실패 시)
+     */
+    private ChatHistoryResponseDTO convertToChatHistoryItemResponseDTO(DataBox dataBox) {
+        if (dataBox == null) {
+            return null;
+        }
+
+        try {
+            return ChatHistoryResponseDTO.builder()
+                    .chatSeq(dataBox.getLong2("d_chat_seq"))
+                    .question(dataBox.getString("d_question"))
+                    .answer(dataBox.getString("d_answer"))
+                    .indate(dataBox.getString("d_indate"))
+                    .build();
+        } catch (Exception e) {
+            logger.error("ChatHistoryItemResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
+            return null;  // 오류 발생 시 null 반환
+        }
+    }
+
+    /**
+     * DataBox를 CursorResponseDTO<ExamHistoryItemResponseDTO>로 변환
+     * @param dataBox 변환할 DataBox
+     * @return 변환된 CursorResponseDTO<ExamHistoryItemResponseDTO>
+     * @throws BusinessException 변환 중 오류 발생 시
+     */
+    private CursorResponseDTO<ExamHistoryResponseDTO> convertToExamHistoryCursorDTO(DataBox dataBox) {
+        if (dataBox == null) {
+            logger.error("변환할 DataBox가 null입니다");
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "응답 데이터가 존재하지 않습니다.");
+        }
+
+        // DataBox에서 리스트 가져오기
+        List<DataBox> examHistory = getListFromDataBox(dataBox, "d_exam_history");
+        boolean hasNextPage = dataBox.getBoolean("d_has_more");
+        Long nextCursor = dataBox.getLong2("d_next_cursor");
+
+        // 시험 항목 변환
+        List<ExamHistoryResponseDTO> examItems = new ArrayList<>();
+        for (DataBox exam : examHistory) {
+            ExamHistoryResponseDTO examItem = convertToExamHistoryItemResponseDTO(exam);
+            if (examItem != null) {  // null 체크
+                examItems.add(examItem);
+            }
+        }
+
+        // 최종 응답 DTO 생성
+        return CursorResponseDTO.<ExamHistoryResponseDTO>builder()
+                .content(examItems)
+                .hasNextPage(hasNextPage)
+                .nextCursor(nextCursor)
+                .build();
+    }
+
+    /**
+     * DataBox를 ExamHistoryItemResponseDTO로 변환
+     * @param dataBox 변환할 DataBox
+     * @return 변환된 ExamHistoryItemResponseDTO 또는 null (변환 실패 시)
+     */
+    private ExamHistoryResponseDTO convertToExamHistoryItemResponseDTO(DataBox dataBox) {
+        if (dataBox == null) {
+            return null;
+        }
+
+        try {
+            return ExamHistoryResponseDTO.builder()
+                    .examSeq(dataBox.getLong2("d_exam_seq"))
+                    .questionNumber(dataBox.getInt2("d_question_number"))
+                    .questionContent(dataBox.getString("d_question_content"))
+                    .answerContent(dataBox.getString("d_answer_content"))
+                    .modelAnswer(dataBox.getString("d_model_answer"))
+                    .evaluation(dataBox.getString("d_evaluation"))
+                    .evaluationResult(dataBox.getString("d_evaluation_result"))
+                    .indate(dataBox.getString("d_indate"))
+                    .build();
+        } catch (Exception e) {
+            logger.error("ExamHistoryItemResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
+            return null;  // 오류 발생 시 null 반환
+        }
+    }
+
+    /**
+     * DataBox에서 리스트를 가져오는 유틸리티 메소드
+     * @param dataBox 데이터 박스
+     * @param key 키
+     * @return 리스트 또는 빈 리스트
+     */
+    @SuppressWarnings("unchecked")
+    private List<DataBox> getListFromDataBox(DataBox dataBox, String key) {
+        Object value = dataBox.getObject(key);
+        if (value == null) {
+            return new ArrayList<>();
+        }
+
+        if (value instanceof List) {
+            return (List<DataBox>) value;
+        } else {
+            logger.warn("키 {}에 해당하는 값이 List 타입이 아닙니다: {}", key, value.getClass().getName());
+            return new ArrayList<>();
         }
     }
 
