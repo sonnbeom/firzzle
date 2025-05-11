@@ -7,6 +7,9 @@ import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import reactor.netty.http.client.HttpClient;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 
 import com.firzzle.llm.dto.ModelType;
 
@@ -27,11 +30,15 @@ public class OpenAiClient {
 
     @Value("${spring.ai.openai.base-url}")
     private void setBaseUrl(String baseUrl) {
+        HttpClient httpClient = HttpClient.create()
+            .resolver(DefaultAddressResolverGroup.INSTANCE); // 시스템 DNS 사용
+
         this.webClient = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+            .baseUrl(baseUrl)
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
+            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .build();
     }
 
     @Value("${spring.ai.openai.timeline.model}")
@@ -39,6 +46,9 @@ public class OpenAiClient {
 
     @Value("${spring.ai.openai.summary.model}")
     private String summaryModel;
+    
+    @Value("${spring.ai.openai.runningchat.model}")
+    private String runningChatModel;
 
     @Async("llmExecutor")
     public CompletableFuture<String> getChatCompletionAsync(
@@ -49,6 +59,7 @@ public class OpenAiClient {
         String model = switch (type) {
             case TIMELINE -> timelineModel;
             case SUMMARY -> summaryModel;
+            case RUNNINGCHAT -> runningChatModel;
         };
 
         List<Map<String, String>> messages = new ArrayList<>();

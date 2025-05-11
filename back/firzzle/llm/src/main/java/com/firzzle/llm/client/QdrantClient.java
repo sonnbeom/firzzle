@@ -10,7 +10,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.firzzle.llm.dto.*;
-
 import reactor.core.publisher.Mono;
 
 /**
@@ -151,5 +150,16 @@ public class QdrantClient {
                 .filter(content -> !content.isBlank())
                 .toList()
             );
+    }
+    
+    public Mono<List<Map<String, Object>>> searchRaw(String collection, Map<String, Object> requestBody) {
+        return webClient.post()
+            .uri("/collections/{collection}/points/search", collection)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(QdrantSearchResponse.class)
+            .map(QdrantSearchResponse::getResult)
+            .doOnSuccess(result -> log.info("🔍 필터 포함 검색 성공: {}개", result.size()))
+            .doOnError(e -> log.error("❌ 검색 실패", e));
     }
 }

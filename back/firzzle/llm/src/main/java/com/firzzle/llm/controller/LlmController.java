@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/llm")
+@RequestMapping("/api/v1/llm")
 public class LlmController {
 
     private final RegistrationService registrationService;

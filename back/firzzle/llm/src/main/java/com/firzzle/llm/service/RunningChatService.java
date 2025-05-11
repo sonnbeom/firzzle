@@ -39,14 +39,20 @@ public class RunningChatService {
     public CompletableFuture<String> runningChat(RunningChatRequest request) {
         String question = request.getQuestion();
         List<Float> vector = embeddingService.embed(question);
-        CompletableFuture<List<String>> contents = qdrantClient.searchWithPayload(QdrantCollections.SCRIPT, vector, 10, 0.3).toFuture();
+        Long contentSeq = request.getContentSeq();
+        return ragService.searchTopPayloadsByContentSeq(QdrantCollections.SCRIPT, vector, contentSeq)
+                .toFuture()
+                .thenCompose(contents -> {
+                    String context = contents.stream().limit(5).collect(Collectors.joining("\n"));
+                    String prompt = runningChatPrompt.createPrompt(question, "", context);
+                    String instruction = runningChatPrompt.createInstruction();
 
-        String context = ((Collection<String>) contents).stream().limit(5).collect(Collectors.joining("\n"));
-        String Prompt = runningChatPrompt.createPrompt(question, "", context);
-        String instruction = runningChatPrompt.createInstruction();
-
-        // TODO: 실제 GPT 호출 필요
-        return null;
+                    return openAiClient.getChatCompletionAsync(instruction, prompt, ModelType.RUNNINGCHAT);
+                })
+                .exceptionally(e -> {
+                    logger.error("❌ runningChat 처리 중 오류", e);
+                    return "답변 생성 중 오류가 발생했습니다.";
+                });
     }
 
     // TEST 컬렉션을 기반으로 GPT 답변을 생성하는 테스트용 비동기 함수

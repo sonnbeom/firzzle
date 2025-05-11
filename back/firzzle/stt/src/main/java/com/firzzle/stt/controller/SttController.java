@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
  * @since 2025. 4. 30.
  */
 @RestController
-@RequestMapping("/api/stt")
+@RequestMapping("/api/v1/stt")
 @RequiredArgsConstructor
 public class SttController {
 	private static final Logger logger = LoggerFactory.getLogger(SttController.class);

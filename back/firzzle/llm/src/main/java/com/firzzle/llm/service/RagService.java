@@ -4,6 +4,8 @@ import com.firzzle.llm.client.QdrantClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import java.util.stream.Collectors;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
@@ -28,4 +30,53 @@ public class RagService {
             .doOnError(e -> log.error("❌ Qdrant 저장 실패", e))
             .subscribe();
     }
+    
+
+	/**
+	 * Qdrant에서 주어진 contentSeq에 해당하는 벡터 중,  
+	 * 입력 벡터와 유사도가 높은 상위 3개의 payload.content 값을 반환합니다.
+	 * 
+	 * @param collection Qdrant 컬렉션 이름
+	 * @param vector 기준이 되는 임베딩 벡터
+	 * @param contentSeq 검색 대상 contentSeq 값 (payload에서 필터링)
+	 * @return 상위 3개의 유사한 벡터의 payload.content 리스트 (Mono 비동기 결과)
+	 * 
+	 * <p>
+	 * 이 메서드는 Qdrant의 filter + 유사도 검색을 조합하여  
+	 * 같은 콘텐츠 그룹(contentSeq) 내에서 의미 있는 유사 컨텍스트를 빠르게 찾는 데 유용합니다.
+	 * </p>
+	 */
+    public Mono<List<String>> searchTopPayloadsByContentSeq(String collection, List<Float> vector, Long contentSeq) {
+        // Qdrant 검색 요청 구성
+        Map<String, Object> request = Map.of(
+            "vector", vector,
+            "limit", 10,  // 넉넉하게 검색하고
+            "with_payload", true,
+            "filter", Map.of(
+                "must", List.of(
+                    Map.of("key", "contentSeq", "match", Map.of("value", contentSeq))
+                )
+            )
+        );
+
+        return qdrantClient.searchRaw(collection, request) // 아래에 함께 정의
+            .map(results -> results.stream()
+                .sorted((a, b) -> {
+                    Double sa = ((Number) a.get("score")).doubleValue();
+                    Double sb = ((Number) b.get("score")).doubleValue();
+                    return -Double.compare(sa, sb); // 내림차순 정렬
+                })
+                .limit(3)
+                .map(result -> {
+                    Map<String, Object> payload = (Map<String, Object>) result.get("payload");
+                    return payload != null ? payload.getOrDefault("content", "").toString() : "";
+                })
+                .filter(content -> !content.isBlank())
+                .collect(Collectors.toList())
+            );
+    }
+    
+    
+    
+    
 }
