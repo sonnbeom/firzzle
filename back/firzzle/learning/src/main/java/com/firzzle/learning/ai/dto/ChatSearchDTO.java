@@ -1,4 +1,4 @@
-package com.firzzle.learning.dto;
+package com.firzzle.learning.ai.dto;
 
 import com.firzzle.common.request.CursorRequestDTO;
 import io.swagger.v3.oas.annotations.media.Schema;

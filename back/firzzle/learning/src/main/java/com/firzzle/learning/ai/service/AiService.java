@@ -1,9 +1,9 @@
-package com.firzzle.learning.service;
+package com.firzzle.learning.ai.service;
 
 import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.RequestBox;
-import com.firzzle.learning.dao.AiDao;
-import com.firzzle.learning.dao.AiLogDao;
+import com.firzzle.learning.ai.dao.AiDao;
+import com.firzzle.learning.ai.dao.AiLogDao;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONArray;
 import org.json.JSONObject;

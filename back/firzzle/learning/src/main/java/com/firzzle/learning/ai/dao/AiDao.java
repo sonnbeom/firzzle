@@ -1,4 +1,4 @@
-package com.firzzle.learning.dao;
+package com.firzzle.learning.ai.dao;
 
 import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.MyBatisSupport;

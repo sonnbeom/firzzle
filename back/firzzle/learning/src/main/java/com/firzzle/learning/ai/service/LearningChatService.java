@@ -1,4 +1,4 @@
-package com.firzzle.learning.service;
+package com.firzzle.learning.ai.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,8 +7,9 @@ import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
-import com.firzzle.learning.dao.ChatDAO;
-import com.firzzle.learning.dao.ExamDAO;
+import com.firzzle.learning.ai.dao.ChatDAO;
+import com.firzzle.learning.ai.dao.ExamDAO;
+import com.firzzle.learning.service.ContentService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
