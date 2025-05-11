@@ -73,8 +73,8 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 qdrant:
-  host: ${QDRANT_HOST}
-  api-key: ${QDRANT_API_KEY}
+  host: ENC(s1Ct6340rv4snLLcZYQq4xaflHsB1lP+rCoNvl07oi34eEtSLvRstJ1ecJBs7vAq)
+  api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
   port: 8082
@@ -130,9 +130,10 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      
 qdrant:
-  host: ${QDRANT_HOST}
-  api-key: ${QDRANT_API_KEY}
+  host: ENC(s1Ct6340rv4snLLcZYQq4xaflHsB1lP+rCoNvl07oi34eEtSLvRstJ1ecJBs7vAq)
+  api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
   port: 8080
@@ -190,8 +191,8 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 qdrant:
-  host: ${QDRANT_HOST}
-  api-key: ${QDRANT_API_KEY}
+  host: ENC(s1Ct6340rv4snLLcZYQq4xaflHsB1lP+rCoNvl07oi34eEtSLvRstJ1ecJBs7vAq)
+  api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
   port: 8080
