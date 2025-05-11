@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class LlmService {
     private final SummaryPrompt summaryPrompt;
     private final RunnigChatPrompt runningChatPrompt;
     private final EmbeddingService embeddingService;
-    private final OxQuizService oxQuizService;
+    private final OxQuizService oxuizService;
     private final RagService ragService;
     private final SummaryService summaryService;
     private final DescriptiveQuiz descriptiveQuiz;
@@ -42,8 +43,8 @@ public class LlmService {
     private static final Logger logger = LoggerFactory.getLogger(LlmService.class);
     // 전체 자막 콘텐츠를 요약하는 비동기 함수
     @Async
-    public CompletableFuture<String> summarizeContents(SummaryRequest request) {
-        String content = request.getContent();
+    public CompletableFuture<String> summarizeContents(LlmRequest request) {
+        String content = request.getScript();
         List<String> scriptLines = Arrays.asList(content.split("\n"));
 
         logger.info("🚀 전체 요약 시작");
@@ -52,7 +53,7 @@ public class LlmService {
             .thenCompose(timelines -> summarizeByChunks(timelines, scriptLines)) // List<ContentBlock>
             .thenApply(blocks -> {
                 blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
-                saveSummaryToDbAndVector(blocks); // ✅ List<ContentBlock> 저장
+                saveBlock(request.getContentSeq(), blocks); // ✅ List<ContentBlock> 저장
                 return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
             })
             .exceptionally(e -> {
@@ -115,12 +116,43 @@ public class LlmService {
     }
     
     @Async
-    public CompletableFuture<Void> saveBlock(List<ContentBlock> block) {
+    public CompletableFuture<Void> saveBlock(long contentSeq, List<ContentBlock> blocks) {
         try {
-        	
-        	
-        	
-            return CompletableFuture.completedFuture(null); // 성공 시
+            Map<String, List<SectionDTO>> levelToSections = new HashMap<>();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
+            for (ContentBlock block : blocks) {
+                int startTime = Integer.parseInt(block.getTime());
+
+                if (block.getSummary_Easy() != null && !block.getSummary_Easy().isBlank()) {
+                    SectionDTO section = new SectionDTO();
+                    section.setTitle(block.getTitle());
+                    section.setStartTime(startTime);
+                    section.setDetails(block.getSummary_Easy());
+
+                    levelToSections.computeIfAbsent("E", k -> new ArrayList<>()).add(section);
+                }
+
+                if (block.getSummary_High() != null && !block.getSummary_High().isBlank()) {
+                    SectionDTO section = new SectionDTO();
+                    section.setTitle(block.getTitle());
+                    section.setStartTime(startTime);
+                    section.setDetails(block.getSummary_High());
+
+                    levelToSections.computeIfAbsent("H", k -> new ArrayList<>()).add(section);
+                }
+            }
+
+            for (Map.Entry<String, List<SectionDTO>> entry : levelToSections.entrySet()) {
+                SummaryDTO summary = new SummaryDTO();
+                summary.setContentSeq(contentSeq);
+                summary.setLevel(entry.getKey());
+                summary.setIndate(LocalDateTime.now().format(formatter));
+
+                summaryService.saveSummaryWithSections(summary, entry.getValue());
+            }
+
+            return CompletableFuture.completedFuture(null);
 
         } catch (Exception e) {
             logger.error("❌ ContentBlock 저장 실패", e);
@@ -188,7 +220,7 @@ public class LlmService {
     
 
     // 새 콘텐츠를 벡터화하고 Qdrant 및 DB에 저장
-    public void register(Integer id, String content) {
+    public void register(Long id, String content) {
         List<Float> vector = embeddingService.embed(content);
 
         testRepository.save(TestEntity.builder()

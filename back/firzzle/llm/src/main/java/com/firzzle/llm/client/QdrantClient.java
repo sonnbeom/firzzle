@@ -42,7 +42,7 @@ public class QdrantClient {
      * @param vector 벡터 데이터 (Float 리스트)
      * @return Mono<Void> (응답 없음)
      */
-    public Mono<Void> upsertVector(String collection, Integer id, List<Float> vector, String content) {
+    public Mono<Void> upsertVector(String collection, Long id, List<Float> vector, String content) {
         // 실제 요청 본문을 로깅
         Map<String, Object> requestBody = Map.of(
             "points", List.of(Map.of(

@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class RegisterRequest {
-    private Integer id;
+    private Long id;
     private String content;
 }

@@ -55,7 +55,7 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.33'
 
     // MyBatis
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 
     // Hibernate Core (for P6spy formstyle)
