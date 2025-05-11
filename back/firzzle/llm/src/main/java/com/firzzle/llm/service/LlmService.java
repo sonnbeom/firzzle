@@ -34,7 +34,7 @@ public class LlmService {
     private final SummaryPrompt summaryPrompt;
     private final RunnigChatPrompt runningChatPrompt;
     private final EmbeddingService embeddingService;
-    private final OxQuizService oxuizService;
+    private final OxQuizService oxQuizService;
     private final RagService ragService;
     private final SummaryService summaryService;
     private final DescriptiveQuiz descriptiveQuiz;
@@ -119,30 +119,47 @@ public class LlmService {
     public CompletableFuture<Void> saveBlock(long contentSeq, List<ContentBlock> blocks) {
         try {
             Map<String, List<SectionDTO>> levelToSections = new HashMap<>();
+            List<OxQuizDTO> oxQuizList = new ArrayList<>();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
             for (ContentBlock block : blocks) {
                 int startTime = Integer.parseInt(block.getTime());
 
+                // 🔹 Easy summary
                 if (block.getSummary_Easy() != null && !block.getSummary_Easy().isBlank()) {
                     SectionDTO section = new SectionDTO();
                     section.setTitle(block.getTitle());
                     section.setStartTime(startTime);
                     section.setDetails(block.getSummary_Easy());
-
                     levelToSections.computeIfAbsent("E", k -> new ArrayList<>()).add(section);
                 }
 
+                // 🔹 High summary
                 if (block.getSummary_High() != null && !block.getSummary_High().isBlank()) {
                     SectionDTO section = new SectionDTO();
                     section.setTitle(block.getTitle());
                     section.setStartTime(startTime);
                     section.setDetails(block.getSummary_High());
-
                     levelToSections.computeIfAbsent("H", k -> new ArrayList<>()).add(section);
                 }
+
+                // 🔹 OX 퀴즈 수집
+                if (block.getOxQuiz() != null) {
+                    OxQuizDTO ox = new OxQuizDTO();
+                    ox.setContentSeq(contentSeq);
+                    ox.setType("OX");
+                    ox.setQuestion(block.getOxQuiz().getProblem());
+                    ox.setCorrectAnswer(block.getOxQuiz().getAnswer());
+                    ox.setExplanation(block.getOxQuiz().getExplanation());
+                    ox.setStartTime(startTime);
+                    ox.setDeleteYn("N");
+                    oxQuizList.add(ox);
+                }
+
+                // 🔹 (선택) 서술형 퀴즈도 필요 시 추가 가능
             }
 
+            // 🔹 요약 저장
             for (Map.Entry<String, List<SectionDTO>> entry : levelToSections.entrySet()) {
                 SummaryDTO summary = new SummaryDTO();
                 summary.setContentSeq(contentSeq);
@@ -150,6 +167,11 @@ public class LlmService {
                 summary.setIndate(LocalDateTime.now().format(formatter));
 
                 summaryService.saveSummaryWithSections(summary, entry.getValue());
+            }
+
+            // 🔹 OX 퀴즈 저장
+            if (!oxQuizList.isEmpty()) {
+                oxQuizService.saveOxQuizzes(contentSeq, oxQuizList);
             }
 
             return CompletableFuture.completedFuture(null);
@@ -161,6 +183,7 @@ public class LlmService {
             return failed;
         }
     }
+
     
     
 
