@@ -45,6 +45,13 @@ dependencies {
 
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // 회로 차단기 관련 라이브러리
+//    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker:1.7.0'
+
+    // reactor-test
+    testImplementation("io.projectreactor:reactor-test:3.7.4")
 }
 
 tasks.named('test') {
