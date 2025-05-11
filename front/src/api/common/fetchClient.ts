@@ -1,6 +1,4 @@
-import { getServerCookie } from '@/app/api/auth/cookies';
 import { ApiResponseWithData, ApiResponseWithoutData } from '@/types/common';
-import { getClientCookie } from '@/utils/cookieService';
 
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
@@ -21,18 +19,9 @@ type FetchOptions<TBody = unknown, TParams = unknown> = Omit<
 export class FetchClient {
   private baseUrl: string;
   private readonly MAX_RETRIES = 2;
-  private isServer: boolean;
 
-  constructor(baseUrl: string, isServer: boolean) {
+  constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-    this.isServer = isServer;
-  }
-
-  private getAccessToken() {
-    if (this.isServer) {
-      return getServerCookie('accessToken');
-    }
-    return getClientCookie('accessToken');
   }
 
   // 응답 데이터가 있는 요청 메서드(오버로드)
@@ -62,17 +51,12 @@ export class FetchClient {
       ...restOptions
     } = options;
 
-    const accessToken = withAuth ? this.getAccessToken() : undefined;
-
     // 헤더 객체 생성
     const allHeaders = new Headers(
       Object.assign(
         {
           'Content-Type': contentType,
         },
-        withAuth && accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
-          : {},
         headers,
       ),
     );
@@ -96,6 +80,7 @@ export class FetchClient {
         ...restOptions,
         headers: allHeaders,
         body: body ? JSON.stringify(body) : undefined,
+        credentials: withAuth ? 'include' : 'same-origin',
       });
 
       // 401 에러 처리
