@@ -1,4 +1,4 @@
-package com.firzzle.learning.controller;
+package com.firzzle.learning.ai.controller;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
@@ -8,8 +8,8 @@ import com.firzzle.common.library.RequestManager;
 import com.firzzle.common.response.CursorResponseDTO;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
-import com.firzzle.learning.dto.*;
-import com.firzzle.learning.service.LearningChatService;
+import com.firzzle.learning.ai.dto.*;
+import com.firzzle.learning.ai.service.LearningChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
