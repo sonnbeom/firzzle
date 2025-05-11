@@ -57,6 +57,124 @@ public class LearningChatService {
     private String openAiApiUrl;
 
     /**
+     * 학습모드 채팅 내역 조회
+     * @param box 요청 파라미터가 담긴 RequestBox
+     * @return 처리 결과가 담긴 DataBox
+     * @throws BusinessException 비즈니스 예외 발생 시
+     */
+    public DataBox getLearningModeChats(RequestBox box) {
+        Long userContentSeq = box.getLong("userContentSeq");
+        Long cursor = box.getLong("cursor");
+        int size = box.getInt("size");
+        String orderBy = box.getString("orderBy");
+        String direction = box.getString("direction");
+        String uuid = box.getString("uuid");
+
+        // 테이블 별칭 설정 (없을 경우를 대비)
+        if (box.get("cursorTable") == null) {
+            box.put("cursorTable", "C");
+        }
+
+        logger.debug("학습모드 채팅 내역 조회 시작 - 사용자 콘텐츠 일련번호: {}, 커서: {}, 페이지 크기: {}, 정렬: {} {}, UUID: {}",
+                userContentSeq, cursor, size, orderBy, direction, uuid);
+
+        // 1. 사용자-콘텐츠 정보 조회
+        DataBox userContentInfo = getUserContentInfo(userContentSeq, uuid);
+        Long contentSeq = userContentInfo.getLong2("d_content_seq");
+
+        // 2. 채팅 내역 조회
+        RequestBox chatHistoryBox = new RequestBox("chatHistoryBox");
+        chatHistoryBox.put("uuid", uuid);
+        chatHistoryBox.put("contentSeq", contentSeq);
+        chatHistoryBox.put("cursor", cursor);
+        chatHistoryBox.put("size", size + 1); // 추가 데이터가 있는지 확인을 위해 요청 크기 + 1
+        chatHistoryBox.put("orderBy", orderBy);
+        chatHistoryBox.put("direction", direction);
+
+        List<DataBox> chatHistory = chatDAO.selectChatHistoryWithCursor(chatHistoryBox);
+
+        boolean hasNextPage = chatHistory.size() > size;
+        if (hasNextPage) {
+            chatHistory.remove(chatHistory.size() - 1); // 마지막 항목 제거
+        }
+
+        Long nextCursor = null;
+        if (hasNextPage && !chatHistory.isEmpty()) {
+            nextCursor = chatHistory.get(chatHistory.size() - 1).getLong2("d_chat_seq");
+        }
+
+        // 3. 결과 DataBox 구성
+        DataBox resultDataBox = new DataBox();
+        resultDataBox.put("d_chat_history", chatHistory);
+        resultDataBox.put("d_has_more", hasNextPage);
+        resultDataBox.put("d_next_cursor", nextCursor);
+
+        logger.debug("학습모드 채팅 내역 조회 완료 - 채팅 수: {}, 다음 항목 존재: {}, 다음 커서: {}",
+                chatHistory.size(), hasNextPage, nextCursor);
+
+        return resultDataBox;
+    }
+
+    /**
+     * 시험모드 문제/답변 내역 조회
+     * @param box 요청 파라미터가 담긴 RequestBox
+     * @return 처리 결과가 담긴 DataBox
+     * @throws BusinessException 비즈니스 예외 발생 시
+     */
+    public DataBox getExamModeHistory(RequestBox box) {
+        Long userContentSeq = box.getLong("userContentSeq");
+        Long cursor = box.getLong("cursor");
+        int size = box.getInt("size");
+        String orderBy = box.getString("orderBy");
+        String direction = box.getString("direction");
+        String uuid = box.getString("uuid");
+
+        // 테이블 별칭 설정 (없을 경우를 대비)
+        if (box.get("cursorTable") == null) {
+            box.put("cursorTable", "E");
+        }
+
+        logger.debug("시험모드 문제/답변 내역 조회 시작 - 사용자 콘텐츠 일련번호: {}, 커서: {}, 페이지 크기: {}, 정렬: {} {}, UUID: {}",
+                userContentSeq, cursor, size, orderBy, direction, uuid);
+
+        // 1. 사용자-콘텐츠 정보 조회
+        DataBox userContentInfo = getUserContentInfo(userContentSeq, uuid);
+        Long contentSeq = userContentInfo.getLong2("d_content_seq");
+
+        // 2. 시험 내역 조회
+        RequestBox examHistoryBox = new RequestBox("examHistoryBox");
+        examHistoryBox.put("uuid", uuid);
+        examHistoryBox.put("contentSeq", contentSeq);
+        examHistoryBox.put("cursor", cursor);
+        examHistoryBox.put("size", size + 1); // 추가 데이터가 있는지 확인을 위해 요청 크기 + 1
+        examHistoryBox.put("orderBy", orderBy);
+        examHistoryBox.put("direction", direction);
+
+        List<DataBox> examHistory = examDAO.selectExamHistoryWithCursor(examHistoryBox);
+
+        boolean hasNextPage = examHistory.size() > size;
+        if (hasNextPage) {
+            examHistory.remove(examHistory.size() - 1); // 마지막 항목 제거
+        }
+
+        Long nextCursor = null;
+        if (hasNextPage && !examHistory.isEmpty()) {
+            nextCursor = examHistory.get(examHistory.size() - 1).getLong2("d_exam_seq");
+        }
+
+        // 3. 결과 DataBox 구성
+        DataBox resultDataBox = new DataBox();
+        resultDataBox.put("d_exam_history", examHistory);
+        resultDataBox.put("d_has_more", hasNextPage);
+        resultDataBox.put("d_next_cursor", nextCursor);
+
+        logger.debug("시험모드 문제/답변 내역 조회 완료 - 시험 수: {}, 다음 항목 존재: {}, 다음 커서: {}",
+                examHistory.size(), hasNextPage, nextCursor);
+
+        return resultDataBox;
+    }
+
+    /**
      * 학습모드 질문 처리
      * @param box 요청 파라미터가 담긴 RequestBox
      * @return 처리 결과가 담긴 DataBox
@@ -590,18 +708,18 @@ public class LearningChatService {
                 // 이전 대화 내역을 메시지에 추가 (오래된 것부터)
                 for (DataBox chat : chatHistory) {
                     // 사용자 질문 추가
-                    if (StringUtils.isNotBlank(chat.getString("question"))) {
+                    if (StringUtils.isNotBlank(chat.getString("d_question"))) {
                         Map<String, String> userMessage = new HashMap<>();
                         userMessage.put("role", "user");
-                        userMessage.put("content", chat.getString("question"));
+                        userMessage.put("content", chat.getString("d_question"));
                         messages.add(userMessage);
                     }
 
                     // 시스템 응답 추가
-                    if (StringUtils.isNotBlank(chat.getString("answer"))) {
+                    if (StringUtils.isNotBlank(chat.getString("d_answer"))) {
                         Map<String, String> assistantMessage = new HashMap<>();
                         assistantMessage.put("role", "assistant");
-                        assistantMessage.put("content", chat.getString("answer"));
+                        assistantMessage.put("content", chat.getString("d_answer"));
                         messages.add(assistantMessage);
                     }
                 }

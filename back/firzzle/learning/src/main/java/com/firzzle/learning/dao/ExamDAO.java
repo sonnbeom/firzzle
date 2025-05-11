@@ -22,6 +22,17 @@ public class ExamDAO extends MyBatisSupport {
     private static final String NAMESPACE = "ExamMapper";
 
     /**
+     * 시험 내역 조회 (커서 기반 페이징)
+     */
+    public List<DataBox> selectExamHistoryWithCursor(RequestBox box) {
+        logger.debug("시험 내역 조회 DAO (커서 기반) - 사용자: {}, 콘텐츠: {}, 커서: {}, 정렬: {} {}, 크기: {}",
+                box.getString("uuid"), box.getLong("contentSeq"), box.getLong("cursor"),
+                box.getString("orderBy"), box.getString("direction"), box.getInt("size"));
+
+        return sqlSession.selectDataBoxList(NAMESPACE + ".selectExamHistoryWithCursor", box);
+    }
+
+    /**
      * 시험 문제 저장
      */
     public Long insertExam(RequestBox box) {
@@ -60,7 +71,7 @@ public class ExamDAO extends MyBatisSupport {
     public List<DataBox> selectRecentExams(RequestBox box) {
         logger.debug("최근 시험 응답 조회 - 사용자: {}, 콘텐츠: {}, 개수: {}",
                 box.getString("uuid"), box.getLong("contentSeq"), box.getInt("limit"));
-        return sqlSession.selectList(NAMESPACE + ".selectRecentExams", box);
+        return sqlSession.selectDataBoxList(NAMESPACE + ".selectRecentExams", box);
     }
 
     /**

@@ -33,6 +33,10 @@ public class LlmService {
     private final SummaryPrompt summaryPrompt;
     private final RunnigChatPrompt runningChatPrompt;
     private final EmbeddingService embeddingService;
+    private final OxQuizService oxQuizService;
+    private final RagService ragService;
+    private final SummaryService summaryService;
+    private final DescriptiveQuiz descriptiveQuiz;
     private final TestRepository testRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(LlmService.class);
@@ -45,17 +49,18 @@ public class LlmService {
         logger.info("🚀 전체 요약 시작");
 
         return extractTimeLine(content)
-            .thenCompose(timelines -> summarizeByChunks(timelines, scriptLines))
-            .thenApply(summary -> {
-            	logger.info(summary);
-                saveSummaryToDbAndVector(summary, scriptLines); // ✅ 외부 함수로 분리
-                return summary;
+            .thenCompose(timelines -> summarizeByChunks(timelines, scriptLines)) // List<ContentBlock>
+            .thenApply(blocks -> {
+                blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
+                saveSummaryToDbAndVector(blocks); // ✅ List<ContentBlock> 저장
+                return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
             })
             .exceptionally(e -> {
                 logger.error("❌ 전체 요약 처리 중 오류", e);
                 return "GPT 응답 중 오류가 발생했습니다.";
             });
     }
+
     
     // 전체 자막 텍스트에서 주요 대주제를 추출하는 함수
     @Async
@@ -67,7 +72,6 @@ public class LlmService {
                     try {
                         ObjectMapper mapper = new ObjectMapper();
                         String cleaned = ScriptUtils.extractJsonOnly(response);
-                        logger.info(cleaned);
                         return mapper.readValue(cleaned, new TypeReference<List<TimeLine>>() {});
                     } catch (Exception e) {
                         logger.error("❌ 대주제 JSON 파싱 실패: {}", response, e);
@@ -78,15 +82,12 @@ public class LlmService {
     
     // 주요 토픽별로 자막을 나누어 요약 요청을 보내는 함수
     @Async
-    private CompletableFuture<String> summarizeByChunks(List<TimeLine> topics, List<String> scriptLines) {
-        List<CompletableFuture<String>> futures = new ArrayList<>();
-        
-        for (int i = 0; i < topics.size() - 1; i++) {
-            TimeLine timeA = topics.get(i);
-            TimeLine timeB = topics.get(i + 1);
-            String start = timeA.getTime();
-            String end = timeB.getTime();
+    private CompletableFuture<List<ContentBlock>> summarizeByChunks(List<TimeLine> topics, List<String> scriptLines) {
+        List<CompletableFuture<List<ContentBlock>>> futures = new ArrayList<>();
 
+        for (int i = 0; i < topics.size(); i++) {
+            String start = topics.get(i).getTime();
+            String end = (i < topics.size() - 1) ? topics.get(i + 1).getTime() : "99999";
             String rawText = ScriptUtils.extractChunkText(scriptLines, start, end);
 
             if (rawText.strip().isEmpty()) {
@@ -94,38 +95,44 @@ public class LlmService {
                 continue;
             }
 
-            String chunkText = String.format(
-            	    start, rawText
-            	);
-            logger.info(chunkText+"\n\n");
-            String instruction = summaryPrompt.createInstruction2();
-            futures.add(openAiClient.getChatCompletionAsync(instruction, chunkText, ModelType.SUMMARY));
-        }
+            String prompt = summaryPrompt.createInstruction2();
 
-        // 마지막 구간 (끝까지)
-        if (!topics.isEmpty()) {
-            TimeLine lastTopic = topics.get(topics.size() - 1);
-            String start = lastTopic.getTime();
-            String end = "99999";
-            String rawText = ScriptUtils.extractChunkText(scriptLines, start, end);
+            // ✅ JSON 응답을 List<ContentBlock>으로 파싱
+            CompletableFuture<List<ContentBlock>> future = openAiClient
+                .getChatCompletionAsync(prompt, rawText, ModelType.SUMMARY)
+                .thenApplyAsync(JsonParser::parseToContentBlockList); // 타입 명시 생략 가능
 
-            if (!rawText.strip().isEmpty()) {
-                String chunkText = String.format(
-                    start, rawText
-                );
-                futures.add(openAiClient.getChatCompletionAsync(summaryPrompt.createInstruction2(), chunkText, ModelType.SUMMARY));
-            }
+            futures.add(future);
         }
 
         return CompletableFuture
             .allOf(futures.toArray(new CompletableFuture[0]))
             .thenApply(v -> futures.stream()
                 .map(CompletableFuture::join)
-                .collect(Collectors.joining(",\n", "[", "]")));
+                .flatMap(List::stream)  // ✅ List<List<ContentBlock>> → List<ContentBlock>
+                .collect(Collectors.toList())
+            );
+    }
+    
+    @Async
+    public CompletableFuture<Void> saveBlock(List<ContentBlock> block) {
+        try {
+        	
+        	
+        	
+            return CompletableFuture.completedFuture(null); // 성공 시
+
+        } catch (Exception e) {
+            logger.error("❌ ContentBlock 저장 실패", e);
+            CompletableFuture<Void> failed = new CompletableFuture<>();
+            failed.completeExceptionally(e);
+            return failed;
+        }
     }
     
     
-    private void saveSummaryToDbAndVector(String summary, List<String> scriptLines) {
+
+    private void saveSummaryToDbAndVector(List<ContentBlock> blocks) {
         // 벡터 저장
 //        List<Float> vector = embeddingService.embed(summary);
         

@@ -2,6 +2,51 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="ExamMapper">
 
+	<!-- 시험 내역 조회 (커서 기반 페이징) - CursorMapper 활용 -->
+	<select id="selectExamHistoryWithCursor" resultType="DataBox" parameterType="RequestBox">
+		<include refid="CursorMapper.cursor_start" />
+		SELECT
+		E.exam_seq,
+		E.content_seq,
+		E.difficulty,
+		E.question_content,
+		E.answer_content,
+		E.model_answer,
+		E.evaluation,
+		CASE
+		WHEN E.evaluation = 'E' THEN 'correct'
+		WHEN E.evaluation = 'F' THEN 'incorrect'
+		WHEN E.evaluation = 'P' THEN 'irrelevant'
+		ELSE NULL
+		END as evaluation_result,
+		DATE_FORMAT(STR_TO_DATE(E.indate, '%Y%m%d%H%i%s'), '%Y-%m-%d %H:%i:%s') as indate,
+		ROW_NUMBER() OVER (ORDER BY E.exam_seq) as question_number
+		FROM
+		fb_ai_exams E
+		JOIN
+		fb_ai_users U ON E.user_seq = U.user_seq
+		WHERE
+		U.uuid = #{uuid}
+		AND
+		E.content_seq = #{contentSeq}
+		<choose>
+			<when test="direction != null and direction.toUpperCase() == 'ASC'">
+				<include refid="CursorMapper.cursor_condition_asc">
+					<property name="cursorTable" value="E" />
+				</include>
+			</when>
+			<otherwise>
+				<include refid="CursorMapper.cursor_condition_desc">
+					<property name="cursorTable" value="E" />
+				</include>
+			</otherwise>
+		</choose>
+		<include refid="CursorMapper.cursor_order_limit">
+			<property name="cursorTable" value="E" />
+		</include>
+		<include refid="CursorMapper.cursor_end" />
+	</select>
+
 	<!-- 시험 문제 저장 (model_answer 제외) -->
 	<insert id="insertExam" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="examSeq">
 		INSERT INTO fb_ai_exams (
