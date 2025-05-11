@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class SummaryService {
 	private final SummaryMapper summaryMapper;
 	
-    private static final Logger logger = LoggerFactory.getLogger(LlmService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
 
     /**
      * 요약 및 섹션 정보를 DB에 저장

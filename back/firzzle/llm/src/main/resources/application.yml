@@ -19,6 +19,8 @@ spring:
         model: gpt-4o-mini
       summary:
         model: gpt-4o-mini
+      runningchat:
+        model: gpt-4o-mini
 
 
 # 공통 설정

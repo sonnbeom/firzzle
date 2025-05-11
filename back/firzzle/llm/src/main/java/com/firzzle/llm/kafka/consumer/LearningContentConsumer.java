@@ -1,7 +1,7 @@
 package com.firzzle.llm.kafka.consumer;
 
 
-import com.firzzle.llm.service.LlmService;
+import com.firzzle.llm.service.RegistrationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Component
 @RequiredArgsConstructor
 public class LearningContentConsumer {
-    private final LlmService llmService;
+    private final RegistrationService llmService;
 
 
 //    @KafkaListener(topics = "learning-content-ready", groupId = "firzzle")

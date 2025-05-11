@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class RunningChatRequest {
 	String Question;
-	String videoSeq;
-	String UserSeq;
+	Long contentSeq;
+//	String PreviousQuestion;
 }
