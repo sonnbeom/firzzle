@@ -73,7 +73,7 @@ const Expert = () => {
           </button>
         </div>
       )}
-      <div className='mx-auto grid max-w-[1000px] grid-cols-1 place-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+      <div className='mx-auto grid w-full max-w-[1000px] grid-cols-3 gap-1 px-1 sm:gap-2 sm:px-2 md:gap-4 md:px-6'>
         {experts.map((expert) => (
           <ExpertCard key={expert.expertSeq} expert={expert} />
         ))}
