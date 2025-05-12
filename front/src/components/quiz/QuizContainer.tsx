@@ -18,7 +18,6 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
   const {
     selected,
     showAnswer,
-    quizResult,
     isCompleted,
     hasAnswered,
     handleSelect,
