@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { TokenResponse } from '@/types/auth';
 import { ApiResponseError, ApiResponseWithData } from '@/types/common';
+import { setServerCookie } from '../cookies';
 
 // OAuth 인증 콜백
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const accessToken = searchParams.get('accessToken');
+
+  console.log('searchParams', searchParams);
+  console.log('accessToken', accessToken);
 
   // accessToken이 없을 경우 에러 처리
   if (!accessToken) {
@@ -31,12 +35,7 @@ export async function GET(request: Request) {
     } as TokenResponse,
   } as ApiResponseWithData<TokenResponse>);
 
-  response.cookies.set('accessToken', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  });
+  setServerCookie('accessToken', accessToken);
 
   return response;
 }
