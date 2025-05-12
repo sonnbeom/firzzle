@@ -52,33 +52,36 @@ public class SttService {
         if (contentService.isContentExistsByVideoId(videoId)) 
             return null;
 
-        // (1) 자막 다운로드
+     // (1) 자막 다운로드
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
             "yt-dlp",
-            "--write-auto-sub",         // 자동 생성된 자막 다운로드
-            "--sub-lang", "ko",         // 한국어 자막
-            "--sub-format", "vtt",      // vtt 포맷으로 받음
-            "--convert-subs", "srt",    // srt로 변환
-            "--skip-download",          // 영상은 다운로드하지 않음
-            "--output", videoId + ".%(ext)s", // 저장 파일 이름
+            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36", // ✅ User-Agent 추가
+            "--write-auto-sub",
+            "--sub-lang", "ko",
+            "--sub-format", "vtt",
+            "--convert-subs", "srt",
+            "--skip-download",
+            "--output", videoId + ".%(ext)s",
             url
         );
-        scriptsExtractor.directory(new File(uploadDir)); // 작업 디렉토리 설정
-        scriptsExtractor.redirectErrorStream(true);        // 에러 스트림 병합
-        runAndPrint(scriptsExtractor);                     // 프로세스 실행
+        scriptsExtractor.directory(new File(uploadDir));
+        scriptsExtractor.redirectErrorStream(true);
+        runAndPrint(scriptsExtractor);
 
         // (2) 자막 파일 읽기
         String scripts = printDownloadedFiles(videoId);
 
-        // (3) 메타데이터 추출 (제목, 설명, 카테고리 등)
+        // (3) 메타데이터 추출
         ProcessBuilder metadataExtractor = new ProcessBuilder(
             "yt-dlp",
+            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36", // ✅ User-Agent 추가
             "--skip-download",
             "--print", "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s",
             "--encoding", "utf-8",
             url
         );
         metadataExtractor.redirectErrorStream(true);
+
 
         Process process = metadataExtractor.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
