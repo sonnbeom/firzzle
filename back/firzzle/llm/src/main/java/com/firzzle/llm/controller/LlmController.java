@@ -38,8 +38,6 @@ public class LlmController {
     private final RegistrationService registrationService;
     private final RunningChatService runningChatService;
 
-
-    
     /**
      * 🎯 업로드된 파일로부터 요약문을 생성하는 API
      * @param String 요약할 텍스트
