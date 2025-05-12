@@ -69,7 +69,7 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
       </div>
       <div className='flex gap-4'>
         {/* 이미지 그룹 */}
-        <div className='w-1/2 bg-blue-50 p-4 md:w-2/5 lg:w-1/3'>
+        <div className='w-1/2 bg-blue-50 p-4 md:w-2/5'>
           <div className='space-y-8'>
             {localReviews.map((item) => (
               <div
