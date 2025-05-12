@@ -1,4 +1,6 @@
+import { getCookie } from '@/actions/auth';
 import { ApiResponseWithData, ApiResponseWithoutData } from '@/types/common';
+import { refreshToken } from '../auth';
 
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
@@ -42,6 +44,7 @@ export class FetchClient {
     options: FetchOptions<TBody>,
   ): Promise<ApiResponseWithData<TResponse> | null> {
     const {
+      withAuth = true,
       contentType = 'application/json',
       headers,
       body,
@@ -50,11 +53,14 @@ export class FetchClient {
       ...restOptions
     } = options;
 
+    const accessToken = (await getCookie('accessToken')).value;
+
     // 헤더 객체 생성
     const allHeaders = new Headers(
       Object.assign(
         {
           'Content-Type': contentType,
+          Authorization: withAuth ? `Bearer ${accessToken}` : '',
         },
         headers,
       ),
@@ -124,24 +130,17 @@ export class FetchClient {
         if (error.message === 'Unauthorized') {
           // 토큰 갱신 API
           console.log('토큰 갱신 시도');
-          const response = await fetch('/api/auth/refresh', {
-            method: 'POST',
-            credentials: 'include',
-          });
+          const response = await refreshToken(retryCount);
 
           console.log('토큰 갱신 응답: ', response);
 
-          const data = await response.json();
-
-          console.log('토큰 갱신 응답 데이터: ', data);
-
-          if (data.message === '토큰 갱신 성공') {
+          if (response.message === '토큰 갱신 성공') {
             return this.request(url, {
               ...options,
               retryCount: retryCount + 1,
             });
           } else {
-            throw new Error(data.message);
+            throw new Error(response.message);
           }
         }
 
