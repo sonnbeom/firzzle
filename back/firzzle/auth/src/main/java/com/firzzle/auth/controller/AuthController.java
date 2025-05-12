@@ -385,7 +385,7 @@ public class AuthController {
         // 리프레시 토큰 쿠키 설정
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);          // JavaScript에서 접근 불가
-        refreshTokenCookie.setSecure(true);            // HTTPS에서만 전송
+        refreshTokenCookie.setSecure(false);            // HTTPS에서만 전송, but 개발 중이므로 false
         refreshTokenCookie.setPath("/api/v1/auth");    // 모든 경로에서 접근 가능
         refreshTokenCookie.setMaxAge(cookieMaxAge);    // 쿠키 유효 기간
 

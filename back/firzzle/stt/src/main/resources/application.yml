@@ -9,21 +9,13 @@ spring:
     import: optional:file:.env[.properties]
 
 # # Whisper 설정
-whisper:
-  executable:
-    path: ${WHISPER_EXECUTABLE_PATH}
-  model:
-    path: ${WHISPER_MODEL_PATH}
-  working:
-    dir: ${WHISPER_WORKING_DIR}
-
-# 파일 저장 경로
-app:
-  file-storage:
-    upload-dir: /data/firzzle/uploads
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic
+# whisper:
+#   executable:
+#     path: ${WHISPER_EXECUTABLE_PATH}
+#   model:
+#     path: ${WHISPER_MODEL_PATH}
+#   working:
+#     dir: ${WHISPER_WORKING_DIR}
 
 # Swagger 설정
 springdoc:
@@ -96,6 +88,14 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: C:\SSAFY\uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+
 server:
   port: 8080
 
@@ -116,7 +116,7 @@ spring:
       on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 10
@@ -130,6 +130,14 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
 
 server:
   port: 8080
@@ -160,7 +168,7 @@ spring:
       on-profile: production
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20
@@ -174,6 +182,14 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
 
 server:
   port: 8080

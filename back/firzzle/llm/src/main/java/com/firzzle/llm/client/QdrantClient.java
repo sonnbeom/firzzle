@@ -10,7 +10,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.firzzle.llm.dto.*;
-
 import reactor.core.publisher.Mono;
 
 /**
@@ -42,7 +41,7 @@ public class QdrantClient {
      * @param vector 벡터 데이터 (Float 리스트)
      * @return Mono<Void> (응답 없음)
      */
-    public Mono<Void> upsertVector(String collection, Integer id, List<Float> vector, String content) {
+    public Mono<Void> upsertVector(String collection, Long id, List<Float> vector, String content) {
         // 실제 요청 본문을 로깅
         Map<String, Object> requestBody = Map.of(
             "points", List.of(Map.of(
@@ -69,6 +68,26 @@ public class QdrantClient {
                     log.error("Response body: {}", e.getMessage());
                 }
             });
+    }
+    
+    public Mono<Void> upsertVector(String collection, Long id, List<Float> vector, Map<String, Object> payload) {
+        Map<String, Object> requestBody = Map.of(
+            "points", List.of(Map.of(
+                "id", id,
+                "vector", vector,
+                "payload", payload
+            ))
+        );
+
+        log.info("📤 Qdrant 업서트 요청 본문: {}", requestBody);
+
+        return webClient.put()
+            .uri("/collections/{collection}/points", collection)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(Void.class)
+            .doOnSuccess(v -> log.info("✅ Qdrant 저장 완료: id={} collection={}", id, collection))
+            .doOnError(e -> log.error("❌ Qdrant 저장 실패", e));
     }
 
     /**
@@ -131,5 +150,16 @@ public class QdrantClient {
                 .filter(content -> !content.isBlank())
                 .toList()
             );
+    }
+    
+    public Mono<List<Map<String, Object>>> searchRaw(String collection, Map<String, Object> requestBody) {
+        return webClient.post()
+            .uri("/collections/{collection}/points/search", collection)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(QdrantSearchResponse.class)
+            .map(QdrantSearchResponse::getResult)
+            .doOnSuccess(result -> log.info("🔍 필터 포함 검색 성공: {}개", result.size()))
+            .doOnError(e -> log.error("❌ 검색 실패", e));
     }
 }
