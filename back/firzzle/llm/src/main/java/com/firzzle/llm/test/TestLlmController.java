@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Log4j2
 @RestController
 @RequiredArgsConstructor
+<<<<<<< HEAD
 @RequestMapping("/api/v1")
+=======
+@RequestMapping("/v1")
+>>>>>>> 519b937025eeec618d25c5bfccdfb510e24573fa
 public class TestLlmController {
     @GetMapping("/test")
     public String test(){
