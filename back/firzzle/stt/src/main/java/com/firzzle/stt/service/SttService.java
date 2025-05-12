@@ -49,8 +49,8 @@ public class SttService {
         String videoId = contentService.extractYoutubeId(url);
 
 //        // 중복 콘텐츠 방지
-//        if (contentService.isContentExistsByVideoId(videoId)) 
-//            return null;
+        if (contentService.isContentExistsByVideoId(videoId)) 
+            return null;
 
         // (1) 자막 다운로드
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
@@ -133,7 +133,14 @@ public class SttService {
         Path srtPath = workingDir.resolve(videoId + ".ko.srt");
 
         if (Files.exists(srtPath)) {
-            return SubtitleUtil.cleanSrtToText(srtPath);
+            String result = SubtitleUtil.cleanSrtToText(srtPath); // ✅ 먼저 내용 읽기
+            try {
+                Files.deleteIfExists(srtPath); // ✅ 파일 삭제
+                logger.info("✅ 자막 파일 삭제 완료: " + srtPath.toString());
+            } catch (IOException e) {
+                logger.warn("⚠️ 자막 파일 삭제 실패: " + srtPath.toString(), e);
+            }
+            return result;
         } else {
             logger.info("❗ ko.srt 자막 파일이 없습니다.");
             return null;
