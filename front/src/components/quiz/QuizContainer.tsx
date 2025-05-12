@@ -43,9 +43,6 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
         title='주의'
         description='현재 화면을 보여나면 문제는 초기화됩니다. 계속하시겠습니까?'
       >
-        <Button variant='ghost' onClick={() => setNavigationDialog(false)}>
-          취소
-        </Button>
         <Button onClick={confirmNavigation}>확인</Button>
       </BasicDialog>
 
