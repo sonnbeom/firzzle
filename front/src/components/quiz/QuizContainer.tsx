@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import BasicDialog from '@/components/common/BasicDialog';
 import { Button } from '@/components/ui/button';
 import { usePreventNavigation } from '@/hooks/usePreventNavigation';
@@ -15,13 +14,10 @@ interface QuizContainerProps {
 }
 
 const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
-  const [showDialog, setShowDialog] = useState(false);
-
   // useQuiz 훅으로 퀴즈 관련 로직 분리
   const {
     selected,
     showAnswer,
-    quizResult,
     isCompleted,
     hasAnswered,
     handleSelect,
@@ -32,47 +28,21 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
 
   // usePreventNavigation 훅 사용
   const {
-    setPendingNavigation,
-    blockUnload,
-
-    originalPushRef,
+    showDialog: showNavigationDialog,
+    setShowDialog: setNavigationDialog,
+    confirmNavigation,
   } = usePreventNavigation(hasAnswered && !showAnswer);
 
   return (
     <div className='relative w-full px-2 md:px-10'>
-      {/* Dialog */}
+      {/* Navigation Dialog */}
       <BasicDialog
-        isOpen={showDialog}
-        onOpenChange={setShowDialog}
+        isOpen={showNavigationDialog}
+        onOpenChange={setNavigationDialog}
         title='주의'
         description='현재 화면을 벗어나면 문제는 초기화됩니다. 계속하시겠습니까?'
       >
-        <Button variant='ghost' onClick={() => setShowDialog(false)}>
-          취소
-        </Button>
-        <Button
-          onClick={() => {
-            setShowDialog(false);
-            setPendingNavigation((prev) => {
-              setTimeout(() => {
-                blockUnload.current = false;
-                if (
-                  prev?.type === 'push' &&
-                  prev.url &&
-                  originalPushRef.current
-                ) {
-                  const pushFn = originalPushRef.current;
-                  pushFn(prev.url, prev.options);
-                } else if (prev?.type === 'back') {
-                  window.history.back();
-                }
-              }, 10);
-              return null;
-            });
-          }}
-        >
-          확인
-        </Button>
+        <Button onClick={confirmNavigation}>확인</Button>
       </BasicDialog>
 
       {/* Quiz */}
@@ -82,11 +52,7 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
             return (
               <QuizAnswer
                 key={question.questionSeq}
-                {...getAnswerProps(
-                  question,
-                  index,
-                  quizResult?.questionResults,
-                )}
+                {...getAnswerProps(question, index)}
               />
             );
           }

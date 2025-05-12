@@ -22,12 +22,16 @@ const BasicDialog = ({
 }: BasicDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+      <DialogContent className='sm:max-w-[450px]'>
+        <DialogHeader className='text-center'>
+          <DialogTitle className='text-center text-xl font-bold text-gray-950'>
+            {title}
+          </DialogTitle>
+          <DialogDescription className='text-md text-gray-700'>
+            {description}
+          </DialogDescription>
         </DialogHeader>
-        <div className='mt-4 flex justify-end space-x-4'>{children}</div>
+        <div className='mt-6 flex justify-center gap-4'>{children}</div>
       </DialogContent>
     </Dialog>
   );

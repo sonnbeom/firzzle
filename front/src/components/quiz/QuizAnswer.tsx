@@ -16,7 +16,7 @@ const QuizAnswer = ({
       <div className='flex items-start gap-4'>
         {/* 번호 */}
         <div className='text-[24px] font-bold text-gray-900 md:text-[30px]'>
-          {questionSeq.toString().padStart(2, '0')}
+          {Number(questionSeq.toString().slice(-1)).toString().padStart(2, '0')}
         </div>
 
         {/* 질문 */}
