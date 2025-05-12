@@ -2,7 +2,7 @@ package com.firzzle.llm.kafka.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firzzle.llm.dto.LlmRequest;
-import com.firzzle.llm.service.LlmService;
+import com.firzzle.llm.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SttConvertedConsumer {
 
-    private final LlmService llmService;
+    private final RegistrationService llmService;
     private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "stt-converted", groupId = "firzzle")

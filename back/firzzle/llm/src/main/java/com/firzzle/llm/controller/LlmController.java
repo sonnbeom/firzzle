@@ -1,21 +1,15 @@
 package com.firzzle.llm.controller;
 
-import com.firzzle.common.exception.BusinessException;
-import com.firzzle.common.exception.ErrorCode;
-import com.firzzle.common.library.DataBox;
-import com.firzzle.common.library.FormatDate;
-import com.firzzle.common.library.RequestBox;
-import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.response.PageResponseDTO;
-import com.firzzle.common.response.Response;
-import com.firzzle.common.response.Status;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 import com.firzzle.llm.dto.*;
 import com.firzzle.llm.service.*;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * @Class Name : LlmController.java
@@ -24,23 +18,21 @@ import com.firzzle.llm.service.*;
  * @since 2025. 4. 30.
  */
 @RestController
-@RequestMapping("/api/llm")
+@RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class LlmController {
 
-    private final LlmService llmService;
+    private final RegistrationService registrationService;
+    private final RunningChatService runningChatService;
 
-    public LlmController(LlmService llmService) {
-        this.llmService = llmService;
-    }
-    
     /**
      * 🎯 업로드된 파일로부터 요약문을 생성하는 API
      * @param String 요약할 텍스트
-     * @return 요약 결과 (LLM 기반 처리)
+     * @return 요약 결과 (LLM 기반 처리).
      */
     @PostMapping("/summary")
     public CompletableFuture<ResponseEntity<String>> postSummary(@RequestBody LlmRequest request) {
-        return llmService.summarizeContents(request)
+        return registrationService.summarizeContents(request)
                 .thenApply(ResponseEntity::ok)
                 .exceptionally(e -> {
                     e.printStackTrace();
@@ -54,13 +46,13 @@ public class LlmController {
 	  * @return 요약 결과 (LLM 기반 처리)
 	  */
 	 @PostMapping("/runningchat")
-	 public ResponseEntity<?> TryRunningChat(@RequestBody RunningChatRequest request) {
-	     try {
-	         return ResponseEntity.ok("null");
-	     } catch (Exception e) {
-	         e.printStackTrace();
-	         return ResponseEntity.status(500).body("LLM 처리 중 오류 발생: " + e.getMessage());
-	     }
+	 public  CompletableFuture<ResponseEntity<String>> TryRunningChat(@RequestBody RunningChatRequest request) {
+        return runningChatService.runningChat(request)
+                .thenApply(result -> ResponseEntity.ok(result))
+                .exceptionally(e -> {
+                    e.printStackTrace();
+                    return ResponseEntity.status(500).body("LLM 처리 중 오류 발생: " + e.getMessage());
+                });
 	 }
     
     /**
@@ -70,7 +62,7 @@ public class LlmController {
      */
     @PostMapping("/chat-test")
     public CompletableFuture<ResponseEntity<String>> ChatTest(@RequestBody String question) {
-        return llmService.testGptResponse(question)
+        return runningChatService.testGptResponse(question)
             .thenApply(result -> ResponseEntity.ok(result))
             .exceptionally(e -> {
                 e.printStackTrace();
@@ -86,7 +78,7 @@ public class LlmController {
      */
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-        llmService.register(request.getId(), request.getContent());
+    	runningChatService.register(request.getId(), request.getContent());
         return ResponseEntity.ok("✅ 등록 완료");
     }
 }
