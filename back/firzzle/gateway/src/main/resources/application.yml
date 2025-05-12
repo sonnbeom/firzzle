@@ -89,8 +89,8 @@ spring:
             - RewritePath=/api/v1/admin/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
-                enabled: true
-                adminOnly: true  # Admin 역할만 접근 가능
+                enabled: false
+#                adminOnly: true  # Admin 역할만 접근 가능
 
         - id: admin-service-v2
           uri: lb://admin-server
@@ -100,8 +100,8 @@ spring:
             - RewritePath=/api/v2/admin/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
-                enabled: true
-                adminOnly: true  # Admin 역할만 접근 가능
+                enabled: false
+#                adminOnly: true  # Admin 역할만 접근 가능
 
 # JWT 설정
 jwt:

@@ -1,12 +1,14 @@
 package com.firzzle.common.logging.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @SuperBuilder
+@Getter
 public class UserActionLog extends LogEvent {
     private String fromContent;
     private String toContent;
@@ -20,7 +22,7 @@ public class UserActionLog extends LogEvent {
                 .event("USER_ACTION")
                 .userId(userId)
                 .detail(detail)
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now().withNano(0))
                 .build();
     }
     public static UserActionLog userLoginLog () {
@@ -28,7 +30,7 @@ public class UserActionLog extends LogEvent {
         return UserActionLog.builder()
                 .event("USER_ACTION")
                 .detail("LOGIN")
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now().withNano(0))
                 .build();
     }
     public static UserActionLog userRecommendActionLog (String userId, String recommendAction) {
@@ -38,7 +40,7 @@ public class UserActionLog extends LogEvent {
                 .userId(userId)
                 .detail("RECOMMEND")
                 .recommendAction(recommendAction)
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now().withNano(0))
                 .build();
     }
     public static UserActionLog userPreferenceLog(String userId, String fromContent, String toContent) {
@@ -47,18 +49,31 @@ public class UserActionLog extends LogEvent {
                 .event("USER_ACTION")
                 .userId(userId)
                 .detail("PREFERENCE")
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now().withNano(0))
                 .fromContent(fromContent)
                 .toContent(toContent)
                 .build();
     }
+    public static UserActionLog testUserPreferenceLog(String userId, String fromContent, String toContent, LocalDateTime localDateTime) {
+
+        return UserActionLog.builder()
+                .event("USER_ACTION")
+                .userId(userId)
+                .detail("PREFERENCE")
+                .timestamp(LocalDateTime.now().withNano(0))
+                .fromContent(fromContent)
+                .toContent(toContent)
+                .build();
+    }
+
+
     public static UserActionLog summaryPreferenceLog(String userId, String summaryPreference) {
 
         return UserActionLog.builder()
                 .event("USER_ACTION")
                 .userId(userId)
                 .detail("SUMMARY_PREFERENCE")
-                .timestamp(LocalDateTime.now())
+                .timestamp(LocalDateTime.now().withNano(0))
                 .summaryPreference(summaryPreference)
                 .build();
     }
