@@ -55,5 +55,4 @@
     AND C.delete_yn = 'N'
     LIMIT 1
 	</select>
-
 </mapper>
