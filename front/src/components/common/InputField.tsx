@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface InputFieldProps {
   label: string;
   id: string;
@@ -7,12 +5,7 @@ interface InputFieldProps {
   placeholder: string;
 }
 
-const InputField: React.FC<InputFieldProps> = ({
-  label,
-  id,
-  type,
-  placeholder,
-}) => {
+const InputField = ({ label, id, type, placeholder }: InputFieldProps) => {
   return (
     <div className='mb-4'>
       <label htmlFor={id} className='text-md mb-2 font-medium text-gray-950'>

@@ -12,7 +12,7 @@ const QuizCard = ({
     <div className='rounded-[14px] border border-gray-50 bg-white px-8 py-2 shadow-sm transition-all md:py-4'>
       {/* 문제 번호 */}
       <div className='text-center text-[24px] font-bold text-gray-900 md:text-[30px]'>
-        {questionSeq.toString().padStart(2, '0')}
+        {(Number(questionSeq.toString().slice(-1))).toString().padStart(2, '0')}
       </div>
 
       {/* 문제 */}
