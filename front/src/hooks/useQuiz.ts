@@ -13,7 +13,6 @@ import {
 const getAnswerProps = (
   question: QuizData['questions'][0],
   index: number,
-  questionResults?: QuizSubmitResponse['questionResults'],
 ): QuizAnswerProps => {
   const explanation = question.userAnswer?.explanation || '';
 

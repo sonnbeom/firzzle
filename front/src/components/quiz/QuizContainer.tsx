@@ -53,11 +53,7 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
             return (
               <QuizAnswer
                 key={question.questionSeq}
-                {...getAnswerProps(
-                  question,
-                  index,
-                  quizResult?.questionResults,
-                )}
+                {...getAnswerProps(question, index)}
               />
             );
           }
