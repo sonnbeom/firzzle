@@ -69,7 +69,7 @@ dependencies {
     //implementation("io.netty:netty-resolver-dns:4.1.100.Final")
     
     // Playwright Java API
-    implementation 'com.microsoft.playwright:playwright:1.34.0'
+    implementation 'com.microsoft.playwright:playwright:1.42.0'
 
     // === 테스트 ===
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

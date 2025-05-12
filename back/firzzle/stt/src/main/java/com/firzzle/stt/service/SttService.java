@@ -48,39 +48,44 @@ public class SttService {
     public String transcribeFromYoutube(String url) throws Exception {
         String videoId = contentService.extractYoutubeId(url);
 
-//        // 중복 콘텐츠 방지
         if (contentService.isContentExistsByVideoId(videoId)) 
             return null;
 
-     // (1) 자막 다운로드
         String UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                 + "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
 
-        // (1) 자막 다운로드
+        // 자막 다운로드
+        String COOKIE_PATH = "/data/firzzle/cookies.txt";
+
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
-          "yt-dlp",
-          "--user-agent", UA,
-          "--no-check-certificate",
-          "--referer", "https://www.youtube.com",
-          "--write-auto-sub",
-          "--sub-lang", "ko",
-          "--sub-format", "vtt",
-          "--convert-subs", "srt",
-          "--skip-download",
-          "--output", videoId + ".%(ext)s",
-          url
+            "yt-dlp",
+            "--user-agent", UA,
+            "--cookies", COOKIE_PATH,
+            "--no-check-certificate",
+            "--referer", "https://www.youtube.com",
+            "--write-auto-sub",
+            "--sub-lang", "ko",
+            "--sub-format", "vtt",
+            "--convert-subs", "srt",
+            "--skip-download",
+            "--output", videoId + ".%(ext)s",
+            url
         );
+        
         scriptsExtractor.directory(new File(uploadDir));
         scriptsExtractor.redirectErrorStream(true);
         runAndPrint(scriptsExtractor);
 
-        // (2) 자막 파일 읽기
         String scripts = printDownloadedFiles(videoId);
+        if (scripts == null) {
+            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+        }
 
-        // (3) 메타데이터 추출
+        // 메타데이터 추출
         ProcessBuilder metadataExtractor = new ProcessBuilder(
             "yt-dlp",
             "--user-agent", UA,
+            "--cookies", COOKIE_PATH,
             "--no-check-certificate",
             "--referer", "https://www.youtube.com",
             "--skip-download",
@@ -90,29 +95,28 @@ public class SttService {
         );
         metadataExtractor.redirectErrorStream(true);
 
-
         Process process = metadataExtractor.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+        BufferedReader reader = new BufferedReader(
+            new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
+        );
+
         List<String> lines = new ArrayList<>();
         String line;
         while ((line = reader.readLine()) != null) {
             lines.add(line);
         }
 
-        // (4) 메타데이터 파싱
         String title = lines.size() > 0 ? lines.get(0) : "";
-
         StringBuilder descBuilder = new StringBuilder();
         for (int i = 1; i < lines.size() - 3; i++) {
             descBuilder.append(lines.get(i)).append(" ");
         }
-        String description = descBuilder.toString().trim();
 
+        String description = descBuilder.toString().trim();
         String category = lines.size() >= 3 ? lines.get(lines.size() - 3) : "";
         String thumbnail = lines.size() >= 2 ? lines.get(lines.size() - 2) : "";
         String durationStr = lines.size() >= 1 ? lines.get(lines.size() - 1) : "";
 
-        // (5) ContentDTO 객체 생성 및 저장
         ContentDTO contentDTO = new ContentDTO();
         contentDTO.setVideoId(videoId);
         contentDTO.setUrl(url);
@@ -121,14 +125,6 @@ public class SttService {
         contentDTO.setCategory(category);
         contentDTO.setThumbnailUrl(thumbnail);
         contentDTO.setDuration(Long.parseLong(durationStr));
-
-        contentService.insertContent(contentDTO);
-        Long contentSeq = contentDTO.getContentSeq();
-        if (scripts != null) {
-            sttConvertedProducer.sendSttResult(contentSeq, scripts); // Kafka 전송
-        } else {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-        }
 
         return scripts;
     }
