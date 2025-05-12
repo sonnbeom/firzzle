@@ -41,7 +41,7 @@ public class LlmController {
     /**
      * 🎯 업로드된 파일로부터 요약문을 생성하는 API
      * @param String 요약할 텍스트
-     * @return 요약 결과 (LLM 기반 처리)
+     * @return 요약 결과 (LLM 기반 처리).
      */
     @PostMapping("/summary")
     public CompletableFuture<ResponseEntity<String>> postSummary(@RequestBody LlmRequest request) {
