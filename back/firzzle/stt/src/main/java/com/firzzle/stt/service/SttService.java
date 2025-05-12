@@ -156,32 +156,32 @@ public class SttService {
      * @throws Exception 프로세스 실행 오류
      */
     private void runAndPrint(ProcessBuilder pb) throws Exception {
-        Process process = pb.start();
-        List<String> outputLines = new ArrayList<>();
+    Process process = pb.start();
+    List<String> outputLines = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                logger.info("[process] " + line);
-                outputLines.add(line);
-            }
-        }
-
-        int exitCode = process.waitFor();
-
-        if (exitCode != 0) {
-            String allOutput = String.join("\n", outputLines);
-
-            if (allOutput.contains("ERROR: Unsupported URL") || allOutput.contains("HTTP Error 404")) {
-                throw new BusinessException(ErrorCode.INVALID_YOUTUBE_URL);
-            }
-
-            if (allOutput.contains("No subtitles") || allOutput.contains("There are no subtitles")) {
-                throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-            }
-
-            throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            logger.info("[process] " + line);
+            outputLines.add(line);
         }
     }
+
+    int exitCode = process.waitFor();
+    String allOutput = String.join("\n", outputLines);
+    logger.error("📌 yt-dlp 전체 로그:\n{}", allOutput); // ✅ 로그 전체 출력
+
+    if (exitCode != 0) {
+        if (allOutput.contains("ERROR: Unsupported URL") || allOutput.contains("HTTP Error 404")) {
+            throw new BusinessException(ErrorCode.INVALID_YOUTUBE_URL);
+        }
+
+        if (allOutput.contains("No subtitles") || allOutput.contains("There are no subtitles")) {
+            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+        }
+
+        throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
+    }
+}
 }
 
