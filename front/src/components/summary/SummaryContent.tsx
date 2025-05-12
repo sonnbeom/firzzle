@@ -1,11 +1,11 @@
-import { SummaryData, SummaryLevel } from '@/types/summary';
+import { SummaryDetail, SummaryLevel } from '@/types/summary';
 import SelectableText from './SelectableText';
 import SummaryCard from './SummaryCard';
 
 interface SummaryContentProps {
   level: SummaryLevel;
-  easyData: SummaryData[];
-  highData: SummaryData[];
+  easyData: SummaryDetail[];
+  highData: SummaryDetail[];
 }
 
 const SummaryContent = async ({
@@ -20,10 +20,10 @@ const SummaryContent = async ({
       <SelectableText>
         {summaryData.map((item) => (
           <SummaryCard
-            key={item.id}
+            key={item.sectionSeq}
             title={item.title}
-            description={item.description}
-            time={item.time}
+            description={item.details}
+            time={item.startTime}
           />
         ))}
       </SelectableText>
