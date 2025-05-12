@@ -8,7 +8,7 @@ interface OAuthButtonProps {
   className?: string;
 }
 
-const OAuthButton = ({ oauth, title, className }: OAuthButtonProps) => {
+const OAuthButton = ({ url, oauth, title, className }: OAuthButtonProps) => {
   let CLIENT_ID = '';
   let REDIRECT_URI = '';
 
@@ -24,9 +24,9 @@ const OAuthButton = ({ oauth, title, className }: OAuthButtonProps) => {
 
   return (
     <Link
-      href={`https://kauth.kakao.com/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`}
+      href={`${url}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`}
     >
-      <Button size='lg' className={`${className}`}>
+      <Button size='lg' className={`${className} cursor-pointer`}>
         {title}
       </Button>
     </Link>

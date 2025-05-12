@@ -15,7 +15,7 @@ const CtaSection = () => {
         </p>
 
         <OAuthButton
-          url='https://kauth.kakao.com/oauth/authorize?'
+          url='https://kauth.kakao.com/oauth/authorize'
           oauth='kakao'
           title='카카오로 시작하기'
           className='bg-white text-blue-400 md:py-3'

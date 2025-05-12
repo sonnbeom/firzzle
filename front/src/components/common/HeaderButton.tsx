@@ -12,7 +12,7 @@ const HeaderButton = () => {
     <>
       {pathname == '/' ? (
         <OAuthButton
-          url='https://kauth.kakao.com/oauth/authorize?'
+          url='https://kauth.kakao.com/oauth/authorize'
           oauth='kakao'
           title='시작하기'
           className='hidden md:block'

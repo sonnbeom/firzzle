@@ -12,7 +12,6 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       try {
         const accessToken = searchParams.get('accessToken');
-        console.log('Client side - accessToken:', accessToken);
 
         const response = await internalApi.get(
           `/auth/callback?accessToken=${accessToken}`,

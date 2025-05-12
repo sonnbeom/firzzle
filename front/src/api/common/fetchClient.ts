@@ -42,7 +42,6 @@ export class FetchClient {
     options: FetchOptions<TBody>,
   ): Promise<ApiResponseWithData<TResponse> | null> {
     const {
-      withAuth = true,
       contentType = 'application/json',
       headers,
       body,
@@ -80,7 +79,7 @@ export class FetchClient {
         ...restOptions,
         headers: allHeaders,
         body: body ? JSON.stringify(body) : undefined,
-        credentials: withAuth ? 'include' : 'same-origin',
+        credentials: 'include',
       });
 
       // 401 에러 처리
@@ -124,17 +123,25 @@ export class FetchClient {
 
         if (error.message === 'Unauthorized') {
           // 토큰 갱신 API
+          console.log('토큰 갱신 시도');
           const response = await fetch('/api/auth/refresh', {
             method: 'POST',
+            credentials: 'include',
           });
 
+          console.log('토큰 갱신 응답: ', response);
+
           const data = await response.json();
+
+          console.log('토큰 갱신 응답 데이터: ', data);
 
           if (data.message === '토큰 갱신 성공') {
             return this.request(url, {
               ...options,
               retryCount: retryCount + 1,
             });
+          } else {
+            throw new Error(data.message);
           }
         }
 

@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server';
-import { TokenResponse } from '@/types/auth';
-import { ApiResponseError, ApiResponseWithData } from '@/types/common';
+import { ApiResponseError, ApiResponseWithoutData } from '@/types/common';
 import { setServerCookie } from '../cookies';
 
 // OAuth 인증 콜백
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const accessToken = searchParams.get('accessToken');
-
-  console.log('searchParams', searchParams);
-  console.log('accessToken', accessToken);
 
   // accessToken이 없을 경우 에러 처리
   if (!accessToken) {
@@ -24,18 +20,15 @@ export async function GET(request: Request) {
   }
 
   // 쿠키에 accessToken 저장
-  const response = NextResponse.json({
+  await setServerCookie('accessToken', 'Bearer ' + accessToken);
+
+  // 응답에서 토큰 제외
+  return NextResponse.json({
     status: 'OK',
     cause: '',
     message: 'OAuth 인증 콜백 성공',
     prevUrl: request.url,
     redirectUrl: '/content',
-    data: {
-      accessToken,
-    } as TokenResponse,
-  } as ApiResponseWithData<TokenResponse>);
-
-  setServerCookie('accessToken', accessToken);
-
-  return response;
+    data: null,
+  } as ApiResponseWithoutData);
 }
