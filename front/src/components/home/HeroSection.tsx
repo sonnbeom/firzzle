@@ -27,7 +27,7 @@ const HeroSection = () => {
 
           <div className='flex flex-wrap gap-4 pt-4'>
             <OAuthButton
-              url='https://kauth.kakao.com/oauth/authorize?'
+              url='https://kauth.kakao.com/oauth/authorize'
               oauth='kakao'
               title='카카오톡으로 시작하기'
             />
