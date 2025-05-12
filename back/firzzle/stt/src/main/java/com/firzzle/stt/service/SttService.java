@@ -53,16 +53,22 @@ public class SttService {
             return null;
 
      // (1) 자막 다운로드
+        String UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                + "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
+
+        // (1) 자막 다운로드
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
-            "yt-dlp",
-            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36", // ✅ User-Agent 추가
-            "--write-auto-sub",
-            "--sub-lang", "ko",
-            "--sub-format", "vtt",
-            "--convert-subs", "srt",
-            "--skip-download",
-            "--output", videoId + ".%(ext)s",
-            url
+          "yt-dlp",
+          "--user-agent", UA,
+          "--no-check-certificate",
+          "--referer", "https://www.youtube.com",
+          "--write-auto-sub",
+          "--sub-lang", "ko",
+          "--sub-format", "vtt",
+          "--convert-subs", "srt",
+          "--skip-download",
+          "--output", videoId + ".%(ext)s",
+          url
         );
         scriptsExtractor.directory(new File(uploadDir));
         scriptsExtractor.redirectErrorStream(true);
@@ -74,7 +80,9 @@ public class SttService {
         // (3) 메타데이터 추출
         ProcessBuilder metadataExtractor = new ProcessBuilder(
             "yt-dlp",
-            "--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36", // ✅ User-Agent 추가
+            "--user-agent", UA,
+            "--no-check-certificate",
+            "--referer", "https://www.youtube.com",
             "--skip-download",
             "--print", "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s",
             "--encoding", "utf-8",
