@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firzzle.llm.mapper.OxQuizMapper">
+   <insert id="insertQuestions" parameterType="java.util.List">
+        INSERT INTO fb_ai_questions (
+            content_seq,
+            question,
+            type,
+            correct_answer,
+            explanation,
+            start_time,
+            delete_yn
+        )
+        VALUES
+        <foreach collection="list" item="q" separator=",">
+            (
+                #{q.contentSeq},
+                #{q.question},
+                #{q.type},
+                #{q.correctAnswer},
+                #{q.explanation},
+                #{q.startTime},
+                #{q.deleteYn}
+            )
+        </foreach>
+    </insert>
+</mapper>

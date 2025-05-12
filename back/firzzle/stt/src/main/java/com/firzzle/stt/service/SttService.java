@@ -48,9 +48,9 @@ public class SttService {
     public String transcribeFromYoutube(String url) throws Exception {
         String videoId = contentService.extractYoutubeId(url);
 
-        // 중복 콘텐츠 방지
-        if (contentService.isContentExistsByVideoId(videoId)) 
-            return null;
+//        // 중복 콘텐츠 방지
+//        if (contentService.isContentExistsByVideoId(videoId)) 
+//            return null;
 
         // (1) 자막 다운로드
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
@@ -69,12 +69,6 @@ public class SttService {
 
         // (2) 자막 파일 읽기
         String scripts = printDownloadedFiles(videoId);
-
-        if (scripts != null) {
-            sttConvertedProducer.sendSttResult(scripts); // Kafka 전송
-        } else {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-        }
 
         // (3) 메타데이터 추출 (제목, 설명, 카테고리 등)
         ProcessBuilder metadataExtractor = new ProcessBuilder(
@@ -118,6 +112,12 @@ public class SttService {
         contentDTO.setDuration(Long.parseLong(durationStr));
 
         contentService.insertContent(contentDTO);
+        Long contentSeq = contentDTO.getContentSeq();
+        if (scripts != null) {
+            sttConvertedProducer.sendSttResult(contentSeq, scripts); // Kafka 전송
+        } else {
+            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+        }
 
         return scripts;
     }
