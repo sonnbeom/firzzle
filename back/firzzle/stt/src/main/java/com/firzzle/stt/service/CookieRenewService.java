@@ -37,7 +37,7 @@ public class CookieRenewService {
             BrowserContext context = browser.newContext();
             Page page = context.newPage();
 
-            // 1) 로그인 페이지 접근 및 계정 입력
+            // 1) 로그인 페이지 접근 및 계정 입력.
             page.navigate("https://accounts.google.com/signin/v2/identifier?service=youtube");
             page.waitForSelector("input[type=\"email\"]").fill(System.getenv("YT_ID"));
             page.click("button:has-text(\"다음\")");
