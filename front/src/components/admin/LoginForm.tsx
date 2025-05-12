@@ -1,4 +1,4 @@
-import InputField from '@/components/admin/InputField';
+import InputField from '@/components/common/InputField';
 import { Button } from '@/components/ui/button';
 
 const LoginForm = () => {
