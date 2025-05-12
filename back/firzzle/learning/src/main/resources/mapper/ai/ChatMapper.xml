@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ChatMapper">
+
+	<!-- 채팅 내역 조회 (커서 기반 페이징) - CursorMapper 활용 -->
+	<select id="selectChatHistoryWithCursor" resultType="DataBox" parameterType="RequestBox">
+		<include refid="CursorMapper.cursor_start" />
+		SELECT
+		C.chat_seq,
+		C.content_seq,
+		C.question,
+		C.answer,
+		DATE_FORMAT(STR_TO_DATE(C.indate, '%Y%m%d%H%i%s'), '%Y-%m-%d %H:%i:%s') as indate
+		FROM
+		fb_ai_chats C
+		JOIN
+		fb_ai_users U ON C.user_seq = U.user_seq
+		WHERE
+		U.uuid = #{uuid}
+		AND
+		C.content_seq = #{contentSeq}
+		<choose>
+			<when test="direction != null and direction.toUpperCase() == 'ASC'">
+				<include refid="CursorMapper.cursor_condition_asc">
+					<property name="cursorTable" value="C" />
+				</include>
+			</when>
+			<otherwise>
+				<include refid="CursorMapper.cursor_condition_desc">
+					<property name="cursorTable" value="C" />
+				</include>
+			</otherwise>
+		</choose>
+		<include refid="CursorMapper.cursor_order_limit">
+			<property name="cursorTable" value="C" />
+		</include>
+		<include refid="CursorMapper.cursor_end" />
+	</select>
+
+	<!-- 채팅 저장 -->
+	<insert id="insertChat" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="chatSeq">
+		INSERT INTO fb_ai_chats (
+			content_seq,
+			user_seq,
+			question,
+			answer,
+			seq,
+			indate
+		) VALUES (
+			#{contentSeq},
+			get_user_seq_by_uuid(#{uuid}),
+			#{question},
+			#{answer},
+			#{seq},
+			#{indate}
+		)
+		<selectKey keyProperty="chatSeq" resultType="Long" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+	</insert>
+
+	<!-- 최근 대화 내역 조회 -->
+	<select id="selectRecentChats" resultType="DataBox" parameterType="RequestBox">
+		SELECT
+			chat_seq,
+			content_seq,
+			question,
+			answer,
+			C.indate
+		FROM
+			fb_ai_chats C
+				JOIN
+			fb_ai_users U ON C.user_seq = U.user_seq
+		WHERE
+			U.uuid = #{uuid}
+		  AND
+			C.content_seq = #{contentSeq}
+		ORDER BY
+			C.chat_seq DESC
+			LIMIT #{limit}
+	</select>
+</mapper>
