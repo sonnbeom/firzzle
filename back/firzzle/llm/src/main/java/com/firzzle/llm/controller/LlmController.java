@@ -1,25 +1,12 @@
 package com.firzzle.llm.controller;
 
-import com.firzzle.common.exception.BusinessException;
-import com.firzzle.common.exception.ErrorCode;
-import com.firzzle.common.library.DataBox;
-import com.firzzle.common.library.FormatDate;
-import com.firzzle.common.library.RequestBox;
-import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.response.PageResponseDTO;
-import com.firzzle.common.response.Response;
-import com.firzzle.common.response.Status;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.firzzle.llm.client.OpenAiClient;
-import com.firzzle.llm.client.QdrantClient;
+
 import com.firzzle.llm.dto.*;
-import com.firzzle.llm.prompt.RunnigChatPrompt;
-import com.firzzle.llm.prompt.SummaryPrompt;
-import com.firzzle.llm.repository.TestRepository;
 import com.firzzle.llm.service.*;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +19,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/llm")
+@RequestMapping("/api/v1")
 public class LlmController {
 
     private final RegistrationService registrationService;
