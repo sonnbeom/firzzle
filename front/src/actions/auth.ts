@@ -1,20 +1,22 @@
+'use server';
+
 import { cookies } from 'next/headers';
 
 // 쿠키 조회
-export const getServerCookie = async (name: string) => {
+export const getCookie = async (name: string) => {
   const cookieStore = await cookies();
+  console.log('getCookie', name, cookieStore.get(name));
   return cookieStore.get(name);
 };
 
 // 쿠키 삭제
-export const removeServerCookie = async (name: string) => {
+export const removeCookie = async (name: string) => {
   (await cookies()).delete(name);
 };
 
 // 쿠키 설정
-export const setServerCookie = async (name: string, value: string) => {
+export const setCookie = async (name: string, value: string) => {
   const cookieStore = await cookies();
-  console.log('setServerCookie', name, value);
   cookieStore.set({
     name: name,
     value: value,
