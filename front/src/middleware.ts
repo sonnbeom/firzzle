@@ -3,7 +3,6 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('accessToken');
-
   const { pathname } = request.nextUrl;
 
   // accessToken이 없고 루트 경로가 아닌 경우 루트로 리다이렉트
