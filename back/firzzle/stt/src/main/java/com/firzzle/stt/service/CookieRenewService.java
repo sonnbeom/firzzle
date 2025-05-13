@@ -17,6 +17,8 @@ import java.nio.file.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+// 클라우드 상에서 요청할 경우 youtube 보안에 막히는 문제를 해결하기 위한 서비스 
 @Service
 public class CookieRenewService {
     private static final Logger log = LoggerFactory.getLogger(CookieRenewService.class);
@@ -67,7 +69,7 @@ public class CookieRenewService {
             page.setDefaultTimeout(60_000);
             page.setDefaultNavigationTimeout(60_000);
 
-            // 1) 로그인 페이지 접근.
+            // 1) 로그인 페이지 접근
             page.navigate("https://accounts.google.com/signin/v2/identifier?service=youtube");
             page.waitForLoadState(LoadState.NETWORKIDLE);
 
@@ -83,7 +85,7 @@ public class CookieRenewService {
             page.waitForSelector("#passwordNext", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
             page.click("#passwordNext");
 
-            // 4) YouTube 메인 페이지 로딩 대기/
+            // 4) YouTube 메인 페이지 로딩 대기
             page.waitForURL("https://www.youtube.com/*", new Page.WaitForURLOptions().setTimeout(60_000));
 
             // 5) 쿠키 가져오기

@@ -1,5 +1,8 @@
 package com.firzzle.gateway.config;
 
+import com.firzzle.gateway.filter.JwtAuthFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -22,6 +25,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -35,13 +39,6 @@ public class SecurityConfig {
 
                 // 경로별 인증 설정
                 .authorizeExchange(exchanges -> exchanges
-                        // 공개 API
-                        .pathMatchers(
-                                "/api/v1/auth/refresh",
-                                "/api/v1/auth/kakao/callback",
-                                "/api/v1/auth/logout",
-                                "/api/v1/auth/me").permitAll()
-
                         // Swagger/OpenAPI 문서
                         .pathMatchers("/swagger-ui.html", "/swagger-ui/**",
                                 "/v3/api-docs/**", "/api-docs/**").permitAll()
@@ -55,9 +52,6 @@ public class SecurityConfig {
                         // OPTIONS 요청
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 관리자 전용 경로
-                        .pathMatchers("/api/v*/admin/**").hasRole("ADMIN")
-
                         .anyExchange().permitAll()
                 )
 
@@ -68,13 +62,16 @@ public class SecurityConfig {
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint((exchange, ex) -> {
                             exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                            logger.info("HttpStatus.UNAUTHORIZED : {}", ex.getMessage());
                             return exchange.getResponse().setComplete();
                         })
                         .accessDeniedHandler((exchange, ex) -> {
                             exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.FORBIDDEN);
+                            logger.info("HttpStatus.FORBIDDEN : {}", ex.getMessage());
                             return exchange.getResponse().setComplete();
                         })
                 )
+
                 .build();
     }
 
