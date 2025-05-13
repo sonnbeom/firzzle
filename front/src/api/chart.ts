@@ -49,13 +49,30 @@ export const getLoginUserRate = async (startDate: string, endDate: string) => {
   return data;
 };
 
-// 요약 단계별 요약 선호 비율율
+// 요약 단계별 요약 선호 비율 - Dropdown
 export const getSummaryLevelRate = async (
   startDate: string,
   endDate: string,
 ) => {
   const { data } = await api.get<TransitionsResponse>(
     `/admin/learning/summary-level`,
+    {
+      params: {
+        startDate,
+        endDate,
+      },
+    },
+  );
+  return data;
+};
+
+// 스냅리뷰 작성 선호도 측정 - Dropdown
+export const getLikeSnapReviewRate = async (
+  startDate: string,
+  endDate: string,
+) => {
+  const { data } = await api.get<TransitionsResponse>(
+    `/admin/learning/snap-review`,
     {
       params: {
         startDate,
