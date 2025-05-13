@@ -74,7 +74,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 qdrant:
-  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
+  host: http://localhost:6333
   api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
