@@ -57,6 +57,8 @@ public class SttService {
         // 자막 다운로드
         String COOKIE_PATH = "/data/firzzle/cookies.txt";
 
+        
+        // 클라우드 환경에서 실행되는 코드 
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
             "yt-dlp",
             "--user-agent", UA,
@@ -71,6 +73,20 @@ public class SttService {
             "--output", videoId + ".%(ext)s",
             url
         );
+        
+// 		  로컬환경에서 실행하는 코드 
+//        ProcessBuilder scriptsExtractor = new ProcessBuilder(
+//            "yt-dlp",
+//            "--no-check-certificate",
+//            "--referer", "https://www.youtube.com",
+//            "--write-auto-sub",
+//            "--sub-lang", "ko",
+//            "--sub-format", "vtt",
+//            "--convert-subs", "srt",
+//            "--skip-download",
+//            "--output", videoId + ".%(ext)s",
+//            url
+//        );
         
         scriptsExtractor.directory(new File(uploadDir));
         scriptsExtractor.redirectErrorStream(true);
