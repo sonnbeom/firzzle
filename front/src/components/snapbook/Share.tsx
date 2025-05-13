@@ -26,7 +26,7 @@ const Share = ({ isOpen, onClose, url }: ShareProps) => {
           <h2 className='text-lg font-medium text-gray-800'>공유하기</h2>
         </div>
         <div className='space-y-6 p-4'>
-          <p className='text-center text-lg text-black'>
+          <p className='text-center text-lg text-gray-950'>
             링크를 갖고 있는 모든 사용자가 방문할 수 있습니다.
           </p>
           <div className='flex space-x-2'>
