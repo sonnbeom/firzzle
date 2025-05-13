@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getCookie } from './actions/auth';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const accessToken = getCookie('accessToken');
+  const accessToken = request.cookies.get('accessToken')?.value;
 
   const { pathname } = request.nextUrl;
 
