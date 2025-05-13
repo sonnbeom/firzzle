@@ -5,6 +5,7 @@ import { useState } from 'react';
 import CurveGraphCard from '@/components/admin/CurveGraphCard';
 import DateRangeSelector from '@/components/admin/DateRangeSelector';
 import BasicDropDown from '@/components/common/BasicDropDown';
+import { DateRangeData } from '@/types/chart';
 
 const FEATURE_OPTIONS = [
   { label: '요약노트', value: 'summary' },
@@ -30,8 +31,19 @@ interface ChartData {
 }
 
 const StrategyBoardPage = () => {
-  const [startDate, setStartDate] = useState<Date>(new Date('2024-04-19'));
-  const [endDate, setEndDate] = useState<Date>(new Date('2024-05-18'));
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+
+  const handleDateChange = ({
+    startDate: newStart,
+    endDate: newEnd,
+    formattedStart,
+    formattedEnd,
+  }: DateRangeData) => {
+    setStartDate(newStart);
+    setEndDate(newEnd);
+    console.log('Formatted dates:', formattedStart, formattedEnd);
+  };
 
   const generateDates = (startDate: Date, days: number) => {
     const dates = [];
@@ -43,17 +55,6 @@ const StrategyBoardPage = () => {
       );
     }
     return dates;
-  };
-
-  const handleDateChange = ({
-    startDate: newStart,
-    endDate: newEnd,
-  }: {
-    startDate: Date;
-    endDate: Date;
-  }) => {
-    setStartDate(newStart);
-    setEndDate(newEnd);
   };
 
   const dates = generateDates(startDate, 30);
@@ -122,7 +123,11 @@ const StrategyBoardPage = () => {
 
   return (
     <div className='flex flex-col gap-6 p-6'>
-      <DateRangeSelector onChange={handleDateChange} />
+      <DateRangeSelector
+        onChange={handleDateChange}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+      />
       {graphData.map((cardProps, index) => (
         <CurveGraphCard key={index} {...cardProps} />
       ))}
