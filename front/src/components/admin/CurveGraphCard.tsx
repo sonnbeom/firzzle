@@ -16,6 +16,7 @@ import { Line } from 'react-chartjs-2';
 
 import BasicBadge from '@/components/common/BasicBadge';
 import BasicPopOver from '@/components/common/BasicPopOver';
+import { CurveGraphCardProps } from '@/types/chart';
 
 ChartJS.register(
   CategoryScale,
@@ -28,41 +29,14 @@ ChartJS.register(
   Filler,
 );
 
-interface DataPoint {
-  x: string; // x축 날짜
-  y: number; // y축 값
-}
-
-interface DataSet {
-  label: string;
-  data: DataPoint[];
-}
-
-interface CurveGraphCardProps {
-  title?: string;
-  description?: string;
-  tags?: {
-    text: string;
-    color: string;
-  }[];
-  dataSets: DataSet[];
-  startDate: Date;
-  endDate: Date;
-  mode?: {
-    text: string;
-    color: string;
-  };
-}
-
 const CurveGraphCard = ({
   title,
   description,
   tags,
   dataSets,
-  startDate,
-  endDate,
   mode,
 }: CurveGraphCardProps) => {
+  // 색 랜덤 지정
   const predefinedColors = [
     '#4A90E2', // 하늘색
     '#50C878', // 에메랄드

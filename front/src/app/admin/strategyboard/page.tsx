@@ -150,8 +150,6 @@ const StrategyBoardPage = () => {
               })),
             },
           ]}
-          startDate={startDate}
-          endDate={endDate}
         />
       </div>
     </div>
