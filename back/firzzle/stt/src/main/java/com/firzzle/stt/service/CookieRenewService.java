@@ -45,7 +45,7 @@ public class CookieRenewService {
 
         try (Playwright playwright = Playwright.create()) {
             BrowserType.LaunchOptions launchOpts = new BrowserType.LaunchOptions()
-                .setHeadless(true)
+                .setHeadless(false)
                 .setArgs(List.of(
                     "--disable-blink-features=AutomationControlled",
                     "--no-sandbox",
@@ -83,7 +83,7 @@ public class CookieRenewService {
             page.waitForSelector("#passwordNext", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
             page.click("#passwordNext");
 
-            // 4) YouTube 메인 페이지 로딩 대기
+            // 4) YouTube 메인 페이지 로딩 대기/
             page.waitForURL("https://www.youtube.com/*", new Page.WaitForURLOptions().setTimeout(60_000));
 
             // 5) 쿠키 가져오기
