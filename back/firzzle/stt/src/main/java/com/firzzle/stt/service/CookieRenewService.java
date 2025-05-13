@@ -63,7 +63,7 @@ public class CookieRenewService {
             // 4) 쿠키 가져오기
             List<Cookie> cookies = context.cookies();
 
-            // 5) yt-dlp 호환 쿠키 포맷으로 저장.
+            // 5) yt-dlp 호환 쿠키 포맷으로 저장
             List<String> lines = cookies.stream()
                 .map(c -> String.format("%s\t%s\t%s\t%s\t%d\t%s\t%s",
                     c.domain.startsWith(".") ? "TRUE" : "FALSE",
