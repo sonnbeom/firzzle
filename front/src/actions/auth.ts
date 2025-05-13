@@ -5,7 +5,6 @@ import { cookies } from 'next/headers';
 // 쿠키 조회
 export const getCookie = async (name: string) => {
   const cookieStore = await cookies();
-  console.log('getCookie', name, cookieStore.get(name));
   return cookieStore.get(name);
 };
 
@@ -21,6 +20,7 @@ export const setCookie = async (name: string, value: string) => {
     name: name,
     value: value,
     httpOnly: true,
+    secure: true,
     path: '/',
   });
 };

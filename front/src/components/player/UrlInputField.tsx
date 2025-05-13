@@ -3,9 +3,10 @@
 import { debounce } from 'lodash';
 import { useEffect, useState } from 'react';
 import { postContent } from '@/api/content';
-import { getPlayer } from '@/api/player';
+import { getYouTubeVideoInfo } from '@/services/youtubeServices';
 import { PlayerInfo } from '@/types/player';
 import BasicButton from '../common/BasicButton';
+import BasicToaster from '../common/BasicToaster';
 import SearchBar from '../common/SearchBar';
 
 interface UrlInputFieldProps {
@@ -21,26 +22,34 @@ const UrlInputField = ({
 }: UrlInputFieldProps) => {
   const [value, setValue] = useState(defaultUrl);
 
-  useEffect(
-    debounce(() => {
-      const handleUrlSubmit = async (url: string) => {
-        const { data } = await getPlayer(url);
-        setPlayerInfo(data);
-      };
-
-      if (value.trim().length > 0) {
-        handleUrlSubmit(value);
+  // 입력된 url 영상 정보 조회
+  const handleUrlSubmit = debounce(async (url: string) => {
+    if (url.trim().length > 0) {
+      try {
+        const videoInfo = await getYouTubeVideoInfo(url);
+        if (videoInfo) {
+          setPlayerInfo(videoInfo);
+        }
+      } catch (error) {
+        return BasicToaster.error(error.message, { duration: 3000 });
       }
-    }, 500),
-    [value],
-  );
+    }
+  }, 500);
 
+  useEffect(() => {
+    handleUrlSubmit(value);
+    return () => {
+      handleUrlSubmit.cancel();
+    };
+  }, [value, handleUrlSubmit]);
+
+  // 영상 분석 시작
   const handleUrlConfirm = async () => {
     setIsSubmitted(true);
     try {
       await postContent();
     } catch (error) {
-      console.error('컨텐츠 등록 실패:', error);
+      return BasicToaster.error(error.message, { duration: 2000 });
     }
   };
 

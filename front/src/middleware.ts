@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
+import { getCookie } from './actions/auth';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const accessToken = request.cookies.get('accessToken');
-  console.log('미들웨어', accessToken);
+  const accessToken = getCookie('accessToken');
 
   const { pathname } = request.nextUrl;
 
-  // // accessToken이 없고 루트 경로가 아닌 경우 루트로 리다이렉트
-  // if (!accessToken && pathname !== '/' && !pathname.startsWith('/share')) {
-  //   return NextResponse.redirect(new URL('/', request.url));
-  // }
+  // accessToken이 없고 루트 경로가 아닌 경우 루트로 리다이렉트
+  if (!accessToken && pathname !== '/' && !pathname.startsWith('/share')) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
 
-  // // accessToken이 있고 루트 경로인 경우 /content로 리다이렉트
-  // if (accessToken && pathname === '/') {
-  //   return NextResponse.redirect(new URL('/content', request.url));
-  // }
+  // accessToken이 있고 루트 경로인 경우 /content로 리다이렉트
+  if (accessToken && pathname === '/') {
+    return NextResponse.redirect(new URL('/content', request.url));
+  }
 
   return NextResponse.next();
 }

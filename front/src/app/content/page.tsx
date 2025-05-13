@@ -1,5 +1,6 @@
-import { getPlayer } from '@/api/player';
+import BasicToaster from '@/components/common/BasicToaster';
 import PlayerContent from '@/components/player/PlayerContent';
+import { getYouTubeVideoInfo } from '@/services/youtubeServices';
 import { PlayerInfo } from '@/types/player';
 
 const ContentPage = async ({
@@ -12,10 +13,9 @@ const ContentPage = async ({
 
   if (url) {
     try {
-      const { data } = await getPlayer(url);
-      initialPlayerInfo = data;
+      initialPlayerInfo = await getYouTubeVideoInfo(url);
     } catch (error) {
-      console.error('플레이어 조회 실패:', error);
+      return BasicToaster.error(error.message, { duration: 2000 });
     }
   }
 
