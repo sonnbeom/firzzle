@@ -80,6 +80,27 @@ spring:
               args:
                 enabled: true
 
+        # llm 서비스 - JWT 필터 적용
+        - id: llm-service-v1
+          uri: lb://llm-server
+          predicates:
+            - Path=/api/v1/llm/**
+          filters:
+            - RewritePath=/api/v1/llm/(?<segment>.*), /api/v1/${segment}
+            - name: JwtAuthFilter
+              args:
+                enabled: false
+
+        - id: llm-service-v2
+          uri: lb://llm-server
+          predicates:
+            - Path=/api/v2/llm/**
+          filters:
+            - RewritePath=/api/v2/llm/(?<segment>.*), /api/v2/${segment}
+            - name: JwtAuthFilter
+              args:
+                enabled: true
+
         # Admin 서비스 - JWT 필터 적용 (추가 역할 검증 필요)
         - id: admin-service-v1
           uri: lb://admin-server
@@ -89,8 +110,8 @@ spring:
             - RewritePath=/api/v1/admin/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
-                enabled: true
-                adminOnly: true  # Admin 역할만 접근 가능
+                enabled: false
+                adminOnly: false  # Admin 역할만 접근 가능
 
         - id: admin-service-v2
           uri: lb://admin-server
@@ -100,8 +121,8 @@ spring:
             - RewritePath=/api/v2/admin/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
-                enabled: true
-                adminOnly: true  # Admin 역할만 접근 가능
+                enabled: false
+                adminOnly: false  # Admin 역할만 접근 가능
 
 # JWT 설정
 jwt:
