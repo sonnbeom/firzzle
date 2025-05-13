@@ -3,14 +3,9 @@ package com.firzzle.admin.strategy.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import com.firzzle.admin.strategy.domain.UserActionLog;
 import com.firzzle.admin.strategy.dto.response.ResponseUserLogTransitionDto;
-import com.firzzle.admin.strategy.repository.UserActionLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 
 
@@ -33,85 +28,64 @@ import java.util.*;
 @Slf4j
 public class UserLogService {
 
-    private final UserActionLogRepository logRepository;
-    private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticsearchClient elasticsearchClient;
 
+    public List<ResponseUserLogTransitionDto> getGroupedTransitions(LocalDate requestDate) {
+        // 최근 10일치의 USER_ACTION 로그를 Elasticsearch에서 조회 (디테일: PREFERENCE)
+        List<UserActionLog> logs = getLogsFromES(requestDate, "PREFERENCE", 10);
 
-//    public Map<String, Map<String, Integer>> getGroupedTransitions(LocalDate requestDate) {
-//        String end = requestDate.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC).toInstant().toString(); // ★ 하루 뒤
-//        String start = requestDate.minusDays(30).atStartOfDay().atOffset(ZoneOffset.UTC).toInstant().toString();
-//
-////        List<UserActionLog> logs = logRepository.findLogs("USER_ACTION", "PREFERENCE", start, end);
-//        List<UserActionLog> logs = findLogs("USER_ACTION", "PREFERENCE", start, end);
-//        log.info("조회된 로그 수: {}", logs.size());
-//
-//        Map<String, Map<String, Integer>> dailyCounts = new TreeMap<>();
-//
-//        for (UserActionLog log : logs) {
-//            LocalDate date = log.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate();
-//            String dateKey = date.toString(); // yyyy-MM-dd
-//            String path = log.getFromContent() + "=>" + log.getToContent();
-//
-//            if ("SUMMARY=>RECOMMEND_CONTENT".equals(path) || "SUMMARY=>RECOMMEND_EXPERT".equals(path)) {
-//                path = "SUMMARY=>RECOMMEND";
-//            }
-//
-//            dailyCounts.computeIfAbsent(dateKey, d -> new HashMap<>())
+        // 날짜별 + 행동 경로별로 개수를 세기 위한 map
+        Map<String, Map<String, Integer>> dailyCounts = new TreeMap<>();
+
+        // 각 로그를 날짜별/경로별로 분류 및 개수 카운팅
+        for (UserActionLog log : logs) {
+            String date = log.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate().toString();
+            String path = log.getFromContent() + "=>" + log.getToContent();
+
+            // 행동 경로가 특정 2가지 중 하나면 단일 RECOMMEND로 통합
+            if ("SUMMARY=>RECOMMEND_CONTENT".equals(path) || "SUMMARY=>RECOMMEND_EXPERT".equals(path)) {
+                path = "SUMMARY=>RECOMMEND";
+            }
+
+            // 날짜별, 경로별로 카운트 누적
+//            dailyCounts.computeIfAbsent(date, d -> new HashMap<>())
 //                    .merge(path, 1, Integer::sum);
-//        }
-//
-//        // 3일 단위로 묶기
-//        List<String> dates = new ArrayList<>(dailyCounts.keySet());
-//        dates.sort(Comparator.naturalOrder());
-//
-//        Map<String, Map<String, Integer>> groupedBy3Days = new LinkedHashMap<>();
-//        for (int i = 0; i < dates.size(); i += 3) {
-//            String startDate = dates.get(i);
-//            String endDateStr = dates.get(Math.min(i + 2, dates.size() - 1));
-//            String range = startDate.equals(endDateStr) ? startDate : startDate + "~" + endDateStr;
-//
-//            Map<String, Integer> temp = new HashMap<>();
-//            for (int j = i; j < i + 3 && j < dates.size(); j++) {
-//                Map<String, Integer> dayMap = dailyCounts.get(dates.get(j));
-//                for (Map.Entry<String, Integer> e : dayMap.entrySet()) {
-//                    temp.merge(e.getKey(), e.getValue(), Integer::sum);
-//                }
-//            }
-//
-//            groupedBy3Days.put(range, temp);
-//        }
-//
-//        return groupedBy3Days;
-//    }
-public List<ResponseUserLogTransitionDto> getGroupedTransitions(LocalDate requestDate) {
-    List<UserActionLog> logs = getLogsFromES(requestDate);
-    Map<String, Map<String, Integer>> dailyCounts = new TreeMap<>();
+            // 1. 날짜에 해당하는 Map이 있는지 확인
+            Map<String, Integer> pathMap = dailyCounts.get(date);
 
-    for (UserActionLog log : logs) {
-        String date = log.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate().toString();
-        String path = log.getFromContent() + "=>" + log.getToContent();
+            // 2. 없으면 새 HashMap을 만들어서 넣는다
+            if (pathMap == null) {
+                pathMap = new HashMap<>();
+                dailyCounts.put(date, pathMap);
+            }
 
-        if ("SUMMARY=>RECOMMEND_CONTENT".equals(path) || "SUMMARY=>RECOMMEND_EXPERT".equals(path)) {
-            path = "SUMMARY=>RECOMMEND";
+            // 3. 해당 경로(path)의 값이 있는지 확인하고 없으면 0으로 처리
+            int currentCount = pathMap.getOrDefault(path, 0);
+
+            // 4. 1을 더해서 다시 저장
+            pathMap.put(path, currentCount + 1);
         }
 
-        dailyCounts.computeIfAbsent(date, d -> new HashMap<>())
-                .merge(path, 1, Integer::sum);
+        List<ResponseUserLogTransitionDto> result = new ArrayList<>();
+
+        // 최근 10일 날짜 기준으로 출력
+        for (int i = 9; i >= 0; i--) {
+            LocalDate date = requestDate.minusDays(i);
+            String key = date.toString();
+
+            Map<String, Integer> transitions = dailyCounts.getOrDefault(key, new HashMap<>());
+
+            result.add(ResponseUserLogTransitionDto.builder()
+                    .date(key)
+                    .transitions(transitions)
+                    .build());
+        }
+
+        return result;
     }
 
-    List<ResponseUserLogTransitionDto> result = new ArrayList<>();
-    for (Map.Entry<String, Map<String, Integer>> entry : dailyCounts.entrySet()) {
-        result.add(ResponseUserLogTransitionDto.builder()
-                .date(entry.getKey())
-                .transitions(entry.getValue())
-                .build());
-    }
 
-    return result;
-}
-
-    public List<UserActionLog> getLogsFromES(LocalDate requestDate) {
+    private List<UserActionLog> getLogsFromES(LocalDate requestDate, String detailType) {
         String from = requestDate.minusDays(30).atStartOfDay(ZoneOffset.UTC).toInstant().toString();
         String to = requestDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().toString();
 
@@ -119,7 +93,7 @@ public List<ResponseUserLogTransitionDto> getGroupedTransitions(LocalDate reques
             Query query = Query.of(q -> q
                     .bool(b -> b
                             .must(m -> m.term(t -> t.field("event.keyword").value("USER_ACTION")))
-                            .must(m -> m.term(t -> t.field("detail.keyword").value("PREFERENCE")))
+                            .must(m -> m.term(t -> t.field("detail.keyword").value(detailType)))
                             .must(m -> m.range(r -> r
                                     .field("@timestamp")
                                     .gte(JsonData.of(from))
@@ -149,5 +123,96 @@ public List<ResponseUserLogTransitionDto> getGroupedTransitions(LocalDate reques
             return List.of();
         }
     }
+    private List<UserActionLog> getLogsFromES(LocalDate requestDate, String detailType, int days) {
+        // ✅ 조회 기간 설정: from ~ to
+        // 예) requestDate = 2025-05-13, days = 10 이라면
+        // from = 2025-05-04T00:00:00Z (UTC 기준)
+        // to   = 2025-05-14T00:00:00Z (UTC 기준 → 다음 날 자정 전까지 포함시키기 위함)
+        String from = requestDate.minusDays(days - 1).atStartOfDay(ZoneOffset.UTC).toInstant().toString();
+        String to = requestDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().toString();
+
+        try {
+            Query query = Query.of(q -> q
+                    .bool(b -> b
+                            // event가 "USER_ACTION"인 문서만 조회
+                            .must(m -> m.term(t -> t.field("event.keyword").value("USER_ACTION")))
+                            // detail이 "PREFERENCE" 또는 전달된 detailType과 일치해야 함
+                            .must(m -> m.term(t -> t.field("detail.keyword").value(detailType)))
+                            // @timestamp가 from ~ to 사이여야 함
+                            .must(m -> m.range(r -> r
+                                    .field("@timestamp")
+                                    // 	greater than or equal 	이상 (≥)
+                                    .gte(JsonData.of(from))
+                                    // less than	미만 (<)
+                                    .lt(JsonData.of(to))
+                            ))
+                    )
+            );
+
+            SearchRequest req = SearchRequest.of(s -> s
+                    .index("spring-logs-*")  // spring-logs-2025.05.13 같은 인덱스 대상
+                    .query(query)
+                    .size(1000) // 최대 1000개 문서만 반환
+            );
+
+            // ✅ Elasticsearch에 요청 보내고 결과 받기
+            SearchResponse<UserActionLog> response = elasticsearchClient.search(req, UserActionLog.class);
+
+            return response.hits().hits().stream()
+                    .map(Hit::source)
+                    .filter(Objects::nonNull)
+                    .toList();
+
+        } catch (Exception e) {
+            log.error("Elasticsearch 쿼리 실패", e);
+            return List.of();
+        }
+    }
+
+    public List<ResponseUserLogTransitionDto> getLearningRate(LocalDate requestDate) {
+        // 최근 10일치 CONTENT_CREATED, START_LEARNING 로그 가져오기
+        List<UserActionLog> createdLogs = getLogsFromES(requestDate, "CONTENT_CREATED", 10);
+        List<UserActionLog> startedLogs = getLogsFromES(requestDate, "START_LEARNING", 10);
+
+        Map<String, Integer> createdPerDay = groupByDay(createdLogs);
+        Map<String, Integer> startedPerDay = groupByDay(startedLogs);
+
+        List<ResponseUserLogTransitionDto> result = new ArrayList<>();
+
+        for (int i = 9; i >= 0; i--) {
+            LocalDate date = requestDate.minusDays(i);
+            String key = date.toString();
+
+            Map<String, Integer> transitions = new HashMap<>();
+            transitions.put("CONTENT_CREATED", createdPerDay.getOrDefault(key, 0));
+            transitions.put("START_LEARNING", startedPerDay.getOrDefault(key, 0));
+
+            result.add(ResponseUserLogTransitionDto.builder()
+                    .date(key)
+                    .transitions(transitions)
+                    .build());
+        }
+
+        return result;
+    }
+
+    private Map<String, Integer> groupByDay(List<UserActionLog> logs) {
+        Map<String, Integer> dailyCounts = new TreeMap<>();
+
+        for (UserActionLog log : logs) {
+            String dateKey = log.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate().toString();
+//            dailyCounts.merge(dateKey, 1, Integer::sum);
+            // 2. 해당 날짜가 이미 Map에 있으면 값 +1, 없으면 1로 시작
+            if (dailyCounts.containsKey(dateKey)) {
+                int current = dailyCounts.get(dateKey);
+                dailyCounts.put(dateKey, current + 1);
+            } else {
+                // 3. 값이 없으면 1로 초기화
+                dailyCounts.put(dateKey, 1);
+            }
+        }
+        return dailyCounts;
+    }
+
 }
 

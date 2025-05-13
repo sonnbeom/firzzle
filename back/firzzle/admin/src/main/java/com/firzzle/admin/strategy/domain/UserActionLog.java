@@ -30,18 +30,7 @@ public class UserActionLog {
     private String userId;
     private String fromContent;
     private String toContent;
-//    @Field(name = "@timestamp", type = FieldType.Date, format = DateFormat.date_time)
-//    private Instant timestamp;
-
-//    private String timestampRaw;
-//
-//    public Instant getTimestamp() {
-//        System.out.println("Log: ,"+ timestampRaw);
-//        if (timestampRaw == null || timestampRaw.isBlank()) return null;
-//        return Instant.parse(timestampRaw);
-//    }
     @JsonProperty("@timestamp")
-//    @Field(name = "@timestamp")
     private String timestampRaw;
 
     @JsonIgnore

@@ -16,6 +16,14 @@ public class UserActionLog extends LogEvent {
     private String recommendAction;
     private String summaryPreference;
 
+    public static UserActionLog fromVisit (String detail) {
+
+        return UserActionLog.builder()
+                .detail(detail)
+                .timestamp(LocalDateTime.now().withNano(0))
+                .build();
+    }
+
     public static UserActionLog userActionLog (String userId, String detail) {
 
         return UserActionLog.builder()
@@ -23,6 +31,15 @@ public class UserActionLog extends LogEvent {
                 .userId(userId)
                 .detail(detail)
                 .timestamp(LocalDateTime.now().withNano(0))
+                .build();
+    }
+    public static UserActionLog userTestActionLog (String userId, String detail, LocalDateTime localDateTime) {
+
+        return UserActionLog.builder()
+                .event("USER_ACTION")
+                .userId(userId)
+                .detail(detail)
+                .timestamp(localDateTime)
                 .build();
     }
     public static UserActionLog userLoginLog () {

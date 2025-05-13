@@ -1,4 +1,4 @@
-package com.firzzle.admin.strategy.config;
+package com.firzzle.admin.common.config;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
