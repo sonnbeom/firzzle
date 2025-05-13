@@ -4,15 +4,21 @@ interface BasicButtonProps {
   isDisabled?: boolean;
   title: ReactNode;
   onClick: (e: MouseEvent<HTMLButtonElement>) => void;
+  className?: string;
 }
 
 const BasicButton = ({
   isDisabled = false,
   title,
   onClick,
+  className,
 }: BasicButtonProps) => {
   return (
-    <Button variant={isDisabled ? 'disabled' : 'default'} onClick={onClick}>
+    <Button
+      variant={isDisabled ? 'disabled' : 'default'}
+      onClick={onClick}
+      className={className}
+    >
       {title}
     </Button>
   );
