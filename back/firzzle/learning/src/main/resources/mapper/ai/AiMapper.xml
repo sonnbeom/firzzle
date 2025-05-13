@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="AiMapper">
+	<select id="selectAiPrompt" resultType="map" parameterType="map">
+		/* AiMapper.selectAiPrompt */
+		SELECT
+			SEQ
+			, `SYSTEM`
+			, `USER`
+			, ASSISTANT
+		FROM
+			fb_ai_prompt_info
+		WHERE
+			1=1
+			<if test="p_seq != null and p_seq !=''.toString()">
+			AND SEQ = #{p_seq}
+			</if>
+		  <choose>
+			  <when test="p_seq_num != null and p_seq_num != ''">
+				  AND SEQ_NUM = #{p_seq_num}
+			  </when>
+			  <otherwise>
+				  AND SEQ_NUM = 1
+			  </otherwise>
+		  </choose>
+	</select>
+
+	<select id="selectApiKey" resultType="map" parameterType="map">
+		/* AiMapper.selectApiKey */
+		SELECT
+			A.USERID
+			, A.LOGIN_ID
+			, B.GRCODE
+			, C.API_KEY
+		FROM
+			FB_MEMBER A
+		INNER JOIN
+			FB_GRCOMP B
+		ON
+			A.COMP = B.COMP
+		INNER JOIN
+			FB_GRCODE C
+		ON
+			B.GRCODE = C.GRCODE
+		WHERE
+			A.USERID = #{u_userid}
+	</select>
+
+	<insert id="insertApiLog" parameterType="map">
+		/* AiMapper.insertApiLog */
+		INSERT INTO
+			fb_ai_tran_sess_log
+		(
+		SEQ
+		, USERID
+		, GRCODE
+		, MODEL
+		, REQUEST_JSON
+		, RESPONSE_JSON
+		, PROMPT_TOKENS
+		, COMPLETION_TOKENS
+		, TOTAL_TOKENS
+		, INDATE
+		, INUSERID
+		, LDATE
+		, LUSERID
+		)
+		VALUES
+		(
+		#{p_seq}
+		, #{u_userid}
+		, #{u_grcode}
+		, #{p_model}
+		, #{p_request_json}
+		, #{p_response_json}
+		, #{p_prompt_tokens}
+		, #{p_completion_tokens}
+		, #{p_total_tokens}
+		, #{ndate}
+		, #{u_userid}
+		, #{ndate}
+		, #{u_userid}
+		);
+	</insert>
+
+
+
+	<insert id="insertFailApiLog" parameterType="map">
+		INSERT INTO fb_ai_tran_fale_log
+			(ERROR_PARAM, ERROR_DESC, INDATE)
+		VALUES (#{p_errorParam}, #{p_errorDesc}, DATE_FORMAT(NOW(), '%Y%m%d%H%i%s'));
+	</insert>
+</mapper>
+

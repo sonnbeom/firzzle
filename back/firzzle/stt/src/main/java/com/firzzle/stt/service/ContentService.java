@@ -2,11 +2,7 @@ package com.firzzle.stt.service;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
-import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
-import com.firzzle.common.library.MyBatisSupport;
-import com.firzzle.common.library.MyBatisTransactionManager;
-import com.firzzle.common.library.RequestBox;
 import com.firzzle.stt.dto.ContentDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Optional;
 
 /**
  * @Class Name : ContentService.java

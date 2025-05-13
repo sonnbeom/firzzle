@@ -9,6 +9,9 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import reactor.netty.http.client.HttpClient;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 
 @Service
 public class EmbeddingService {
@@ -20,6 +23,10 @@ public class EmbeddingService {
 
     private final WebClient webClient = WebClient.builder()
             .baseUrl("https://api.openai.com/v1")
+            .clientConnector(new ReactorClientHttpConnector(
+                    HttpClient.create()
+                        .resolver(DefaultAddressResolverGroup.INSTANCE) // 시스템 DNS resolver 명시
+                ))
             .build();
 
     /**
@@ -65,7 +72,7 @@ public class EmbeddingService {
             return embedding;
 
         } catch (WebClientResponseException e) {
-            log.error("❌ OpenAI API 호출 오류: status={}, body={}", e.getRawStatusCode(), e.getResponseBodyAsString(), e);
+            log.error("❌ OpenAI API 호출 오류: body={}", e.getResponseBodyAsString(), e);
             throw new RuntimeException("OpenAI API 호출 실패", e);
         } catch (Exception e) {
             log.error("❌ 임베딩 생성 중 예상치 못한 오류 발생", e);

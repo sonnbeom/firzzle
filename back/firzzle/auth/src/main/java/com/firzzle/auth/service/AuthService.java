@@ -164,7 +164,7 @@ public class AuthService {
             Claims claims = jwtTokenProvider.validateAndGetClaims(refreshToken);
             String jti = JwtTokenProvider.extractTokenId(claims);
 
-            // 토큰 삭제 (블랙리스트에 추가)
+            // 토큰 삭제
             RequestBox jtiBox = new RequestBox("requestbox");
             jtiBox.put("jti", jti);
             tokenDAO.deleteRefreshToken(jtiBox);
@@ -179,6 +179,31 @@ public class AuthService {
         } catch (Exception e) {
             logger.error("로그아웃 처리 중 오류: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "로그아웃 처리 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 사용자 정보 조회
+     */
+    public DataBox getUserInfo(RequestBox box) {
+        try {
+            String uuid = box.getString("uuid");
+
+            // UUID로 사용자 조회
+            RequestBox uuidBox = new RequestBox("requestbox");
+            uuidBox.put("uuid", uuid);
+            DataBox userDataBox = userDAO.selectUserByUuid(uuidBox);
+
+            if (userDataBox == null) {
+                throw new BusinessException(ErrorCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다.");
+            }
+
+            return userDataBox;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("사용자 정보 조회 중 오류: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 정보 조회 중 오류가 발생했습니다.");
         }
     }
 

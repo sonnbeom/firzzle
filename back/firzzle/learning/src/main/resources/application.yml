@@ -35,6 +35,7 @@ jwt:
 openai:
   api:
     key: ENC(Plt2GhFueGU1jjrNurLTJtCefqnyh2I3nWoNuc/6CcGAu7xSHKYFba8bBDeVVu5WYwFbhlyB2YjNyfOG/VC7uLmGCkzREpOgdDXo3YutBA66kGe1gCE8wIQ629xHRCb0KGS/8eVKeJnL/Y9fM8bItWppom8B4R6R7st/wvdRF5Z8Z3LF1t15QkaxlKNDi65RtFYEyRxysXYx2jOVEd3ymbzHHcCu/LCNPvq+e1KBDRl1fQuwLgE//QeiM1stDW3o)
+    url: https://api.openai.com
 
 ---
 # 로컬 환경 설정

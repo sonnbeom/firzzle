@@ -3,6 +3,7 @@ package com.firzzle.auth.controller;
 import com.firzzle.auth.dto.KakaoLoginRequestDTO;
 import com.firzzle.auth.dto.TokenRequestDTO;
 import com.firzzle.auth.dto.TokenResponseDTO;
+import com.firzzle.auth.dto.UserResponseDTO;
 import com.firzzle.auth.service.AuthService;
 import com.firzzle.auth.service.OAuthRedirectService;
 import com.firzzle.common.exception.BusinessException;
@@ -27,6 +28,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -253,17 +256,75 @@ public class AuthController {
         try {
             // 쿠키에서 리프레시 토큰 추출
             String refreshToken = extractRefreshTokenFromCookie(request);
-            if (refreshToken == null) {
-                throw new BusinessException(ErrorCode.INVALID_TOKEN, "리프레시 토큰이 없습니다.");
+            if (!refreshToken.isBlank()) {
+                RequestBox box = RequestManager.getBox(request);
+                box.put("refreshToken", refreshToken);
+
+                authService.logout(box);
+
+                // 리프레시 토큰 쿠키 삭제
+                deleteRefreshTokenCookie(response);
             }
 
-            RequestBox box = RequestManager.getBox(request);
-            box.put("refreshToken", refreshToken);
+            Response<Void> apiResponse = Response.<Void>builder()
+                    .status(Status.OK)
+                    .message("로그아웃 성공")
+                    .build();
 
-            authService.logout(box);
+            return ResponseEntity.ok(apiResponse);
+        } catch (BusinessException e) {
+            logger.error("로그아웃 중 비즈니스 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("로그아웃 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "로그아웃 중 오류가 발생했습니다.");
+        }
+    }
 
-            // 리프레시 토큰 쿠키 삭제
-            deleteRefreshTokenCookie(response);
+    /**
+     * 로그아웃 API - auth 경로
+     * @param request HTTP 요청 객체
+     * @param response HTTP 응답 객체
+     * @return 로그아웃 응답
+     */
+    @PostMapping(value = "/auth/logout", produces = "application/json;charset=UTF-8")
+    @Operation(summary = "로그아웃 (auth 경로)", description = "사용자의 현재 세션을 종료하고, 발급된 리프레시 토큰을 서버에서 무효화하며 클라이언트의 쿠키를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "로그아웃 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 - 리프레시 토큰 누락"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 - 유효하지 않은 토큰"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류 - 로그아웃 처리 중 내부 서버 오류"
+            )
+    })
+    public ResponseEntity<Response<Void>> authLogout(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        logger.info("auth 경로 로그아웃 요청");
+
+        try {
+            // 쿠키에서 리프레시 토큰 추출
+            String refreshToken = extractRefreshTokenFromCookie(request);
+            if (!refreshToken.isBlank()) {
+                RequestBox box = RequestManager.getBox(request);
+                box.put("refreshToken", refreshToken);
+
+                authService.logout(box);
+
+                // 리프레시 토큰 쿠키 삭제
+                deleteRefreshTokenCookie(response);
+            }
 
             Response<Void> apiResponse = Response.<Void>builder()
                     .status(Status.OK)
@@ -285,20 +346,16 @@ public class AuthController {
      * @param response HTTP 응답 객체
      */
     private void deleteRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refresh_token", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // 즉시 만료
+        // 루트 경로의 쿠키 삭제
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")               // 루트 경로
+                .maxAge(0)               // 즉시 만료
+                .sameSite("None")
+                .build();
 
-        // SameSite 속성 설정
-        String cookieHeader = String.format("%s=%s; Max-Age=0; Path=%s; HttpOnly; Secure; SameSite=Lax",
-                cookie.getName(),
-                cookie.getValue(),
-                cookie.getPath());
-
-        response.addHeader("Set-Cookie", cookieHeader);
-        response.addCookie(cookie);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     /**
@@ -345,6 +402,9 @@ public class AuthController {
 
             logger.info("카카오 로그인 성공 - 리다이렉트: {}", redirectUrl);
 
+            // 로그인 조회 => ELK
+            log(userLoginLog());
+
             response.sendRedirect(redirectUrl);
         } catch (BusinessException e) {
             logger.error("카카오 콜백 처리 중 비즈니스 예외 발생: {}", e.getMessage());
@@ -379,26 +439,74 @@ public class AuthController {
      * @param refreshToken 리프레시 토큰
      */
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        // 쿠키 만료 시간 (예: 7일)
-        int cookieMaxAge = 7 * 24 * 60 * 60;
+        // 쿠키 만료 시간 (30일)
+        int cookieMaxAge = 30 * 24 * 60 * 60;
 
-        // 리프레시 토큰 쿠키 설정
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);          // JavaScript에서 접근 불가
-        refreshTokenCookie.setSecure(true);            // HTTPS에서만 전송
-        refreshTokenCookie.setPath("/api/v1/auth");    // 모든 경로에서 접근 가능
-        refreshTokenCookie.setMaxAge(cookieMaxAge);    // 쿠키 유효 기간
+        // HTTP-Only 쿠키 생성
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)          // JavaScript에서 접근 불가능
+                .secure(false)            // HTTPS 전송만 허용
+                .path("/")               // 모든 경로에서 사용 가능
+                .maxAge(cookieMaxAge)    // 쿠키 유효 기간
+                .sameSite("None")        // 크로스 사이트 요청 설정
+                .build();
 
-        // SameSite 속성 설정 (크로스 사이트 요청 제한)
-        // HttpServletResponse가 직접 SameSite 속성을 지원하지 않아 헤더로 추가
-        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=Lax",
-                refreshTokenCookie.getName(),
-                refreshTokenCookie.getValue(),
-                refreshTokenCookie.getMaxAge(),
-                refreshTokenCookie.getPath());
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
 
-        response.addHeader("Set-Cookie", cookieHeader);
-        response.addCookie(refreshTokenCookie);
+    /**
+     * 현재 로그인한 사용자 정보 조회 API
+     * @param request HTTP 요청 객체
+     * @return 사용자 정보 응답
+     */
+    @GetMapping(value = "/me", produces = "application/json;charset=UTF-8")
+    @Operation(summary = "현재 로그인한 사용자 정보 조회", description = "인증된 사용자의 프로필 정보를 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "사용자 정보 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 - 유효하지 않은 토큰 또는 권한 없음"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "사용자 정보를 찾을 수 없음"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류 - 사용자 정보 조회 중 내부 서버 오류"
+            )
+    })
+    public ResponseEntity<Response<UserResponseDTO>> getCurrentUser(
+            HttpServletRequest request) {
+
+        logger.info("현재 로그인한 사용자 정보 조회 요청");
+
+        try {
+            RequestBox box = RequestManager.getBox(request);
+            String uuid =  box.getString("uuid");
+            logger.debug("사용자 정보 조회 요청 - uuid: {}", uuid);
+
+            DataBox userDataBox = authService.getUserInfo(box);
+            UserResponseDTO userResponseDTO = convertToUserResponseDTO(userDataBox);
+
+            Response<UserResponseDTO> response = Response.<UserResponseDTO>builder()
+                    .status(Status.OK)
+                    .data(userResponseDTO)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (BusinessException e) {
+            logger.error("사용자 정보 조회 중 비즈니스 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("사용자 정보 조회 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 정보 조회 중 오류가 발생했습니다.");
+        }
     }
 
     /**
@@ -448,6 +556,33 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("날짜 변환 중 오류 발생: {}", e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * DataBox를 UserResponseDTO로 변환
+     * @param dataBox 데이터 박스
+     * @return 사용자 응답 DTO
+     */
+    private UserResponseDTO convertToUserResponseDTO(DataBox dataBox) {
+        if (dataBox == null) {
+            return null;
+        }
+
+        try {
+            return UserResponseDTO.builder()
+                    .uuid(dataBox.getString("d_uuid"))
+                    .username(dataBox.getString("d_username"))
+                    .email(dataBox.getString("d_email"))
+                    .name(dataBox.getString("d_name"))
+                    .role(dataBox.getString("d_role"))
+                    .profileImageUrl(dataBox.getString("d_profile_image_url"))
+                    .lastLogin(parseDateTime(dataBox.getString("d_last_login")))
+                    .signupType(dataBox.getString("d_signup_type"))
+                    .build();
+        } catch (Exception e) {
+            logger.error("UserResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
+            return new UserResponseDTO();
         }
     }
 }
