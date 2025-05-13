@@ -40,7 +40,7 @@ const Share = ({ isOpen, onClose, url }: ShareProps) => {
                 if (url) {
                   navigator.clipboard
                     .writeText(url)
-                    .then(() => BasicToaster.default('링크가 복사되었습니다'));
+                    .then(() => BasicToaster.default('링크가 복사되었습니다', { id: 'copySuccess' }));
                 }
               }}
             >
