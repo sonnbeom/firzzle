@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 /**
- * MyBatis 매핑용 DTO
+ * MyBatis 매핑용 DTO.
  */
 @Data
 @NoArgsConstructor

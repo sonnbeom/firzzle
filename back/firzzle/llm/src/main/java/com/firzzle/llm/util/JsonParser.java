@@ -1,13 +1,12 @@
 package com.firzzle.llm.util;
 
-import com.firzzle.llm.dto.ContentBlock;
-import com.firzzle.llm.dto.ParsedSummary;
-
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.firzzle.llm.domain.ContentBlock;
+import com.firzzle.llm.domain.ParsedSummary;
 
 import java.util.ArrayList;
 import java.util.List;
