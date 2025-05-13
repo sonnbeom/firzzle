@@ -36,7 +36,7 @@ public class CookieRenewService {
         renewCookies();
     }
 
-    @Scheduled(cron = "0 0 2 * * *") // 매일 새벽 02시 (KST) 실행
+    @Scheduled(cron = "0 0 2 * * *")
     public void renewCookies() {
         log.info("▶️ YouTube 쿠키 자동 재발급 시작");
 
@@ -46,6 +46,8 @@ public class CookieRenewService {
         }
 
         try (Playwright playwright = Playwright.create()) {
+            log.debug("✅ Playwright 인스턴스 생성 완료");
+
             BrowserType.LaunchOptions launchOpts = new BrowserType.LaunchOptions()
                 .setHeadless(true)
                 .setArgs(List.of(
@@ -56,42 +58,50 @@ public class CookieRenewService {
                     "--disable-gpu",
                     "--no-zygote"
                 ));
+            log.debug("✅ 브라우저 런치 옵션 구성 완료");
 
             Browser browser = playwright.chromium().launch(launchOpts);
+            log.debug("✅ 브라우저 런치 성공");
+
             BrowserContext context = browser.newContext(new Browser.NewContextOptions()
                 .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
                               "AppleWebKit/537.36 (KHTML, like Gecko) " +
                               "Chrome/120.0.0.0 Safari/537.36")
             );
             Page page = context.newPage();
-
-            // 기본 타임아웃 연장 (60초)
             page.setDefaultTimeout(60_000);
             page.setDefaultNavigationTimeout(60_000);
 
-            // 1) 로그인 페이지 접근
+            log.debug("➡️ 구글 로그인 페이지 접근 중...");
             page.navigate("https://accounts.google.com/signin/v2/identifier?service=youtube");
             page.waitForLoadState(LoadState.NETWORKIDLE);
+            log.debug("✅ 로그인 페이지 로딩 완료");
 
-            // 2) 이메일 입력 및 다음 클릭
+            log.debug("➡️ 이메일 입력 중...");
             page.waitForSelector("input[type=\"email\"]", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
             page.fill("input[type=\"email\"]", ytId);
+            log.debug("✅ 이메일 입력 완료");
+
             page.waitForSelector("#identifierNext", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
             page.click("#identifierNext");
+            log.debug("✅ 다음 버튼 클릭 완료 (이메일)");
 
-            // 3) 비밀번호 입력 및 다음 클릭
+            log.debug("➡️ 비밀번호 입력 대기 중...");
             page.waitForSelector("input[type=\"password\"]", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
             page.fill("input[type=\"password\"]", ytPw);
+            log.debug("✅ 비밀번호 입력 완료");
+
             page.waitForSelector("#passwordNext", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
             page.click("#passwordNext");
+            log.debug("✅ 다음 버튼 클릭 완료 (비밀번호)");
 
-            // 4) YouTube 메인 페이지 로딩 대기
+            log.debug("➡️ YouTube 메인 페이지 로딩 대기 중...");
             page.waitForURL("https://www.youtube.com/*", new Page.WaitForURLOptions().setTimeout(60_000));
+            log.debug("✅ YouTube 페이지 접근 성공");
 
-            // 5) 쿠키 가져오기
             List<Cookie> cookies = context.cookies();
+            log.debug("✅ 쿠키 추출 완료. 총 {}개", cookies.size());
 
-            // 6) yt-dlp 호환 Netscape 쿠키 포맷으로 저장
             List<String> lines = cookies.stream()
                 .map(c -> String.format("%s\t%s\t%s\t%s\t%d\t%s\t%s",
                     c.domain.startsWith(".") ? "TRUE" : "FALSE",
@@ -104,11 +114,20 @@ public class CookieRenewService {
                 ))
                 .collect(Collectors.toList());
 
+            log.debug("✅ 쿠키 변환 완료, 저장 경로: {}", COOKIE_PATH);
+
             Files.createDirectories(COOKIE_PATH.getParent());
             Files.write(COOKIE_PATH, lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            log.debug("✅ 쿠키 파일 저장 완료");
 
-            // 7) 파일 권한 제한 (chmod 600)
-            new ProcessBuilder("chmod", "600", COOKIE_PATH.toString()).start().waitFor();
+            try {
+                log.debug("🔒 파일 권한 설정 (chmod 600)");
+                Process chmodProcess = new ProcessBuilder("chmod", "600", COOKIE_PATH.toString()).start();
+                int chmodExit = chmodProcess.waitFor();
+                log.debug("✅ chmod 결과 코드: {}", chmodExit);
+            } catch (IOException e) {
+                log.warn("⚠️ chmod 명령 실행 실패: {}", e.getMessage());
+            }
 
             log.info("✅ 쿠키 저장 완료: {}", COOKIE_PATH);
             browser.close();
