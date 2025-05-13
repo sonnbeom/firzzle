@@ -28,6 +28,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -286,8 +288,16 @@ public class AuthController {
      * @param response HTTP 응답 객체
      */
     private void deleteRefreshTokenCookie(HttpServletResponse response) {
-        String cookieHeader = String.format("refresh_token=; Max-Age=0; Path=/; HttpOnly");
-        response.addHeader("Set-Cookie", cookieHeader);
+        // 루트 경로의 쿠키 삭제
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")               // 루트 경로
+                .maxAge(0)               // 즉시 만료
+                .sameSite("None")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     /**
@@ -371,32 +381,19 @@ public class AuthController {
      * @param refreshToken 리프레시 토큰
      */
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        // 쿠키 만료 시간 (예: 7일)
-        int cookieMaxAge = 7 * 24 * 60 * 60;
+        // 쿠키 만료 시간 (30일)
+        int cookieMaxAge = 30 * 24 * 60 * 60;
 
-        // 리프레시 토큰 쿠키 설정
-        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);          // JavaScript에서 접근 불가
-        refreshTokenCookie.setSecure(false);            // HTTPS에서만 전송, but 개발 중이므로 false
-        refreshTokenCookie.setPath("/");    // 모든 경로에서 접근 가능
-        refreshTokenCookie.setMaxAge(cookieMaxAge);    // 쿠키 유효 기간
+        // HTTP-Only 쿠키 생성
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)          // JavaScript에서 접근 불가능
+                .secure(false)            // HTTPS 전송만 허용
+                .path("/")               // 모든 경로에서 사용 가능
+                .maxAge(cookieMaxAge)    // 쿠키 유효 기간
+                .sameSite("None")        // 크로스 사이트 요청 설정
+                .build();
 
-        // SameSite 속성 설정 (크로스 사이트 요청 제한)
-        // HttpServletResponse가 직접 SameSite 속성을 지원하지 않아 헤더로 추가
-//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=Lax", // HTTPS에서만 전송
-//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; SameSite=Lax", // but 개발 중이므로 false
-//                refreshTokenCookie.getName(),
-//                refreshTokenCookie.getValue(),
-//                refreshTokenCookie.getMaxAge(),
-//                refreshTokenCookie.getPath());
-
-        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly;", // but 개발 중이므로 false
-                refreshTokenCookie.getName(),
-                refreshTokenCookie.getValue(),
-                refreshTokenCookie.getMaxAge(),
-                refreshTokenCookie.getPath());
-
-        response.addHeader("Set-Cookie", cookieHeader);
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     /**
