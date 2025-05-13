@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firzzle.llm.mapper.SummaryMapper">
+
+    <insert id="insertSummary" useGeneratedKeys="true" keyProperty="summarySeq">
+        INSERT INTO fb_ai_summaries (content_seq, level, indate)
+        VALUES (#{contentSeq}, #{level}, #{indate})
+    </insert>
+
+	<insert id="insertSections">
+	    INSERT INTO fb_ai_sections (summary_seq, title, start_time, details)
+	    VALUES
+	    <foreach collection="list" item="section" separator=",">
+	        (#{section.summarySeq}, #{section.title}, #{section.startTime}, #{section.details})
+	    </foreach>
+	</insert>
+
+</mapper>

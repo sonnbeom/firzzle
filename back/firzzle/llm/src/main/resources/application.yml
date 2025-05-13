@@ -1,5 +1,9 @@
-# 공통 설정 (common)
+server:
+  port: 8082
+
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: llm-server
   servlet:
@@ -7,12 +11,26 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
 
-# 애플리케이션 설정
+  ai:
+    openai:
+      api-key: ENC(T2d/CMHeJB/CwlAq+ID4gcQqyLTlfTzPFvtJkCKXCzQ7+bm6DmUK6gSURhSVbnwWR2FojzJSzn3F91AgrT8VYz2EIG0/j6KkyiJySQS9BUmj3NucnYiClsDAgD718VFua02pMNNY9VHIdjYP+/vrBDj6zLpAnbc/I4j+cGfM/GpZCvgKa28+6+9HfXk+/CQUf6hiPDLb7lNWU3fXXLf3BSmsZ8TGn3i071hhmISZsx0OKRDwC5u/cM5ZXxRkGDnb)
+      base-url: https://api.openai.com/v1
+      timeline:
+        model: gpt-4o-mini
+      summary:
+        model: gpt-4o-mini
+      runningchat:
+        model: gpt-4o-mini
+
+
+# 공통 설정
 app:
   file-storage:
     upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
 
-# Swagger/OpenAPI 설정
 springdoc:
   api-docs:
     path: /api-docs
@@ -22,30 +40,33 @@ springdoc:
     operations-sorter: alpha
   packages-to-scan: com.firzzle.llm.controller
 
-#Jasypt 설정
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
 
+eureka:
+  client:
+    enabled: false # HEAD 브랜치 설정 우선
+
+
 ---
-# 로컬 환경 설정
+
+# local 환경
 spring:
   config:
     activate:
       on-profile: local
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    #    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
-    jdbc-url: ENC(ygXVhsF9CysFggaflxcQWINq4Xeo7e2Kgzk09fKfaMb57mq+mFLlBz740u3YK++f2A79SpBdqnh7JL22sHA5IXljAN81Yaza8iVTrk8uuSnFdki8RMldcRDzlTX9xsS0UH7GrhugvwQ2LpvuEDo6fO8j5DCEw1LUwxGqqG2PLdw=)
-    username: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
-    password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
+    jdbc-url: ENC(+lTxE7Jf6xDUX4EbEmIGZdpIvhpuvh7Onxzom7ocQk7tnaWh7HUUHJKv8D7FJaCodQ16ht90bAOBqaOKYqO0moYTUkmiPN/eDaY+IOXcikOD6KrDjT5g/p42qqSPYx3H45TiqQ4Y7VyU/GAqDElydTq34ZBfLNIqzyM3VnoCSiMng77175W9islbKP6My29Mz+OQjs28f/BSa+xvzjuyng==)
+    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
     maximum-pool-size: 10
-  # Kafka 설정
   kafka:
     bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
     consumer:
-      group-id: llm-group
+      group-id: firzzle
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -53,10 +74,13 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
-server:
-  port: 8080 # 포트 안 정해져서 8080
+qdrant:
+  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
+  api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
-# Eureka 설정
+server:
+  port: 8082
+
 eureka:
   client:
     register-with-eureka: true
@@ -66,7 +90,6 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
-# MyBatis 설정
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   type-aliases-package: com.firzzle.llm.dto,com.firzzle.common.library
@@ -78,7 +101,6 @@ mybatis:
     - alias: RequestBox
       type: com.firzzle.common.library.RequestBox
 
-# P6Spy 설정
 decorator:
   datasource:
     p6spy:
@@ -87,25 +109,19 @@ decorator:
 logging:
   config: classpath:logback/logback-local.xml
 
-# Kafka 토픽 설정
-app:
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic
-
 ---
-# 개발 환경 설정
+
+# dev 환경
 spring:
   config:
     activate:
       on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 10
-  # Kafka 설정
   kafka:
     bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
     consumer:
@@ -116,11 +132,14 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      
+qdrant:
+  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
+  api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
   port: 8080
 
-# Eureka 설정
 eureka:
   client:
     register-with-eureka: true
@@ -130,7 +149,6 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
-# MyBatis 설정
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   type-aliases-package: com.firzzle.llm.dto,com.firzzle.common.library
@@ -142,7 +160,6 @@ mybatis:
     - alias: RequestBox
       type: com.firzzle.common.library.RequestBox
 
-# P6Spy 설정
 decorator:
   datasource:
     p6spy:
@@ -151,25 +168,19 @@ decorator:
 logging:
   config: classpath:logback/logback-dev.xml
 
-# Kafka 토픽 설정
-app:
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic
-
 ---
-# 프로덕션 환경 설정
+
+# production 환경
 spring:
   config:
     activate:
       on-profile: production
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20
-  # Kafka 설정
   kafka:
     bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
     consumer:
@@ -181,10 +192,13 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+qdrant:
+  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
+  api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
+
 server:
   port: 8080
 
-# Eureka 설정
 eureka:
   client:
     register-with-eureka: true
@@ -194,7 +208,6 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
-# MyBatis 설정
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   type-aliases-package: com.firzzle.llm.dto,com.firzzle.common.library
@@ -206,7 +219,6 @@ mybatis:
     - alias: RequestBox
       type: com.firzzle.common.library.RequestBox
 
-# P6Spy 설정
 decorator:
   datasource:
     p6spy:
@@ -214,9 +226,3 @@ decorator:
 
 logging:
   config: classpath:logback/logback-production.xml
-
-# Kafka 토픽 설정
-app:
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic

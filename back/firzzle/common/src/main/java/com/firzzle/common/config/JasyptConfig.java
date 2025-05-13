@@ -28,16 +28,16 @@ public class JasyptConfig {
         return encryptor;
     }
 
-    public void main(String[] args) {
+    public static void main(String[] args) {
         ArrayList<String> encryptList = new ArrayList<>();
         ArrayList<String> decryptList = new ArrayList<>();
-        encryptList.add("jdbc:mysql://localhost:3306/mydb"); //암호화 대상 문자 추가
+        encryptList.add("firzzletest"); //암호화 대상 문자 추가
         //복호화 대상 문자열 추가 ENC() 괄호 내부 값으로 넣기
-        decryptList.add("7hxyFwQ8LzNDka98TeYQKEdeBi0VUM1ZmQ8Is7Kv7Wc=");
+        decryptList.add("xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg");
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setProvider(new BouncyCastleProvider());
         encryptor.setPoolSize(2);
-        encryptor.setPassword(secretKey);
+        encryptor.setPassword("firzzle_new"); // 암호화 키
         encryptor.setAlgorithm("PBEWITHSHA256AND128BITAES-CBC-BC");
         System.out.println("============암호화=============");
         for (String target : encryptList) {

@@ -31,7 +31,7 @@ dependencies {
 	implementation project(':jwt')
 
 	// Spring Security와 OAuth2 의존성
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+//	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
 	// JWT
@@ -66,7 +66,10 @@ dependencies {
 
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
+//	testImplementation 'org.springframework.security:spring-security-test'
+
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
 }
 
 // 모듈의 build.gradle

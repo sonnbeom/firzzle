@@ -1,18 +1,31 @@
-# 공통 설정 (common)
 spring:
   application:
     name: stt-server
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 100MB
+      max-request-size: 100MB
+  config:
+    import: optional:file:.env[.properties]
 
-# 애플리케이션 설정
-app:
-  file-storage:
-    upload-dir: /data/firzzle/uploads
+# # Whisper 설정
+# whisper:
+#   executable:
+#     path: ${WHISPER_EXECUTABLE_PATH}
+#   model:
+#     path: ${WHISPER_MODEL_PATH}
+#   working:
+#     dir: ${WHISPER_WORKING_DIR}
 
-# Swagger/OpenAPI 설정
+playwright:
+  # Playwright 브라우저 옵션 (headless 여부 등)
+  chromium:
+    headless: true
+    args:
+      - "--no-sandbox"
+      - "--disable-setuid-sandbox"
+
+# Swagger 설정
 springdoc:
   api-docs:
     path: /api-docs
@@ -22,27 +35,57 @@ springdoc:
     operations-sorter: alpha
   packages-to-scan: com.firzzle.stt.controller
 
-#Jasypt 설정
+# Jasypt
 jasypt:
   encryptor:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
 
+# Eureka
+eureka:
+ client:
+   register-with-eureka: true
+   fetch-registry: true
+   service-url:
+     defaultZone: ENC(cJOm7bGDAdx9BFBu49TKVNLq8Q0GWOvujo09v6uWSzrDGUy7LpDWE+HoHkCohaFj+4QXgHGgLatmhJJfG4bDSQ==)
+ instance:
+   instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# MyBatis
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.firzzle.stt.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+# P6Spy
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  config: classpath:logback/logback-local.xml
 ---
-# 로컬 환경 설정
+# local 환경
 spring:
   config:
     activate:
       on-profile: local
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    #    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
-    jdbc-url: ENC(ygXVhsF9CysFggaflxcQWINq4Xeo7e2Kgzk09fKfaMb57mq+mFLlBz740u3YK++f2A79SpBdqnh7JL22sHA5IXljAN81Yaza8iVTrk8uuSnFdki8RMldcRDzlTX9xsS0UH7GrhugvwQ2LpvuEDo6fO8j5DCEw1LUwxGqqG2PLdw=)
-    username: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
-    password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
+    jdbc-url: ENC(+lTxE7Jf6xDUX4EbEmIGZdpIvhpuvh7Onxzom7ocQk7tnaWh7HUUHJKv8D7FJaCodQ16ht90bAOBqaOKYqO0moYTUkmiPN/eDaY+IOXcikOD6KrDjT5g/p42qqSPYx3H45TiqQ4Y7VyU/GAqDElydTq34ZBfLNIqzyM3VnoCSiMng77175W9islbKP6My29Mz+OQjs28f/BSa+xvzjuyng==)
+    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
     maximum-pool-size: 10
-  # Kafka 설정
   kafka:
+    listener:
+      auto-startup: false
     bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
     consumer:
       group-id: stt-group
@@ -53,59 +96,45 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: C:\SSAFY\uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+  youtube:
+  # Playwright 로그인에 사용할 환경변수
+    credentials:
+      id: ENC(ZYVZ8NT84MNDqNJmWmDjx0EJs9oZ+zAn/5A+x7SNmqE=)
+      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
+    # 쿠키 파일 경로
+    cookies-path: ${app.file-storage.upload-dir}/cookies.txt
+
 server:
-  port: 8080 # 포트 안 정해져서 8080
+  port: 8080
 
-# Eureka 설정
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: ENC(gcqgrb530BaHAxfrXv+H99Truf7GbhCtAnVug3PXHz8rD8pTQgy3sMOl7rhKPFpY)
-  instance:
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
-
-# MyBatis 설정
-mybatis:
-  mapper-locations: classpath:mappers/**/*.xml
-  type-aliases-package: com.firzzle.stt.dto,com.firzzle.common.library
-  configuration:
-    map-underscore-to-camel-case: true
-  type-aliases:
-    - alias: DataBox
-      type: com.firzzle.common.library.DataBox
-    - alias: RequestBox
-      type: com.firzzle.common.library.RequestBox
-
-# P6Spy 설정
 decorator:
   datasource:
     p6spy:
-      enable-logging: true
+      enable-logging: false
 
 logging:
   config: classpath:logback/logback-local.xml
 
-# Kafka 토픽 설정
-app:
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic
-
 ---
-# 개발 환경 설정
+
+# dev 환경
 spring:
   config:
     activate:
       on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 10
-  # Kafka 설정
   kafka:
     bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
     consumer:
@@ -117,10 +146,24 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+  youtube:
+  # Playwright 로그인에 사용할 환경변수
+    credentials:
+      id: ENC(ZYVZ8NT84MNDqNJmWmDjx0EJs9oZ+zAn/5A+x7SNmqE=)
+      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
+    # 쿠키 파일 경로
+    cookies-path: ${app.file-storage.upload-dir}/cookies.txt
+
 server:
   port: 8080
 
-# Eureka 설정
 eureka:
   client:
     register-with-eureka: true
@@ -129,20 +172,13 @@ eureka:
       defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+yt-dlp:
+  # yt-dlp 호출 시 기본적으로 추가할 옵션
+  default-opts:
+    - "--cookies=${app.youtube.cookies-path}"
+    - "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36"
 
-# MyBatis 설정
-mybatis:
-  mapper-locations: classpath:mappers/**/*.xml
-  type-aliases-package: com.firzzle.stt.dto,com.firzzle.common.library
-  configuration:
-    map-underscore-to-camel-case: true
-  type-aliases:
-    - alias: DataBox
-      type: com.firzzle.common.library.DataBox
-    - alias: RequestBox
-      type: com.firzzle.common.library.RequestBox
 
-# P6Spy 설정
 decorator:
   datasource:
     p6spy:
@@ -151,25 +187,19 @@ decorator:
 logging:
   config: classpath:logback/logback-dev.xml
 
-# Kafka 토픽 설정
-app:
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic
-
 ---
-# 프로덕션 환경 설정
+
+# production 환경
 spring:
   config:
     activate:
       on-profile: production
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20
-  # Kafka 설정
   kafka:
     bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
     consumer:
@@ -181,32 +211,30 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+# 파일 저장 경로
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+  kafka:
+    topic:
+      content-analysis: content-analysis-topic
+  youtube:
+  # Playwright 로그인에 사용할 환경변수
+    credentials:
+      id: ENC(ZYVZ8NT84MNDqNJmWmDjx0EJs9oZ+zAn/5A+x7SNmqE=)
+      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
+    # 쿠키 파일 경로
+    cookies-path: ${app.file-storage.upload-dir}/cookies.txt
+
+yt-dlp:
+  # yt-dlp 호출 시 기본적으로 추가할 옵션
+  default-opts:
+    - "--cookies=${app.youtube.cookies-path}"
+    - "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36"
+
 server:
   port: 8080
 
-# Eureka 설정
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
-  instance:
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
-
-# MyBatis 설정
-mybatis:
-  mapper-locations: classpath:mappers/**/*.xml
-  type-aliases-package: com.firzzle.stt.dto,com.firzzle.common.library
-  configuration:
-    map-underscore-to-camel-case: true
-  type-aliases:
-    - alias: DataBox
-      type: com.firzzle.common.library.DataBox
-    - alias: RequestBox
-      type: com.firzzle.common.library.RequestBox
-
-# P6Spy 설정
 decorator:
   datasource:
     p6spy:
@@ -214,11 +242,4 @@ decorator:
 
 logging:
   config: classpath:logback/logback-production.xml
-
-# Kafka 토픽 설정
-app:
-  kafka:
-    topic:
-      content-analysis: content-analysis-topic
-
 

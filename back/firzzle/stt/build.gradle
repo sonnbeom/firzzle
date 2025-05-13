@@ -24,78 +24,85 @@ configurations {
 }
 
 dependencies {
-    // 프로젝트 의존성
-    implementation project(':common')
-//	implementation project(':user-domain')
-
-    // MyBatis 관련 의존성 추가
-    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
-    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-
-    // Hibernate Core만 추가 P6spy formstyle을 위함
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
-    //p6spy
-    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
-
-    // Web & API
+    // === Spring Boot 기본 스타터 ===
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework:spring-context-support'
 
-    // Eureka Client
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
-
-    // Kafka
+    // === Kafka ===
     implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.apache.kafka:kafka-streams'
 
-    // OpenAPI/Swagger
+    // === Eureka ===
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
+
+    // === Swagger / OpenAPI ===
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
 
-    //jasypt
+    // === MyBatis ===
+    implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+
+    // === P6Spy ===
+    implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.7.1'
+
+    // === Jasypt (보안 암호화) ===
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.69'
 
-    // Test
+    // === Lombok ===
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // === 공통 모듈 ===
+    implementation project(':common')
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    // implementation project(':user-domain') // 필요시 주석 해제
+    
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    
+    //implementation("io.netty:netty-resolver-dns:4.1.100.Final")
+    
+    // Playwright Java API
+    implementation 'com.microsoft.playwright:playwright:1.42.0'
+
+    // === 테스트 ===
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:3.1.4'
+    implementation platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.0')
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
-// 모듈의 build.gradle
+// === 공통 리소스 복사 ===
 processResources {
-    // common 모듈의 리소스를 현재 모듈의 리소스로 복사
-
-    // messages
     from project(':common').sourceSets.main.resources.matching {
-        include 'messages/**'  // messages 디렉토리 아래의 모든 파일을 복사
-    }
-
-    // logback
-    from project(':common').sourceSets.main.resources.matching {
-        include 'logback/**'  // logback 디렉토리 아래의 모든 파일을 복사
-    }
-
-    // mapper/common
-    from project(':common').sourceSets.main.resources.matching {
-        include 'mapper/common/**'  // mapper/common 디렉토리 아래의 모든 파일을 복사
-    }
-
-    // 개별 파일 복사
-    from project(':common').sourceSets.main.resources.matching {
+        include 'messages/**'
+        include 'logback/**'
+        include 'mapper/common/**'
         include 'banner.txt'
         include 'log4jdbc.log4j2.properties'
         include 'spy.properties'
     }
 }
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
+// === JAR 설정 ===
 bootJar {
-    enabled = true  // 서비스는 실행 가능한 jar 생성
+    enabled = true
 }
 
 jar {
-    enabled = false  // bootJar를 사용하므로 일반 jar는 비활성화
+    enabled = false
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }

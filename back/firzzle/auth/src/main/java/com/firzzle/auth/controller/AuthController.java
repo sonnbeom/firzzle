@@ -11,6 +11,8 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
+import com.firzzle.common.logging.dto.UserActionLog;
+import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,11 +32,16 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
+import static com.firzzle.common.logging.dto.UserActionLog.*;
+import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : AuthController.java
@@ -104,6 +111,9 @@ public class AuthController {
                     .message("카카오 로그인 성공")
                     .data(tokenResponseDTO)
                     .build();
+
+            // 로그인 조회 => ELK
+            log(userLoginLog());
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
@@ -275,37 +285,25 @@ public class AuthController {
      * @param response HTTP 응답 객체
      */
     private void deleteRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refresh_token", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // 즉시 만료
-
-        // SameSite 속성 설정
-        String cookieHeader = String.format("%s=%s; Max-Age=0; Path=%s; HttpOnly; Secure; SameSite=Lax",
-                cookie.getName(),
-                cookie.getValue(),
-                cookie.getPath());
-
+        String cookieHeader = String.format("refresh_token=; Max-Age=0; Path=/; HttpOnly");
         response.addHeader("Set-Cookie", cookieHeader);
-        response.addCookie(cookie);
     }
 
     /**
      * 카카오 로그인 콜백 API
      * @param request HTTP 요청 객체
      * @param response HTTP 응답 객체
-     * @return 토큰 응답
+     * @return void
      */
-    @GetMapping(value = "/kakao/callback", produces = "application/json;charset=UTF-8")
+    @GetMapping(value = "/kakao/callback")
     @Operation(summary = "카카오 로그인 콜백", description = "카카오 로그인 후 리다이렉트되는 엔드포인트로, 인증 코드를 처리하여 액세스 토큰과 리프레시 토큰을 발급합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "카카오 로그인 콜백 처리 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TokenResponseDTO.class))),
+            @ApiResponse(responseCode = "200", description = "카카오 로그인 콜백 처리 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 - 인증 코드 누락 또는 유효하지 않은 코드"),
             @ApiResponse(responseCode = "401", description = "인증 실패 - 카카오 인증 실패"),
             @ApiResponse(responseCode = "500", description = "서버 오류 - 카카오 API 연동 실패 또는 내부 서버 오류")
     })
-    public ResponseEntity<Response<TokenResponseDTO>> kakaoCallback(
+    public void kakaoCallback(
             @Parameter(description = "카카오 인증 코드", required = true) @RequestParam("code") String code,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -327,28 +325,39 @@ public class AuthController {
             // 리프레시 토큰을 HTTP-Only 쿠키로 설정
             setRefreshTokenCookie(response, tokenResponseDTO.getRefreshToken());
 
-            // 응답에서 리프레시 토큰 제거 (쿠키로만 전송)
-            TokenResponseDTO responseDto = TokenResponseDTO.builder()
-                    .accessToken(tokenResponseDTO.getAccessToken())
-                    .expiresIn(tokenResponseDTO.getExpiresIn())
-                    .tokenType(tokenResponseDTO.getTokenType())
-                    .issuedAt(tokenResponseDTO.getIssuedAt())
-                    .build();
+            // 리다이렉트 URL 결정
+            String baseRedirectUrl = oAuthRedirectService.determineClientRedirectUri();
 
-            Response<TokenResponseDTO> apiResponse = Response.<TokenResponseDTO>builder()
-                    .status(Status.OK)
-                    .message("카카오 로그인 성공")
-                    .data(responseDto)
-                    .build();
+            // 액세스 토큰을 쿼리 파라미터로 추가
+            String redirectUrl = baseRedirectUrl + "?accessToken=" + tokenResponseDTO.getAccessToken();
 
-            return ResponseEntity.ok(apiResponse);
+            logger.info("카카오 로그인 성공 - 리다이렉트: {}", redirectUrl);
 
+            response.sendRedirect(redirectUrl);
         } catch (BusinessException e) {
             logger.error("카카오 콜백 처리 중 비즈니스 예외 발생: {}", e.getMessage());
-            throw e;
+            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri();
+            try {
+                // URL 인코딩 시 StandardCharsets.UTF_8 사용
+                String encodedMessage = URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8.toString());
+                clientErrorRedirectUri += "?error=business&message=" + encodedMessage;
+                response.sendRedirect(clientErrorRedirectUri);
+            } catch (IOException ex) {
+                logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         } catch (Exception e) {
             logger.error("카카오 콜백 처리 중 예외 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "카카오 콜백 처리 중 오류가 발생했습니다.");
+            String clientErrorRedirectUri = oAuthRedirectService.determineClientRedirectUri();
+            try {
+                // URL 인코딩 시 StandardCharsets.UTF_8 사용
+                String encodedMessage = URLEncoder.encode("서버 오류가 발생했습니다.", StandardCharsets.UTF_8.toString());
+                clientErrorRedirectUri += "?error=server&message=" + encodedMessage;
+                response.sendRedirect(clientErrorRedirectUri);
+            } catch (IOException ex) {
+                logger.error("리다이렉트 중 예외 발생: {}", ex.getMessage(), ex);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
         }
     }
 
@@ -364,21 +373,33 @@ public class AuthController {
         // 리프레시 토큰 쿠키 설정
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);          // JavaScript에서 접근 불가
-        refreshTokenCookie.setSecure(true);            // HTTPS에서만 전송
-        refreshTokenCookie.setPath("/api/v1/auth");    // 모든 경로에서 접근 가능
+        refreshTokenCookie.setSecure(false);            // HTTPS에서만 전송, but 개발 중이므로 false
+        refreshTokenCookie.setPath("/");    // 모든 경로에서 접근 가능
         refreshTokenCookie.setMaxAge(cookieMaxAge);    // 쿠키 유효 기간
 
         // SameSite 속성 설정 (크로스 사이트 요청 제한)
         // HttpServletResponse가 직접 SameSite 속성을 지원하지 않아 헤더로 추가
-        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=Lax",
+//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=Lax", // HTTPS에서만 전송
+//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; SameSite=Lax", // but 개발 중이므로 false
+//                refreshTokenCookie.getName(),
+//                refreshTokenCookie.getValue(),
+//                refreshTokenCookie.getMaxAge(),
+//                refreshTokenCookie.getPath());
+
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly;", // but 개발 중이므로 false
                 refreshTokenCookie.getName(),
                 refreshTokenCookie.getValue(),
                 refreshTokenCookie.getMaxAge(),
                 refreshTokenCookie.getPath());
 
         response.addHeader("Set-Cookie", cookieHeader);
-        response.addCookie(refreshTokenCookie);
     }
+
+    // /api/v1/auth/me
+//    현재 로그인한 사용자 정보 조회
+//
+//    토큰에서 사용자 정보를 추출하여 반환
+//    프로필 표시, 개인화된 UI 등에 필요
 
     /**
      * DataBox를 TokenResponseDTO로 변환
