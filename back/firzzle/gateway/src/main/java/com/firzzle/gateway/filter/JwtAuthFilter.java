@@ -35,8 +35,8 @@ import java.util.List;
 public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Config> {
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
-    // 개발 모드 플래그 추가 - false로 설정
-    private static final boolean DEV_MODE = false;
+    // 개발 모드 플래그 - true로 설정하면 JWT 검증 없이 개발용 사용자 정보 사용
+    private static final boolean DEV_MODE = true;
 
     // 개발 환경에서 사용할 고정 사용자 정보
     private static final String DEV_UUID = "07f670f0-2853-11f0-aeb6-c68431894852";
@@ -57,7 +57,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
         return (exchange, chain) -> {
             // 필터가 비활성화된 경우 바로 다음 필터로 전달
             if (!config.isEnabled()) {
-                logger.debug("JwtAuthFilter 비활성화됨 - 인증 검사 없이 요청 통과");
+                logger.info("JwtAuthFilter 비활성화됨 - 인증 검사 없이 요청 통과");
                 return chain.filter(exchange);
             }
 
@@ -66,7 +66,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             String requestMethod = request.getMethod().toString();
             String clientIp = getClientIp(request);
 
-            logger.debug("JWT 인증 시작 - 경로: [{}] {}, IP: {}", requestMethod, requestPath, clientIp);
+            logger.info("JWT 인증 시작 - 경로: [{}] {}, IP: {}", requestMethod, requestPath, clientIp);
 
             // 개발 모드인 경우
             if (DEV_MODE) {
@@ -85,7 +85,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
 
             // Authorization 헤더 확인
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                logger.warn("인증 실패 - Authorization 헤더 없음: [{}] {}, IP: {}",
+                logger.info("인증 실패 - Authorization 헤더 없음: [{}] {}, IP: {}",
                         requestMethod, requestPath, clientIp);
                 return onError(exchange, "Authorization 헤더가 없습니다.", HttpStatus.UNAUTHORIZED);
             }
@@ -94,7 +94,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             String token = JwtTokenUtil.extractTokenFromAuthHeader(authHeader);
 
             if (token == null) {
-                logger.warn("인증 실패 - 유효하지 않은 JWT 토큰 형식: [{}] {}, IP: {}",
+                logger.info("인증 실패 - 유효하지 않은 JWT 토큰 형식: [{}] {}, IP: {}",
                         requestMethod, requestPath, clientIp);
                 return onError(exchange, "유효한 JWT 토큰 형식이 아닙니다.", HttpStatus.UNAUTHORIZED);
             }
@@ -102,7 +102,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             try {
                 // 토큰의 첫 10자리만 로깅 (보안상의 이유로 전체 토큰은 로깅하지 않음)
                 String tokenPrefix = token.length() > 10 ? token.substring(0, 10) + "..." : token;
-                logger.debug("JWT 토큰 검증 중 - 토큰: {}, 경로: [{}] {}",
+                logger.info("JWT 토큰 검증 중 - 토큰: {}, 경로: [{}] {}",
                         tokenPrefix, requestMethod, requestPath);
 
                 // JwtTokenProvider를 사용하여 토큰 검증 및 클레임 추출
@@ -111,14 +111,14 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                 String role = JwtTokenUtil.extractRole(claims);
                 String scope = JwtTokenUtil.extractScope(claims);
 
-                logger.debug("JWT 토큰 검증 성공 - 사용자: {}, 역할: {}, 스코프: {}", uuid, role, scope);
+                logger.info("JWT 토큰 검증 성공 - 사용자: {}, 역할: {}, 스코프: {}", uuid, role, scope);
 
                 // 어드민 전용 경로인 경우 역할 확인
                 if (config.isAdminOnly()) {
-                    logger.debug("관리자 전용 경로 접근 확인 중 - 경로: {}, 역할: {}", requestPath, role);
+                    logger.info("관리자 전용 경로 접근 확인 중 - 경로: {}, 역할: {}", requestPath, role);
 
                     if (!"admin".equalsIgnoreCase(role)) {
-                        logger.warn("관리자 권한 접근 거부 - 사용자: {}, 역할: {}, 경로: {}, IP: {}",
+                        logger.info("관리자 권한 접근 거부 - 사용자: {}, 역할: {}, 경로: {}, IP: {}",
                                 uuid, role, requestPath, clientIp);
                         return onError(exchange, "관리자 권한이 필요합니다.", HttpStatus.FORBIDDEN);
                     }
@@ -129,10 +129,10 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
 
                 // 요청 경로에 따른 접근 권한 확인
                 String servicePath = extractServicePath(requestPath);
-                logger.debug("서비스 경로 접근 확인 중 - 경로: {}, 서비스: {}", requestPath, servicePath);
+                logger.info("서비스 경로 접근 확인 중 - 경로: {}, 서비스: {}", requestPath, servicePath);
 
                 if (!hasAccessToService(claims, servicePath)) {
-                    logger.warn("서비스 접근 권한 없음 - 사용자: {}, 역할: {}, 서비스: {}, IP: {}",
+                    logger.info("서비스 접근 권한 없음 - 사용자: {}, 역할: {}, 서비스: {}, IP: {}",
                             uuid, role, servicePath, clientIp);
                     return onError(exchange, "해당 서비스에 접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
                 }
@@ -149,19 +149,19 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
 
                 // 토큰 만료 임박 확인 (선택적 기능)
                 if (JwtTokenUtil.isTokenExpiringSoon(claims, 300)) { // 5분(300초) 이내
-                    logger.debug("토큰 만료 임박 - 사용자: {}, 남은 시간: {}초",
+                    logger.info("토큰 만료 임박 - 사용자: {}, 남은 시간: {}초",
                             uuid, getTokenRemainingTime(claims));
                 }
 
                 return chain.filter(exchange.mutate().request(mutatedRequest).build());
 
             } catch (JwtException e) {
-                logger.error("JWT 토큰 검증 실패 - 오류: {}, 경로: [{}] {}, IP: {}",
+                logger.info("JWT 토큰 검증 실패 - 오류: {}, 경로: [{}] {}, IP: {}",
                         e.getMessage(), requestMethod, requestPath, clientIp);
                 return onError(exchange, JwtTokenUtil.getReadableJwtError(e), HttpStatus.UNAUTHORIZED);
             } catch (Exception e) {
-                logger.error("JWT 처리 중 예외 발생 - 오류: {}, 경로: [{}] {}, IP: {}",
-                        e.getMessage(), requestMethod, requestPath, clientIp, e);
+                logger.info("JWT 처리 중 예외 발생 - 오류: {}, 경로: [{}] {}, IP: {}",
+                        e.getMessage(), requestMethod, requestPath, clientIp);
                 return onError(exchange, "인증 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         };
@@ -246,13 +246,13 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
         response.setStatusCode(status);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        // 로깅 레벨 상황에 맞게 조정
+        // 로깅 레벨 상황에 맞게 조정 - 모두 INFO로 변경
         if (status == HttpStatus.UNAUTHORIZED) {
-            logger.warn("인증 오류 응답: {}, 상태: {}", message, status);
+            logger.info("인증 오류 응답: {}, 상태: {}", message, status);
         } else if (status == HttpStatus.FORBIDDEN) {
-            logger.warn("접근 거부 응답: {}, 상태: {}", message, status);
+            logger.info("접근 거부 응답: {}, 상태: {}", message, status);
         } else {
-            logger.error("서버 오류 응답: {}, 상태: {}", message, status);
+            logger.info("서버 오류 응답: {}, 상태: {}", message, status);
         }
 
         // Response 객체 생성 (GlobalExceptionHandler와 동일한 형식)
@@ -268,7 +268,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             DataBuffer buffer = response.bufferFactory().wrap(responseBytes);
             return response.writeWith(Mono.just(buffer));
         } catch (Exception e) {
-            logger.error("JSON 변환 중 오류 발생", e);
+            logger.info("JSON 변환 중 오류 발생: {}", e.getMessage());
             return response.setComplete();
         }
     }
