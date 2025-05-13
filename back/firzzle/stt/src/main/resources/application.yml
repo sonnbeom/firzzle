@@ -106,8 +106,8 @@ app:
   youtube:
   # Playwright 로그인에 사용할 환경변수
     credentials:
-      id: ENC(J0jPnLW3xJv4ccK2gXgbFpC/dl4FnKqhTMBMnHXM07M=)
-      pw: ENC(3tXF4dqz8ehBwb/ynejJxDb8nST5OoyDId1bDg/QyDg=)
+      id: ENC(sacYT0XXczagA4gjRSdL07rstIRTcGSbwnpL3xqRdwI=)
+      pw: ENC(csLpQhPUVGAUcEEWr4QgioOZUdk/aZacmKIt2V7PoeY=)
     # 쿠키 파일 경로
     cookies-path: ${app.file-storage.upload-dir}/cookies.txt
 
