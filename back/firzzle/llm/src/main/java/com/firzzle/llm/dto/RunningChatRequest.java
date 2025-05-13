@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class RunningChatRequest {
+	Long contentSeq;
 	String Question;
-	String videoSeq;
-	String UserSeq;
+	String PreviousQuestion; // 2개 정도? 
 }

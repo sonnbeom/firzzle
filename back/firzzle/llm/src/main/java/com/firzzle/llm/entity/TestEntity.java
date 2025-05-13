@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class TestEntity{
 
     @Id
-    private Integer id;
+    private Long id;
     @Column(columnDefinition = "TEXT")
     private String content;
     private LocalDateTime createdAt;

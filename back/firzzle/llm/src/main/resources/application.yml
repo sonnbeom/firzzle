@@ -19,6 +19,8 @@ spring:
         model: gpt-4o-mini
       summary:
         model: gpt-4o-mini
+      runningchat:
+        model: gpt-4o-mini
 
 
 # 공통 설정
@@ -43,10 +45,9 @@ jasypt:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
 
-eureka:
-  client:
-    enabled: false # HEAD 브랜치 설정 우선
-
+#eureka:
+#  client:
+#    enabled: false # HEAD 브랜치 설정 우선
 
 ---
 
@@ -73,7 +74,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 qdrant:
-  host: ENC(s1Ct6340rv4snLLcZYQq4xaflHsB1lP+rCoNvl07oi34eEtSLvRstJ1ecJBs7vAq)
+  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
   api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
@@ -116,7 +117,7 @@ spring:
       on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 10
@@ -130,9 +131,9 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      
+
 qdrant:
-  host: ENC(s1Ct6340rv4snLLcZYQq4xaflHsB1lP+rCoNvl07oi34eEtSLvRstJ1ecJBs7vAq)
+  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
   api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
@@ -143,7 +144,8 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+      # 유레카 서버 ip 로 지정
+      defaultZone: ENC(a/ouu/mzdNsTfGZEb5GtfZZxpgAiSQ96G93Z5GUSkjsIUfBQWOZNBmSGAbNB1f1TAluTD+ARvOrSzgyz1W1YZg==)
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
@@ -175,7 +177,7 @@ spring:
       on-profile: production
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    jdbc-url: ENC(tgaaLhoeKpaFq+gSRoyULKnpPwE85+r4rofzbTQRCUf6/+fiw3oQsl/xLNO1MnK+iBHKq1dGPR2IREaL+pDutBV84otxN7oVzh1bM8Z/lVqhr9b0mUV4WjChLf0JlDQ3XU/SHV7vOxpx9aMbp8ihFL9j1YSGM//w22GToW0lADlvS3o3WVSeje0fEB8FppsxF5Wi6762vx7PbTFLmo1OXRoFMa9d8utbitAL1l92WSI=)
     username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20
@@ -191,7 +193,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 qdrant:
-  host: ENC(s1Ct6340rv4snLLcZYQq4xaflHsB1lP+rCoNvl07oi34eEtSLvRstJ1ecJBs7vAq)
+  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
   api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
@@ -202,9 +204,16 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+      # 유레카 서버 ip 로 지정
+      defaultZone: ENC(/41tljZDMZpNgXvM80gXVFmnDrDcBQHNU53N4cED7Drjo5iU+IAIIY+V62fqdY1D/7hAmAbMLJruMqrwTpvDkA==)
   instance:
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    preferIpAddress: true
+    ip-address: ENC(5IT1nt5OqCBjYMDxZhtVLY5mBWFTmHTcFKm74jqKV54nDpETIeydg3WO0Ftt8Pkb)
+    non-secure-port: ${SERVER_PORT:8082}  # 명시적으로 포트 지정
+    securePortEnabled: false
+    healthCheckUrl: http://ENC(5IT1nt5OqCBjYMDxZhtVLY5mBWFTmHTcFKm74jqKV54nDpETIeydg3WO0Ftt8Pkb):${SERVER_PORT:8082}/actuator/health
+    homePageUrl: http://ENC(5IT1nt5OqCBjYMDxZhtVLY5mBWFTmHTcFKm74jqKV54nDpETIeydg3WO0Ftt8Pkb):${SERVER_PORT:8082}/
+    instanceId: llm-server:ENC(5IT1nt5OqCBjYMDxZhtVLY5mBWFTmHTcFKm74jqKV54nDpETIeydg3WO0Ftt8Pkb):${SERVER_PORT:8082}
 
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml

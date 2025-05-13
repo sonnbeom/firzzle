@@ -48,37 +48,62 @@ public class SttService {
     public String transcribeFromYoutube(String url) throws Exception {
         String videoId = contentService.extractYoutubeId(url);
 
-//        // 중복 콘텐츠 방지
-//        if (contentService.isContentExistsByVideoId(videoId)) 
-//            return null;
+        if (contentService.isContentExistsByVideoId(videoId)) 
+            return null;
 
-        // (1) 자막 다운로드
+        String UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                + "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
+
+        // 자막 다운로드
+        String COOKIE_PATH = "/data/firzzle/cookies.txt";
+
+        
+        // 클라우드 환경에서 실행되는 코드 
         ProcessBuilder scriptsExtractor = new ProcessBuilder(
             "yt-dlp",
-            "--write-auto-sub",         // 자동 생성된 자막 다운로드
-            "--sub-lang", "ko",         // 한국어 자막
-            "--sub-format", "vtt",      // vtt 포맷으로 받음
-            "--convert-subs", "srt",    // srt로 변환
-            "--skip-download",          // 영상은 다운로드하지 않음
-            "--output", videoId + ".%(ext)s", // 저장 파일 이름
+            "--user-agent", UA,
+            "--cookies", COOKIE_PATH,
+            "--no-check-certificate",
+            "--referer", "https://www.youtube.com",
+            "--write-auto-sub",
+            "--sub-lang", "ko",
+            "--sub-format", "vtt",
+            "--convert-subs", "srt",
+            "--skip-download",
+            "--output", videoId + ".%(ext)s",
             url
         );
-        scriptsExtractor.directory(new File(uploadDir)); // 작업 디렉토리 설정
-        scriptsExtractor.redirectErrorStream(true);        // 에러 스트림 병합
-        runAndPrint(scriptsExtractor);                     // 프로세스 실행
+        
+// 		  로컬환경에서 실행하는 코드 
+//        ProcessBuilder scriptsExtractor = new ProcessBuilder(
+//            "yt-dlp",
+//            "--no-check-certificate",
+//            "--referer", "https://www.youtube.com",
+//            "--write-auto-sub",
+//            "--sub-lang", "ko",
+//            "--sub-format", "vtt",
+//            "--convert-subs", "srt",
+//            "--skip-download",
+//            "--output", videoId + ".%(ext)s",
+//            url
+//        );
+        
+        scriptsExtractor.directory(new File(uploadDir));
+        scriptsExtractor.redirectErrorStream(true);
+        runAndPrint(scriptsExtractor);
 
-        // (2) 자막 파일 읽기
         String scripts = printDownloadedFiles(videoId);
-
-        if (scripts != null) {
-            sttConvertedProducer.sendSttResult(scripts); // Kafka 전송
-        } else {
+        if (scripts == null) {
             throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
         }
 
-        // (3) 메타데이터 추출 (제목, 설명, 카테고리 등)
+        // 메타데이터 추출
         ProcessBuilder metadataExtractor = new ProcessBuilder(
             "yt-dlp",
+            "--user-agent", UA,
+            "--cookies", COOKIE_PATH,
+            "--no-check-certificate",
+            "--referer", "https://www.youtube.com",
             "--skip-download",
             "--print", "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s",
             "--encoding", "utf-8",
@@ -87,27 +112,27 @@ public class SttService {
         metadataExtractor.redirectErrorStream(true);
 
         Process process = metadataExtractor.start();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8));
+        BufferedReader reader = new BufferedReader(
+            new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
+        );
+
         List<String> lines = new ArrayList<>();
         String line;
         while ((line = reader.readLine()) != null) {
             lines.add(line);
         }
 
-        // (4) 메타데이터 파싱
         String title = lines.size() > 0 ? lines.get(0) : "";
-
         StringBuilder descBuilder = new StringBuilder();
         for (int i = 1; i < lines.size() - 3; i++) {
             descBuilder.append(lines.get(i)).append(" ");
         }
-        String description = descBuilder.toString().trim();
 
+        String description = descBuilder.toString().trim();
         String category = lines.size() >= 3 ? lines.get(lines.size() - 3) : "";
         String thumbnail = lines.size() >= 2 ? lines.get(lines.size() - 2) : "";
         String durationStr = lines.size() >= 1 ? lines.get(lines.size() - 1) : "";
 
-        // (5) ContentDTO 객체 생성 및 저장
         ContentDTO contentDTO = new ContentDTO();
         contentDTO.setVideoId(videoId);
         contentDTO.setUrl(url);
@@ -116,8 +141,6 @@ public class SttService {
         contentDTO.setCategory(category);
         contentDTO.setThumbnailUrl(thumbnail);
         contentDTO.setDuration(Long.parseLong(durationStr));
-
-//        contentService.insertContent(contentDTO);
 
         return scripts;
     }
@@ -133,7 +156,16 @@ public class SttService {
         Path srtPath = workingDir.resolve(videoId + ".ko.srt");
 
         if (Files.exists(srtPath)) {
-            return SubtitleUtil.cleanSrtToText(srtPath);
+            // 텍스트 추출
+            String result = SubtitleUtil.cleanSrtToText(srtPath);
+            // 파일 삭제
+            try {
+                Files.deleteIfExists(srtPath);
+                logger.info("✅ 자막 파일 삭제 완료: " + srtPath);
+            } catch (IOException e) {
+                logger.warn("⚠️ 자막 파일 삭제 실패: " + srtPath, e);
+            }
+            return result;
         } else {
             logger.info("❗ ko.srt 자막 파일이 없습니다.");
             return null;
@@ -147,32 +179,32 @@ public class SttService {
      * @throws Exception 프로세스 실행 오류
      */
     private void runAndPrint(ProcessBuilder pb) throws Exception {
-        Process process = pb.start();
-        List<String> outputLines = new ArrayList<>();
+    Process process = pb.start();
+    List<String> outputLines = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                logger.info("[process] " + line);
-                outputLines.add(line);
-            }
-        }
-
-        int exitCode = process.waitFor();
-
-        if (exitCode != 0) {
-            String allOutput = String.join("\n", outputLines);
-
-            if (allOutput.contains("ERROR: Unsupported URL") || allOutput.contains("HTTP Error 404")) {
-                throw new BusinessException(ErrorCode.INVALID_YOUTUBE_URL);
-            }
-
-            if (allOutput.contains("No subtitles") || allOutput.contains("There are no subtitles")) {
-                throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-            }
-
-            throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            logger.info("[process] " + line);
+            outputLines.add(line);
         }
     }
+
+    int exitCode = process.waitFor();
+    String allOutput = String.join("\n", outputLines);
+    logger.error("📌 yt-dlp 전체 로그:\n{}", allOutput); // ✅ 로그 전체 출력
+
+    if (exitCode != 0) {
+        if (allOutput.contains("ERROR: Unsupported URL") || allOutput.contains("HTTP Error 404")) {
+            throw new BusinessException(ErrorCode.INVALID_YOUTUBE_URL);
+        }
+
+        if (allOutput.contains("No subtitles") || allOutput.contains("There are no subtitles")) {
+            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+        }
+
+        throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
+    }
+}
 }
 

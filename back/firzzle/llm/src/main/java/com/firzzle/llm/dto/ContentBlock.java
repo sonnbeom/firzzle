@@ -8,7 +8,7 @@ public class ContentBlock {
     private String time;
     private String summary_Easy;
     private String summary_High;
-    private OxQuiz oxQuiz;
-    private DescriptiveQuiz descriptiveQuiz;
+    private OxQuizBlock oxQuiz;
+    private DescriptiveQuizBlock descriptiveQuiz;
 }
 

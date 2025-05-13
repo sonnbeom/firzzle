@@ -27,6 +27,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/v1/kakao/callback").permitAll()  // 카카오 콜백 URL
                         .requestMatchers("/api/v1/refresh").permitAll()         // 토큰 갱신 엔드포인트
                         .requestMatchers("/api/v1/logout").permitAll()          // 로그아웃 엔드포인트
+                        .requestMatchers("/api/v1/auth/kakao/callback").permitAll()  // 카카오 콜백 URL
+                        .requestMatchers("/api/v1/auth/refresh").permitAll()         // 토큰 갱신 엔드포인트
+                        .requestMatchers("/api/v1/auth/logout").permitAll()          // 로그아웃 엔드포인트
 
                         // Actuator 엔드포인트 허용
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
