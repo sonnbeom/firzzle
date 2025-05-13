@@ -157,7 +157,7 @@ public class ExpertRecommendationController {
             // 전문가 추천 로깅 => ELK
             String referer = box.getString("referer");
             String userId = box.getString("uuid");
-            log(userPreferenceLog(userId, referer.toUpperCase(), "RECOMMEND_EXPERT"));
+            log(userPreferenceLog(userId, referer.toUpperCase(), "RECOMMEND"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {

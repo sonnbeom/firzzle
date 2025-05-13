@@ -36,11 +36,16 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    #    jdbc-url: jdbc:p6spy:mysql://localhost:3306/db명?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
-    jdbc-url: ENC(ygXVhsF9CysFggaflxcQWINq4Xeo7e2Kgzk09fKfaMb57mq+mFLlBz740u3YK++f2A79SpBdqnh7JL22sHA5IXljAN81Yaza8iVTrk8uuSnFdki8RMldcRDzlTX9xsS0UH7GrhugvwQ2LpvuEDo6fO8j5DCEw1LUwxGqqG2PLdw=)
-    username: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
-    password: ENC(PoluhF69wR3XMkG1luZCne6txUJeJHcddNrqsLU6rLs=)
+    #    jdbc-url: jdbc:p6spy:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
+    #    jdbc-url: ENC(OvwLQr1WRx28Jf8teIXvvLXBlxMgNu0eP1KixLtefm5/bf0S7dHl1O5ETSNxw/7va+UrhvZjnt8yZOEi8jYIIQQNvZTXC2W7fJO9gm5jAQGbekBgF604D9FPOZUwxH/5wT79h4i8mJW+P867NgOM965KCxSTMx+nFCLQVmXyceyIQKHiaYJK1c1+jbpHCS0b)
+    jdbc-url: jdbc:p6spy:mysql://localhost:3306/firzzle_ai_playground?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+    #    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    username: root
+    #    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
+    password: 4245
     maximum-pool-size: 10
+  elasticsearch:
+    uris: http://43.203.118.56:9200
   # Kafka 설정
   kafka:
     bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
@@ -106,6 +111,8 @@ spring:
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 10
   # Kafka 설정
+  elasticsearch:
+    uris: http://43.203.118.56:9200
   kafka:
     bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
     consumer:
@@ -170,6 +177,8 @@ spring:
     password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
     maximum-pool-size: 20
   # Kafka 설정
+  elasticsearch:
+    uris: http://43.203.118.56:9200
   kafka:
     bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
     consumer:
