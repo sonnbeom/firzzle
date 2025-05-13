@@ -54,7 +54,7 @@ public class SttService {
         WebClient webClient = webClientBuilder
             .baseUrl(externalUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader("X-API-KEY", secretKey) // ✅ 키를 헤더로 추가
+            .defaultHeader("X-API-KEY", secretKey) // ✅ 키를 헤더로 추가.
             .build();
 
         Map<String, String> requestBody = Map.of(
