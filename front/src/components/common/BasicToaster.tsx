@@ -25,9 +25,29 @@ const BasicToaster = ({ duration = 1500, ...props }: BasicToasterProps) => {
   );
 };
 
-BasicToaster.success = (message: string) => toast(message, { style: styles.success, className: 'font-medium text-md' });
-BasicToaster.error = (message: string) => toast(message, { style: styles.error, className: 'font-medium text-md' });
-BasicToaster.warning = (message: string) => toast(message, { style: styles.warning, className: 'font-medium text-md' });
-BasicToaster.default = (message: string) => toast(message, { style: styles.default, className: 'font-medium text-md' });
+BasicToaster.success = (message: string, options?: { duration?: number }) =>
+  toast(message, {
+    style: styles.success,
+    className: 'font-medium text-md',
+    duration: options?.duration,
+  });
+BasicToaster.error = (message: string, options?: { duration?: number }) =>
+  toast(message, {
+    style: styles.error,
+    className: 'font-medium text-md',
+    duration: options?.duration,
+  });
+BasicToaster.warning = (message: string, options?: { duration?: number }) =>
+  toast(message, {
+    style: styles.warning,
+    className: 'font-medium text-md',
+    duration: options?.duration,
+  });
+BasicToaster.default = (message: string, options?: { duration?: number }) =>
+  toast(message, {
+    style: styles.default,
+    className: 'font-medium text-md',
+    duration: options?.duration,
+  });
 
 export default BasicToaster;
