@@ -45,7 +45,7 @@ public class CookieRenewService {
 
         try (Playwright playwright = Playwright.create()) {
             BrowserType.LaunchOptions launchOpts = new BrowserType.LaunchOptions()
-                .setHeadless(false)
+                .setHeadless(true)
                 .setArgs(List.of(
                     "--disable-blink-features=AutomationControlled",
                     "--no-sandbox",
