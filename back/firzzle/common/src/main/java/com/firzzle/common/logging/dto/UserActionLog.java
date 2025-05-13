@@ -19,6 +19,7 @@ public class UserActionLog extends LogEvent {
     public static UserActionLog fromVisit (String detail) {
 
         return UserActionLog.builder()
+                .event("USER_ACTION")
                 .detail(detail)
                 .timestamp(LocalDateTime.now().withNano(0))
                 .build();
@@ -33,15 +34,7 @@ public class UserActionLog extends LogEvent {
                 .timestamp(LocalDateTime.now().withNano(0))
                 .build();
     }
-    public static UserActionLog userTestActionLog (String userId, String detail, LocalDateTime localDateTime) {
 
-        return UserActionLog.builder()
-                .event("USER_ACTION")
-                .userId(userId)
-                .detail(detail)
-                .timestamp(localDateTime)
-                .build();
-    }
     public static UserActionLog userLoginLog () {
 
         return UserActionLog.builder()

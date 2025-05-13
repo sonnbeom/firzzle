@@ -1,17 +1,13 @@
-package com.firzzle.admin.strategy.domain;
+package com.firzzle.admin.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Id;
 import lombok.*;
-import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Document(indexName = "spring-logs-*")
 @Getter
@@ -30,6 +26,7 @@ public class UserActionLog {
     private String userId;
     private String fromContent;
     private String toContent;
+    private String summaryPreference;
     @JsonProperty("@timestamp")
     private String timestampRaw;
 

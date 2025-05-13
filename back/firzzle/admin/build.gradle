@@ -26,7 +26,6 @@ configurations {
 dependencies {
     // 프로젝트 의존성
     implementation project(':common')
-//	implementation project(':user-domain')
 
     // MyBatis 관련 의존성 추가
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'

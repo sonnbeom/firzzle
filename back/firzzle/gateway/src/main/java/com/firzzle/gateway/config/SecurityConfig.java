@@ -56,7 +56,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // 관리자 전용 경로
-                        .pathMatchers("/api/v*/admin/**").hasRole("ADMIN")
+//                        .pathMatchers("/api/v*/admin/**").hasRole("ADMIN")
 
                         .anyExchange().permitAll()
                 )

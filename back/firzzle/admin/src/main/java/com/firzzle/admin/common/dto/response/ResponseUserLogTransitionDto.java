@@ -1,4 +1,4 @@
-package com.firzzle.admin.strategy.dto.response;
+package com.firzzle.admin.common.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

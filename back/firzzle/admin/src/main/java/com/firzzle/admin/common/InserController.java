@@ -1,5 +1,6 @@
-package com.firzzle.admin.strategy.controller;
+package com.firzzle.admin.common;
 
+import com.firzzle.common.logging.dto.UserActionLog;
 import com.firzzle.common.logging.service.LoggingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +50,33 @@ public class InserController {
 
         return "inserted test logs";
     }
+    @PostMapping("/login")
+    public Object postLogingData() {
+        for (int i = 0; i < 20; i++) {
+            LoggingService.log(UserActionLog.fromVisit("VISIT"));
+            LoggingService.log(UserActionLog.userLoginLog());
+        }
+        return "inserted test logs";
+    }
+    @PostMapping("/summary")
+    public Object postSummaryData() {
+        for (int i = 0; i < 20; i++) {
+            LoggingService.log(UserActionLog.summaryPreferenceLog("TEST_ID", "EASY"));
+        }
+        for (int i = 0; i < 30; i++) {
+            LoggingService.log(UserActionLog.summaryPreferenceLog("TEST_ID", "DIFFICULT"));
+        }
+        return "inserted test logs";
+    }
+    @PostMapping("/snap-review")
+    public Object postSnapReviewData() {
+        for (int i = 0; i < 20; i++) {
+            log(userActionLog("TEST_SNAP_REVIEW_ID","SNAP_REVIEW_INPUT"));
+            log(userActionLog("TEST_LEARNING_ID", "START_LEARNING"));
+        }
+        return "inserted test logs";
+    }
+
 
 
 }
