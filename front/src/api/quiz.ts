@@ -1,9 +1,9 @@
 import { QuizData, QuizSubmitRequest, QuizSubmitResponse } from '@/types/quiz';
-import { externalApi } from './common/apiInstance';
+import { api } from './common/apiInstance';
 
 // 퀴즈 조회
 export const getQuiz = async (contentSeq: string) => {
-  const { data } = await externalApi.get<{ content: QuizData }>(
+  const { data } = await api.get<{ content: QuizData }>(
     `/learning/contents/${contentSeq}/quiz`,
   );
   return data.content;
@@ -14,9 +14,9 @@ export const submitQuizAnswers = async (
   contentSeq: string,
   request: QuizSubmitRequest,
 ) => {
-  const { data } = await externalApi.post<
-    QuizSubmitResponse,
-    QuizSubmitRequest
-  >(`/learning/contents/${contentSeq}/quiz`, { body: request });
+  const { data } = await api.post<QuizSubmitResponse, QuizSubmitRequest>(
+    `/learning/contents/${contentSeq}/quiz`,
+    { body: request },
+  );
   return data;
 };

@@ -1,13 +1,13 @@
 'use client';
 
 import * as React from 'react';
+import Icons from '@/components/common/Icons';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Icons from './Icons';
 
 interface DropDownItem {
   label: string;

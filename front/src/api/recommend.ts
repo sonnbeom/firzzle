@@ -4,14 +4,14 @@ import {
   ExpertListResponse,
   ExpertPaginationRequest,
 } from '@/types/recommend';
-import { externalApi } from './common/apiInstance';
+import { api } from './common/apiInstance';
 
 // 추천 강의 조회
 export const getRecommendations = async (
   contentSeq: number,
   request: InfiniteScrollRequest,
 ) => {
-  const { data } = await externalApi.get<SnapReviewListResponse>(
+  const { data } = await api.get<SnapReviewListResponse>(
     `/learning/contents/${contentSeq}/recommendations`,
     {
       params: request,
@@ -25,7 +25,7 @@ export const getExpertRecommendations = async (
   contentSeq: number,
   request: ExpertPaginationRequest,
 ) => {
-  const { data } = await externalApi.get<ExpertListResponse>(
+  const { data } = await api.get<ExpertListResponse>(
     `/learning/contents/${contentSeq}/expert-recommendations`,
     {
       params: request,
