@@ -256,17 +256,75 @@ public class AuthController {
         try {
             // 쿠키에서 리프레시 토큰 추출
             String refreshToken = extractRefreshTokenFromCookie(request);
-            if (refreshToken == null) {
-                throw new BusinessException(ErrorCode.INVALID_TOKEN, "리프레시 토큰이 없습니다.");
+            if (!refreshToken.isBlank()) {
+                RequestBox box = RequestManager.getBox(request);
+                box.put("refreshToken", refreshToken);
+
+                authService.logout(box);
+
+                // 리프레시 토큰 쿠키 삭제
+                deleteRefreshTokenCookie(response);
             }
 
-            RequestBox box = RequestManager.getBox(request);
-            box.put("refreshToken", refreshToken);
+            Response<Void> apiResponse = Response.<Void>builder()
+                    .status(Status.OK)
+                    .message("로그아웃 성공")
+                    .build();
 
-            authService.logout(box);
+            return ResponseEntity.ok(apiResponse);
+        } catch (BusinessException e) {
+            logger.error("로그아웃 중 비즈니스 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("로그아웃 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "로그아웃 중 오류가 발생했습니다.");
+        }
+    }
 
-            // 리프레시 토큰 쿠키 삭제
-            deleteRefreshTokenCookie(response);
+    /**
+     * 로그아웃 API - auth 경로
+     * @param request HTTP 요청 객체
+     * @param response HTTP 응답 객체
+     * @return 로그아웃 응답
+     */
+    @PostMapping(value = "/auth/logout", produces = "application/json;charset=UTF-8")
+    @Operation(summary = "로그아웃 (auth 경로)", description = "사용자의 현재 세션을 종료하고, 발급된 리프레시 토큰을 서버에서 무효화하며 클라이언트의 쿠키를 삭제합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "로그아웃 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 - 리프레시 토큰 누락"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 - 유효하지 않은 토큰"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류 - 로그아웃 처리 중 내부 서버 오류"
+            )
+    })
+    public ResponseEntity<Response<Void>> authLogout(
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        logger.info("auth 경로 로그아웃 요청");
+
+        try {
+            // 쿠키에서 리프레시 토큰 추출
+            String refreshToken = extractRefreshTokenFromCookie(request);
+            if (!refreshToken.isBlank()) {
+                RequestBox box = RequestManager.getBox(request);
+                box.put("refreshToken", refreshToken);
+
+                authService.logout(box);
+
+                // 리프레시 토큰 쿠키 삭제
+                deleteRefreshTokenCookie(response);
+            }
 
             Response<Void> apiResponse = Response.<Void>builder()
                     .status(Status.OK)
