@@ -20,7 +20,7 @@ spring:
 playwright:
   # Playwright 브라우저 옵션 (headless 여부 등)
   chromium:
-    headless: true
+#    headless: true
     args:
       - "--no-sandbox"
       - "--disable-setuid-sandbox"
