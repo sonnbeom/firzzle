@@ -106,7 +106,7 @@ app:
   youtube:
   # Playwright 로그인에 사용할 환경변수
     credentials:
-      id: ENC(ZYVZ8NT84MNDqNJmWmDjx0EJs9oZ+zAn/5A+x7SNmqE=)
+      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
       pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
     # 쿠키 파일 경로
     cookies-path: ${app.file-storage.upload-dir}/cookies.txt
@@ -156,7 +156,7 @@ app:
   youtube:
   # Playwright 로그인에 사용할 환경변수
     credentials:
-      id: ENC(ZYVZ8NT84MNDqNJmWmDjx0EJs9oZ+zAn/5A+x7SNmqE=)
+      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
       pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
     # 쿠키 파일 경로
     cookies-path: ${app.file-storage.upload-dir}/cookies.txt
@@ -221,7 +221,7 @@ app:
   youtube:
   # Playwright 로그인에 사용할 환경변수
     credentials:
-      id: ENC(ZYVZ8NT84MNDqNJmWmDjx0EJs9oZ+zAn/5A+x7SNmqE=)
+      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
       pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
     # 쿠키 파일 경로
     cookies-path: ${app.file-storage.upload-dir}/cookies.txt
