@@ -63,6 +63,12 @@ decorator:
 
 logging:
   config: classpath:logback/logback-local.xml
+
+external:
+  api:
+    url: ENC(i6XEMht8A69gSD8qPHmCEh21RPnyqxtKm3YSmf3VcUxqUj+lAlVHg+Pshm0U8hUe)
+    key: ENC(Ujsd0oVEIqvN2OseUrOaKpNQHCXHKSIy3yY0sOwM/oJhe+0H08sN7wd9/j6l1u6A)
+
 ---
 # local 환경
 spring:

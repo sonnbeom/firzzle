@@ -12,7 +12,7 @@ spring:
         - id: auth-public-v1
           uri: lb://auth-server
           predicates:
-            - Path=/api/v1/auth/login/**, /api/v1/auth/refresh, /api/v1/auth/kakao/callback, /api/v1/auth/public/**
+            - Path=/api/v1/auth/login/**, /api/v1/auth/refresh, /api/v1/auth/kakao/callback, /api/v1/auth/public/**, /api/v1/auth/logout
           filters:
             - RewritePath=/api/v1/auth/(?<segment>.*), /api/v1/${segment}
 
@@ -80,6 +80,27 @@ spring:
               args:
                 enabled: true
 
+        # llm 서비스 - JWT 필터 적용
+        - id: llm-service-v1
+          uri: lb://llm-server
+          predicates:
+            - Path=/api/v1/llm/**
+          filters:
+            - RewritePath=/api/v1/llm/(?<segment>.*), /api/v1/${segment}
+            - name: JwtAuthFilter
+              args:
+                enabled: false
+
+        - id: llm-service-v2
+          uri: lb://llm-server
+          predicates:
+            - Path=/api/v2/llm/**
+          filters:
+            - RewritePath=/api/v2/llm/(?<segment>.*), /api/v2/${segment}
+            - name: JwtAuthFilter
+              args:
+                enabled: true
+
         # Admin 서비스 - JWT 필터 적용 (추가 역할 검증 필요)
         - id: admin-service-v1
           uri: lb://admin-server
@@ -89,8 +110,8 @@ spring:
             - RewritePath=/api/v1/admin/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
-                enabled: true
-                adminOnly: true  # Admin 역할만 접근 가능
+                enabled: false
+                adminOnly: false  # Admin 역할만 접근 가능
 
         - id: admin-service-v2
           uri: lb://admin-server
@@ -100,15 +121,15 @@ spring:
             - RewritePath=/api/v2/admin/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
-                enabled: true
-                adminOnly: true  # Admin 역할만 접근 가능
+                enabled: false
+                adminOnly: false  # Admin 역할만 접근 가능
 
 # JWT 설정
 jwt:
   secret: your-secret-key-should-be-at-least-32-bytes-long
   access-token-validity-seconds: 3600
   refresh-token-validity-seconds: 604800
-  issuer: firzzle.site  # issuer 추가
+  issuer: firzzle.site
 
 ---
 # 로컬 환경 설정
@@ -121,11 +142,12 @@ spring:
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins:
-              - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)"
-              - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)"
-              - "ENC(Xfl3MDQKHLlZc//V9ypP/nYRO9U1MLq5e8LYoOwxz3DLgHZsT2CrCnGqlZHoYIFF)"
-              - "ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)"
+            # allowedOrigins 대신 allowedOriginPatterns 사용
+            allowedOriginPatterns:
+              - "http://localhost:3000"
+              - "http://localhost:5173"
+              - "http://localhost:5174"
+              - "http://localhost:8080"
             allowedMethods:
               - GET
               - POST
@@ -147,12 +169,12 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka
-#      defaultZone: ENC(gwXQw1ns6DV2Br4OkeUbr1f0vBn5FAaf7HWlRFogDejLcTUM7At5Y51uIo+GDsogipX5eIWEHgRmYEFcjyPYYg==)
+#      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
 
 # 애플리케이션 설정
 app:
   url:
-    base: ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)
+    base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
 
 ---
 # 개발 환경 설정
@@ -165,12 +187,13 @@ spring:
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins:
-              - "ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)"
-              - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)" # 개발 끝나면 삭제
-              - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)" # 개발 끝나면 삭제
-              - "ENC(Xfl3MDQKHLlZc//V9ypP/nYRO9U1MLq5e8LYoOwxz3DLgHZsT2CrCnGqlZHoYIFF)" # 개발 끝나면 삭제
-              - "ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)" # 개발 끝나면 삭제
+            # allowedOrigins 대신 allowedOriginPatterns 사용
+            allowedOriginPatterns:
+              - "ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)"
+              - "http://localhost:3000" # 개발 끝나면 삭제
+              - "http://localhost:5173" # 개발 끝나면 삭제
+              - "http://localhost:5174" # 개발 끝나면 삭제
+              - "http://localhost:8080" # 개발 끝나면 삭제
             allowedMethods:
               - GET
               - POST
@@ -191,7 +214,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ENC(gwXQw1ns6DV2Br4OkeUbr1f0vBn5FAaf7HWlRFogDejLcTUM7At5Y51uIo+GDsogipX5eIWEHgRmYEFcjyPYYg==)
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
 
 #Jasypt 설정
 jasypt:
@@ -201,7 +224,7 @@ jasypt:
 
 app:
   url:
-    base: ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)
+    base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
 
 ---
 # 프로덕션 환경 설정
@@ -214,12 +237,13 @@ spring:
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins:
-              - "ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)"
-              - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)" # 개발 끝나면 삭제
-              - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)" # 개발 끝나면 삭제
-              - "ENC(Xfl3MDQKHLlZc//V9ypP/nYRO9U1MLq5e8LYoOwxz3DLgHZsT2CrCnGqlZHoYIFF)" # 개발 끝나면 삭제
-              - "ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)" # 개발 끝나면 삭제
+            # allowedOrigins 대신 allowedOriginPatterns 사용
+            allowedOriginPatterns:
+              - "ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)"
+              - "http://localhost:3000" # 개발 끝나면 삭제
+              - "http://localhost:5173" # 개발 끝나면 삭제
+              - "http://localhost:5174" # 개발 끝나면 삭제
+              - "http://localhost:8080" # 개발 끝나면 삭제
             allowedMethods:
               - GET
               - POST
@@ -240,8 +264,8 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ENC(gwXQw1ns6DV2Br4OkeUbr1f0vBn5FAaf7HWlRFogDejLcTUM7At5Y51uIo+GDsogipX5eIWEHgRmYEFcjyPYYg==)
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
 
 app:
   url:
-    base: ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)
+    base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
