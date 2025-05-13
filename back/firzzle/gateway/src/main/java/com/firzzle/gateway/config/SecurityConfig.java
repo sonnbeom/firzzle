@@ -88,32 +88,41 @@ public class SecurityConfig {
         // 허용할 origin 설정 (프로덕션에서는 구체적인 출처로 변경)
         configuration.setAllowedOrigins(Arrays.asList("*"));
 
-        // 허용할 HTTP 메서드 설정
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
+        // 모든 HTTP 메서드 허용
+        configuration.setAllowedMethods(Arrays.asList("*"));
 
-        // 허용할 헤더 설정
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"
-        ));
+        // 모든 헤더 허용
+        configuration.setAllowedHeaders(Arrays.asList("*"));
 
-        // 노출할 헤더 명시적 설정
-        configuration.setExposedHeaders(Arrays.asList(
-                "Authorization",
-                "Access-Control-Allow-Origin",
-                "Access-Control-Allow-Credentials",
-                "Access-Control-Expose-Headers",
-                "X-User-UUID",
-                "X-User-Role",
-                "X-User-Scope"
-        ));
+        // 모든 헤더 노출 허용
+        configuration.setExposedHeaders(Arrays.asList("*"));
+
+//        // 허용할 HTTP 메서드 설정
+//        configuration.setAllowedMethods(Arrays.asList(
+//                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+//        ));
+//
+//        // 허용할 헤더 설정
+//        configuration.setAllowedHeaders(Arrays.asList(
+//                "Authorization",
+//                "Content-Type",
+//                "X-Requested-With",
+//                "Accept",
+//                "Origin",
+//                "Access-Control-Request-Method",
+//                "Access-Control-Request-Headers"
+//        ));
+//
+//        // 노출할 헤더 명시적 설정
+//        configuration.setExposedHeaders(Arrays.asList(
+//                "Authorization",
+//                "Access-Control-Allow-Origin",
+//                "Access-Control-Allow-Credentials",
+//                "Access-Control-Expose-Headers",
+//                "X-User-UUID",
+//                "X-User-Role",
+//                "X-User-Scope"
+//        ));
 
         // 인증 정보 포함 설정
         configuration.setAllowCredentials(true);
