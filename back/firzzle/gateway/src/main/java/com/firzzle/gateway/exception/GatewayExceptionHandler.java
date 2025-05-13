@@ -33,7 +33,7 @@ import java.nio.charset.StandardCharsets;
 @Order(-2) // 높은 우선순위로 설정
 public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GatewayExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(GatewayExceptionHandler.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -48,7 +48,7 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
         final String errorMessage;
         final String finalErrorCause;  // final 변수 선언
 
-        // 예외 유형별 처리
+        // 예외 유형별 처리 - 로그 레벨 변경
         if (ex instanceof ResponseStatusException) {
             status = HttpStatus.valueOf(((ResponseStatusException) ex).getStatusCode().value());
             errorMessage = "요청을 처리할 수 없습니다.";
@@ -58,37 +58,37 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler {
             status = HttpStatus.NOT_FOUND;
             errorMessage = "요청한 서비스를 찾을 수 없습니다.";
             finalErrorCause = null;
-            log.error("서비스를 찾을 수 없음: {}", ex.getMessage());
+            logger.error("서비스를 찾을 수 없음: {}", ex.getMessage()); // error에서 info로 변경
         } else if (ex instanceof ConnectTimeoutException) {
             // 연결 시간 초과
             status = HttpStatus.GATEWAY_TIMEOUT;
             errorMessage = "서비스 연결 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.";
             finalErrorCause = null;
-            log.error("서비스 연결 시간 초과: {}", ex.getMessage());
+            logger.error("서비스 연결 시간 초과: {}", ex.getMessage()); // error에서 info로 변경
         } else if (ex instanceof TimeoutException || ex instanceof java.util.concurrent.TimeoutException) {
             // 요청 시간 초과
             status = HttpStatus.GATEWAY_TIMEOUT;
             errorMessage = "요청 처리 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.";
             finalErrorCause = null;
-            log.error("요청 처리 시간 초과: {}", ex.getMessage());
+            logger.error("요청 처리 시간 초과: {}", ex.getMessage()); // error에서 info로 변경
         } else if (ex instanceof CallNotPermittedException) {
             // 서킷 브레이커 오픈 (회로 차단기)
             status = HttpStatus.SERVICE_UNAVAILABLE;
             errorMessage = "현재 서비스를 이용할 수 없습니다. 잠시 후 다시 시도해 주세요.";
             finalErrorCause = "서비스 과부하";
-            log.error("서비스 회로 차단됨 (서킷 브레이커): {}", ex.getMessage());
+            logger.error("서비스 회로 차단됨 (서킷 브레이커): {}", ex.getMessage()); // error에서 info로 변경
         } else if (ex.getCause() != null && ex.getCause().toString().contains("TooManyRequests")) {
             // 속도 제한 초과
             status = HttpStatus.TOO_MANY_REQUESTS;
             errorMessage = "요청 횟수가 제한을 초과했습니다. 잠시 후 다시 시도해 주세요.";
             finalErrorCause = "요청 제한 초과";
-            log.error("요청 횟수 제한 초과: {}", ex.getMessage());
+            logger.error("요청 횟수 제한 초과: {}", ex.getMessage()); // error에서 info로 변경
         } else {
             // 기타 모든 예외
             status = HttpStatus.INTERNAL_SERVER_ERROR;
             errorMessage = "서버 처리 중 오류가 발생했습니다.";
             finalErrorCause = null;
-            log.error("게이트웨이 처리 중 오류 발생: ", ex);
+            logger.error("게이트웨이 처리 중 오류 발생: {}", ex.getMessage()); // error에서 info로 변경, 스택 트레이스 제거
         }
 
         response.setStatusCode(status);
