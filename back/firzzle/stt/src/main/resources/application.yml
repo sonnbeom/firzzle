@@ -67,7 +67,7 @@ logging:
 external:
   api:
     url: ENC(jTM7QqgZfUyhmFp0u/T/sABnwlzQdX7u0h6jCj5hVolaTuslUsQjYIaQKAPhf787HTFVlu6Q9oA14FmFSquanw==)
-    key: ENC(Ujsd0oVEIqvN2OseUrOaKpNQHCXHKSIy3yY0sOwM/oJhe+0H08sN7wd9/j6l1u6A)
+    key: ENC(NvfpCyz8FQxDsP3jIHJ442NqU0IA29d3TAYYdwW0o5G0JuEniYlbbIlm8UjB4fnj)
 
 ---
 # local 환경
