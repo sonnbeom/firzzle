@@ -25,26 +25,42 @@ const BasicToaster = ({ duration = 1500, ...props }: BasicToasterProps) => {
   );
 };
 
-BasicToaster.success = (message: string, options?: { duration?: number }) =>
+BasicToaster.success = (
+  message: string,
+  options?: { duration?: number; id?: string },
+) =>
   toast(message, {
+    id: options?.id,
     style: styles.success,
     className: 'font-medium text-md',
     duration: options?.duration,
   });
-BasicToaster.error = (message: string, options?: { duration?: number }) =>
+BasicToaster.error = (
+  message: string,
+  options?: { duration?: number; id?: string },
+) =>
   toast(message, {
+    id: options?.id,
     style: styles.error,
     className: 'font-medium text-md',
     duration: options?.duration,
   });
-BasicToaster.warning = (message: string, options?: { duration?: number }) =>
+BasicToaster.warning = (
+  message: string,
+  options?: { duration?: number; id?: string },
+) =>
   toast(message, {
+    id: options?.id,
     style: styles.warning,
     className: 'font-medium text-md',
     duration: options?.duration,
   });
-BasicToaster.default = (message: string, options?: { duration?: number }) =>
+BasicToaster.default = (
+  message: string,
+  options?: { duration?: number; id?: string },
+) =>
   toast(message, {
+    id: options?.id,
     style: styles.default,
     className: 'font-medium text-md',
     duration: options?.duration,

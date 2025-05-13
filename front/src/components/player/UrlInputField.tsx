@@ -31,7 +31,11 @@ const UrlInputField = ({
           setPlayerInfo(videoInfo);
         }
       } catch (error) {
-        return BasicToaster.error(error.message, { duration: 3000 });
+        setPlayerInfo(null);
+        return BasicToaster.error(error.message, {
+          id: 'fetch youtube',
+          duration: 3000,
+        });
       }
     }
   }, 500);
@@ -49,12 +53,15 @@ const UrlInputField = ({
     try {
       await postContent();
     } catch (error) {
-      return BasicToaster.error(error.message, { duration: 2000 });
+      return BasicToaster.error(error.message, {
+        id: 'fetch youtube',
+        duration: 2000,
+      });
     }
   };
 
   return (
-    <div className='flex w-full items-center gap-2 lg:gap-4'>
+    <div className='flex h-full w-full items-center gap-2 lg:gap-4'>
       <SearchBar
         value={value}
         placeholder='학습할 영상의 링크를 입력하세요.'
@@ -69,6 +76,7 @@ const UrlInputField = ({
         isDisabled={value === ''}
         title='확인'
         onClick={handleUrlConfirm}
+        className='h-full'
       />
     </div>
   );

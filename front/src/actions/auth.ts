@@ -21,6 +21,7 @@ export const setCookie = async (name: string, value: string) => {
     value: value,
     httpOnly: true,
     secure: true,
+    sameSite: 'strict',
     path: '/',
   });
 };

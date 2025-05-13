@@ -15,7 +15,10 @@ const ContentPage = async ({
     try {
       initialPlayerInfo = await getYouTubeVideoInfo(url);
     } catch (error) {
-      return BasicToaster.error(error.message, { duration: 2000 });
+      return BasicToaster.error(error.message, {
+        id: 'fetch youtube',
+        duration: 2000,
+      });
     }
   }
 

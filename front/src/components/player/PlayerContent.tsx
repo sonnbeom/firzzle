@@ -4,6 +4,7 @@ import { useState } from 'react';
 import PlayerFetcher from '@/components/player/PlayerFetcher';
 import ProgressBar from '@/components/player/ProgressBar';
 import { PlayerInfo } from '@/types/player';
+import CopyrightInfo from './CopyrightInfo';
 import UrlInputField from './UrlInputField';
 
 interface PlayerContentProps {
@@ -21,7 +22,7 @@ const PlayerContent = ({
   );
 
   return (
-    <div className='flex h-full w-full flex-col items-center justify-around gap-5 pt-20 lg:gap-10'>
+    <div className='flex h-full w-full flex-col items-center justify-around gap-5 pt-10 lg:gap-10'>
       {!playerInfo ? (
         <div className='flex flex-col items-center gap-1 lg:gap-2'>
           <p className='text-2xl font-semibold whitespace-nowrap text-gray-900 md:text-3xl'>
@@ -49,6 +50,8 @@ const PlayerContent = ({
           <ProgressBar />
         )}
       </div>
+
+      <CopyrightInfo />
     </div>
   );
 };
