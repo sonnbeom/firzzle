@@ -23,7 +23,7 @@ export const getYouTubeVideoInfo = async (
     );
 
     if (!response.ok) {
-      throw new Error('YouTube API 호출 실패');
+      throw new Error('YouTube 영상을 불러오는 중 문제가 발생했습니다.');
     }
 
     const oembedData = await response.json();
