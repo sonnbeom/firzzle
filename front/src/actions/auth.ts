@@ -20,6 +20,7 @@ export const setCookie = async (name: string, value: string) => {
     name: name,
     value: value,
     httpOnly: true,
+    secure: true,
     path: '/',
   });
 };

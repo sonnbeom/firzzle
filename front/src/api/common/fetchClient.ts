@@ -85,7 +85,6 @@ export class FetchClient {
         ...restOptions,
         headers: allHeaders,
         body: body ? JSON.stringify(body) : undefined,
-        credentials: 'include',
       });
 
       // 401 에러 처리
@@ -129,10 +128,7 @@ export class FetchClient {
 
         if (error.message === 'Unauthorized') {
           // 토큰 갱신 API
-          console.log('토큰 갱신 시도');
           const response = await refreshToken(retryCount);
-
-          console.log('토큰 갱신 응답: ', response);
 
           if (response.message === '토큰 갱신 성공') {
             return this.request(url, {
@@ -149,6 +145,8 @@ export class FetchClient {
           retryCount: retryCount + 1,
         });
       }
+
+      throw error;
     }
   }
 
