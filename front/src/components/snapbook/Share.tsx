@@ -26,7 +26,7 @@ const Share = ({ isOpen, onClose, url }: ShareProps) => {
           <h2 className='text-lg font-medium text-gray-800'>공유하기</h2>
         </div>
         <div className='space-y-6 p-4'>
-          <p className='text-center text-lg text-black'>
+          <p className='text-center text-lg text-gray-950'>
             링크를 갖고 있는 모든 사용자가 방문할 수 있습니다.
           </p>
           <div className='flex space-x-2'>
@@ -36,7 +36,13 @@ const Share = ({ isOpen, onClose, url }: ShareProps) => {
               className='w-full rounded-md border border-gray-300 px-3 py-2'
             />
             <Button
-              onClick={() => BasicToaster.default('링크가 복사되었습니다')}
+              onClick={() => {
+                if (url) {
+                  navigator.clipboard
+                    .writeText(url)
+                    .then(() => BasicToaster.default('링크가 복사되었습니다', { id: 'copySuccess' }));
+                }
+              }}
             >
               복사
             </Button>
