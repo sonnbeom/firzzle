@@ -1,12 +1,12 @@
 import { TransitionsResponse } from '@/types/chart';
-import { externalApi } from './common/apiInstance';
+import { api } from './common/apiInstance';
 
 // 기간별 기능 전환율 조회
 export const getFunctionChangeRate = async (
   startDate: string,
   endDate: string,
 ) => {
-  const { data } = await externalApi.get<TransitionsResponse>(
+  const { data } = await api.get<TransitionsResponse>(
     `/admin/strategy/transitions`,
     {
       params: {
@@ -23,7 +23,7 @@ export const getEducateChangeRate = async (
   startDate: string,
   endDate: string,
 ) => {
-  const { data } = await externalApi.get<TransitionsResponse>(
+  const { data } = await api.get<TransitionsResponse>(
     `/admin/strategy/conversion/transitions`,
     {
       params: {

@@ -93,7 +93,7 @@ export class FetchClient {
       }
 
       if (!response.ok) {
-        throw new Error('API 호출을 실패했습니다.');
+        throw new Error('오류가 발생했습니다. 다시 시도해주세요.');
       }
 
       // 204 No Content 응답 처리

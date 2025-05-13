@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import Icons from '../common/Icons';
+import Icons from './Icons';
 
 interface DropDownItem {
   label: string;

@@ -1,9 +1,9 @@
 import { ShareResponse, ShareCheck } from '@/types/share';
-import { externalApi } from './common/apiInstance';
+import { api } from './common/apiInstance';
 
 // 스냅 리뷰 공유 여부 조회
 export const getShareCheck = async (contentSeq: number) => {
-  const { data } = await externalApi.get<{ data: ShareCheck | null }>(
+  const { data } = await api.get<{ data: ShareCheck | null }>(
     `/learning/contents/${contentSeq}/share-code`,
   );
   return {
@@ -14,7 +14,7 @@ export const getShareCheck = async (contentSeq: number) => {
 
 // 공유 코드 생성
 export const createShareCode = async (contentSeq: number) => {
-  const { data } = await externalApi.post<{ data: ShareCheck }, never>(
+  const { data } = await api.post<{ data: ShareCheck }, never>(
     `/learning/contents/${contentSeq}/snap-review/share`,
   );
   return data.data;
@@ -34,13 +34,11 @@ export const checkAndCreateShareCode = async (contentSeq: number) => {
 export const getShareReview = async (
   shareCode: string,
 ): Promise<ShareResponse> => {
-  const { data } = await externalApi.get<ShareResponse>(
-    `/learning/share/${shareCode}`,
-  );
+  const { data } = await api.get<ShareResponse>(`/learning/share/${shareCode}`);
   return data;
 };
 
 // 스냅 리뷰 공유 취소
 export const deleteShareLink = async (shareCode: string) => {
-  await externalApi.delete<{ data: null }>(`/learning/share/${shareCode}`);
+  await api.delete<{ data: null }>(`/learning/share/${shareCode}`);
 };
