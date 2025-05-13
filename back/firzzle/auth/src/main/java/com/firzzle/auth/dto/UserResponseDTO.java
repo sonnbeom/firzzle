@@ -32,7 +32,7 @@ public class UserResponseDTO {
     private String profileImageUrl;
 
     @Schema(description = "마지막 로그인 시간")
-    private LocalDateTime lastLogin;
+    private String lastLogin;
 
     @Schema(description = "가입 유형", example = "O")
     private String signupType;
