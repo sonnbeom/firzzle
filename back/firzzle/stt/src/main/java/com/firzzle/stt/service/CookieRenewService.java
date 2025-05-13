@@ -2,6 +2,8 @@ package com.firzzle.stt.service;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.Cookie;
+import com.microsoft.playwright.options.LoadState;
+import com.microsoft.playwright.options.WaitForSelectorState;
 
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -42,28 +44,52 @@ public class CookieRenewService {
         }
 
         try (Playwright playwright = Playwright.create()) {
-            Browser browser = playwright.chromium()
-                .launch(new BrowserType.LaunchOptions().setHeadless(true));
-            BrowserContext context = browser.newContext();
+            BrowserType.LaunchOptions launchOpts = new BrowserType.LaunchOptions()
+                .setHeadless(true)
+                .setArgs(List.of(
+                    "--disable-blink-features=AutomationControlled",
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--no-zygote"
+                ));
+
+            Browser browser = playwright.chromium().launch(launchOpts);
+            BrowserContext context = browser.newContext(new Browser.NewContextOptions()
+                .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+                              "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                              "Chrome/120.0.0.0 Safari/537.36")
+            );
             Page page = context.newPage();
 
-            // 1) 로그인 페이지 접근 및 계정 입력.
+            // 기본 타임아웃 연장 (60초)
+            page.setDefaultTimeout(60_000);
+            page.setDefaultNavigationTimeout(60_000);
+
+            // 1) 로그인 페이지 접근.
             page.navigate("https://accounts.google.com/signin/v2/identifier?service=youtube");
-            page.waitForSelector("input[type=\"email\"]").fill(ytId);
-            page.click("button:has-text(\"다음\")");
+            page.waitForLoadState(LoadState.NETWORKIDLE);
 
-            // 2) 비밀번호 입력
-            page.waitForSelector("input[type=\"password\"]", new Page.WaitForSelectorOptions().setTimeout(15000));
+            // 2) 이메일 입력 및 다음 클릭
+            page.waitForSelector("input[type=\"email\"]", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
+            page.fill("input[type=\"email\"]", ytId);
+            page.waitForSelector("#identifierNext", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
+            page.click("#identifierNext");
+
+            // 3) 비밀번호 입력 및 다음 클릭
+            page.waitForSelector("input[type=\"password\"]", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
             page.fill("input[type=\"password\"]", ytPw);
-            page.click("button:has-text(\"다음\")");
+            page.waitForSelector("#passwordNext", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
+            page.click("#passwordNext");
 
-            // 3) YouTube 메인 페이지까지 이동 완료 대기
+            // 4) YouTube 메인 페이지 로딩 대기/
             page.waitForURL("https://www.youtube.com/*", new Page.WaitForURLOptions().setTimeout(60_000));
 
-            // 4) 쿠키 가져오기
+            // 5) 쿠키 가져오기
             List<Cookie> cookies = context.cookies();
 
-            // 5) yt-dlp 호환 쿠키 포맷으로 저장
+            // 6) yt-dlp 호환 Netscape 쿠키 포맷으로 저장
             List<String> lines = cookies.stream()
                 .map(c -> String.format("%s\t%s\t%s\t%s\t%d\t%s\t%s",
                     c.domain.startsWith(".") ? "TRUE" : "FALSE",
@@ -76,13 +102,11 @@ public class CookieRenewService {
                 ))
                 .collect(Collectors.toList());
 
-            // 디렉토리 생성 및 저장
             Files.createDirectories(COOKIE_PATH.getParent());
             Files.write(COOKIE_PATH, lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            // 파일 권한 제한
-            Process chmod = new ProcessBuilder("chmod", "600", COOKIE_PATH.toString()).start();
-            chmod.waitFor();
+            // 7) 파일 권한 제한 (chmod 600)
+            new ProcessBuilder("chmod", "600", COOKIE_PATH.toString()).start().waitFor();
 
             log.info("✅ 쿠키 저장 완료: {}", COOKIE_PATH);
             browser.close();
