@@ -26,7 +26,6 @@ configurations {
 dependencies {
     // 프로젝트 의존성
     implementation project(':common')
-//	implementation project(':user-domain')
 
     // MyBatis 관련 의존성 추가
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.1'
@@ -61,6 +60,16 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
     implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+    // Elasticsearch DSL (QueryBuilders, SortBuilders 등 사용 시)
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
+    // Jackson JSON 직렬화용 (ES 객체 처리 시 유용)
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    implementation 'co.elastic.clients:elasticsearch-java:8.12.0'
+
+
 }
 
 // 모듈의 build.gradle
