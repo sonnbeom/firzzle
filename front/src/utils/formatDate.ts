@@ -9,3 +9,8 @@ export const formatDateToKorean = (dateString: string) => {
     day: 'numeric',
   });
 };
+
+// 로컬타입 변환
+export const formatToLocalDate = (date: Date) => {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};

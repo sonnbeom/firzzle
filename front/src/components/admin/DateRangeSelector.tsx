@@ -2,26 +2,43 @@
 
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DateRange, Range, RangeKeyDict } from 'react-date-range';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
+import { DateRangeSelectorProps } from '@/types/chart';
+import { formatToLocalDate } from '@/utils/formatDate';
 
-interface DateRangeSelectorProps {
-  onChange?: (ranges: { startDate: Date; endDate: Date }) => void;
-}
-
-const DateRangeSelector = ({ onChange }: DateRangeSelectorProps) => {
+const DateRangeSelector = ({
+  onChange,
+  initialStartDate,
+  initialEndDate,
+}: DateRangeSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [state, setState] = useState([
     {
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: initialStartDate || new Date(),
+      endDate: initialEndDate || new Date(),
       key: 'selection',
     },
   ]);
 
   const [tempState, setTempState] = useState(state);
+
+  // 초기값에 대한 onChange 호출
+  useEffect(() => {
+    if (onChange) {
+      const startDate = state[0].startDate;
+      const endDate = state[0].endDate;
+
+      onChange({
+        startDate,
+        endDate,
+        formattedStart: formatToLocalDate(startDate),
+        formattedEnd: formatToLocalDate(endDate),
+      });
+    }
+  }, [onChange, state]);
 
   const handleSelect = (ranges: RangeKeyDict) => {
     const selection = ranges.selection as Range;
@@ -30,10 +47,17 @@ const DateRangeSelector = ({ onChange }: DateRangeSelectorProps) => {
 
   const handleConfirm = () => {
     setState(tempState);
+
+    const startDate = tempState[0].startDate;
+    const endDate = tempState[0].endDate;
+
     onChange?.({
-      startDate: tempState[0].startDate,
-      endDate: tempState[0].endDate,
+      startDate,
+      endDate,
+      formattedStart: formatToLocalDate(startDate),
+      formattedEnd: formatToLocalDate(endDate),
     });
+
     setIsOpen(false);
   };
 

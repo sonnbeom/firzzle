@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import ContentCard from '@/components/admin/ContentCard';
 import DateRangeSelector from '@/components/admin/DateRangeSelector';
 import FavoriteContentCard from '@/components/admin/FavoriteContentCard';
@@ -8,19 +9,32 @@ import PopularExpertCard from '@/components/admin/PopularExpertCard';
 import VideoLengthCard from '@/components/admin/VideoLengthCard';
 
 const AdminPage = () => {
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+
   const handleDateChange = ({
     startDate,
     endDate,
+    formattedStart,
+    formattedEnd,
   }: {
     startDate: Date;
     endDate: Date;
+    formattedStart: string;
+    formattedEnd: string;
   }) => {
-    // 추후 여기서 데이터 fetching 등을 수행
+    setStartDate(startDate);
+    setEndDate(endDate);
+    console.log('Formatted dates:', formattedStart, formattedEnd);
   };
 
   return (
     <div className='flex flex-col gap-6 p-6'>
-      <DateRangeSelector onChange={handleDateChange} />
+      <DateRangeSelector
+        onChange={handleDateChange}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+      />
       <ContentCard
         title='인기 있는 영상 카테고리'
         description='2025.01 ~ 2025.04'
