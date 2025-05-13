@@ -5,6 +5,7 @@ import { useState } from 'react';
 import CurveGraphCard from '@/components/admin/CurveGraphCard';
 import DateRangeSelector from '@/components/admin/DateRangeSelector';
 import BasicDropDown from '@/components/common/BasicDropDown';
+import { DateRangeData } from '@/types/chart';
 
 const FEATURE_OPTIONS = [
   { label: '요약노트', value: 'summary' },
@@ -38,12 +39,7 @@ const StrategyBoardPage = () => {
     endDate: newEnd,
     formattedStart,
     formattedEnd,
-  }: {
-    startDate: Date;
-    endDate: Date;
-    formattedStart: string;
-    formattedEnd: string;
-  }) => {
+  }: DateRangeData) => {
     setStartDate(newStart);
     setEndDate(newEnd);
     console.log('Formatted dates:', formattedStart, formattedEnd);

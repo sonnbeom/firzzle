@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+
 import ContentCard from '@/components/admin/ContentCard';
 import DateRangeSelector from '@/components/admin/DateRangeSelector';
 import FavoriteContentCard from '@/components/admin/FavoriteContentCard';
 import PopularCategoryCard from '@/components/admin/PopularCategoryCard';
 import PopularExpertCard from '@/components/admin/PopularExpertCard';
 import VideoLengthCard from '@/components/admin/VideoLengthCard';
+import { DateRangeData } from '@/types/chart';
 
 const AdminPage = () => {
   const [startDate, setStartDate] = useState<Date>(new Date());
@@ -17,12 +19,7 @@ const AdminPage = () => {
     endDate,
     formattedStart,
     formattedEnd,
-  }: {
-    startDate: Date;
-    endDate: Date;
-    formattedStart: string;
-    formattedEnd: string;
-  }) => {
+  }: DateRangeData) => {
     setStartDate(startDate);
     setEndDate(endDate);
     console.log('Formatted dates:', formattedStart, formattedEnd);

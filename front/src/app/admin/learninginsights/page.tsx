@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import CurveGraphCard from '@/components/admin/CurveGraphCard';
 import DateRangeSelector from '@/components/admin/DateRangeSelector';
+import { DateRangeData } from '@/types/chart';
 
 interface Tag {
   text: string;
@@ -45,12 +46,7 @@ const LearningInsightPage = () => {
     endDate: newEnd,
     formattedStart,
     formattedEnd,
-  }: {
-    startDate: Date;
-    endDate: Date;
-    formattedStart: string;
-    formattedEnd: string;
-  }) => {
+  }: DateRangeData) => {
     setStartDate(newStart);
     setEndDate(newEnd);
     console.log('Formatted dates:', formattedStart, formattedEnd);
