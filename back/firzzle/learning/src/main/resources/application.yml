@@ -210,7 +210,7 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
-# MyBatis 설정
+# MyBatis 설정.
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
   type-aliases-package: com.firzzle.learning.dto,com.firzzle.common.library
