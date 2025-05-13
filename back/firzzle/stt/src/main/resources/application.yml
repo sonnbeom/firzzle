@@ -66,7 +66,7 @@ logging:
 
 external:
   api:
-    url: ENC(i6XEMht8A69gSD8qPHmCEh21RPnyqxtKm3YSmf3VcUxqUj+lAlVHg+Pshm0U8hUe)
+    url: ENC(jTM7QqgZfUyhmFp0u/T/sABnwlzQdX7u0h6jCj5hVolaTuslUsQjYIaQKAPhf787HTFVlu6Q9oA14FmFSquanw==)
     key: ENC(Ujsd0oVEIqvN2OseUrOaKpNQHCXHKSIy3yY0sOwM/oJhe+0H08sN7wd9/j6l1u6A)
 
 ---
