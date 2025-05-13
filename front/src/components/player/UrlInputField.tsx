@@ -45,7 +45,7 @@ const UrlInputField = ({
     return () => {
       handleUrlSubmit.cancel();
     };
-  }, [value, handleUrlSubmit]);
+  }, [value]);
 
   // 영상 분석 시작
   const handleUrlConfirm = async () => {
@@ -54,7 +54,7 @@ const UrlInputField = ({
       await postContent();
     } catch (error) {
       return BasicToaster.error(error.message, {
-        id: 'fetch youtube',
+        id: 'analyze youtube',
         duration: 2000,
       });
     }

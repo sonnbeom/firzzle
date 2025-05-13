@@ -2,8 +2,9 @@ import { InfiniteScrollRequest } from '@/types/common';
 import { ContentListResponse, ContentResponse } from '@/types/content';
 import { externalApi } from './common/apiInstance';
 
+// 학습 컨텐츠 분석
 export const postContent = async () => {
-  return await externalApi.post('/contents');
+  return await externalApi.post('/learning/contents');
 };
 
 // 학습 컨텐츠 정보 조회
