@@ -36,7 +36,13 @@ const Share = ({ isOpen, onClose, url }: ShareProps) => {
               className='w-full rounded-md border border-gray-300 px-3 py-2'
             />
             <Button
-              onClick={() => BasicToaster.default('링크가 복사되었습니다')}
+              onClick={() => {
+                if (url) {
+                  navigator.clipboard
+                    .writeText(url)
+                    .then(() => BasicToaster.default('링크가 복사되었습니다'));
+                }
+              }}
             >
               복사
             </Button>
