@@ -285,20 +285,8 @@ public class AuthController {
      * @param response HTTP 응답 객체
      */
     private void deleteRefreshTokenCookie(HttpServletResponse response) {
-        Cookie cookie = new Cookie("refresh_token", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // 즉시 만료
-
-        // SameSite 속성 설정
-        String cookieHeader = String.format("%s=%s; Max-Age=0; Path=%s; HttpOnly; Secure; SameSite=Lax",
-                cookie.getName(),
-                cookie.getValue(),
-                cookie.getPath());
-
+        String cookieHeader = String.format("refresh_token=; Max-Age=0; Path=/; HttpOnly");
         response.addHeader("Set-Cookie", cookieHeader);
-        response.addCookie(cookie);
     }
 
     /**
@@ -385,21 +373,33 @@ public class AuthController {
         // 리프레시 토큰 쿠키 설정
         Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
         refreshTokenCookie.setHttpOnly(true);          // JavaScript에서 접근 불가
-        refreshTokenCookie.setSecure(true);            // HTTPS에서만 전송
-        refreshTokenCookie.setPath("/api/v1/auth");    // 모든 경로에서 접근 가능
+        refreshTokenCookie.setSecure(false);            // HTTPS에서만 전송, but 개발 중이므로 false
+        refreshTokenCookie.setPath("/");    // 모든 경로에서 접근 가능
         refreshTokenCookie.setMaxAge(cookieMaxAge);    // 쿠키 유효 기간
 
         // SameSite 속성 설정 (크로스 사이트 요청 제한)
         // HttpServletResponse가 직접 SameSite 속성을 지원하지 않아 헤더로 추가
-        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=Lax",
+//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=Lax", // HTTPS에서만 전송
+//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; SameSite=Lax", // but 개발 중이므로 false
+//                refreshTokenCookie.getName(),
+//                refreshTokenCookie.getValue(),
+//                refreshTokenCookie.getMaxAge(),
+//                refreshTokenCookie.getPath());
+
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly;", // but 개발 중이므로 false
                 refreshTokenCookie.getName(),
                 refreshTokenCookie.getValue(),
                 refreshTokenCookie.getMaxAge(),
                 refreshTokenCookie.getPath());
 
         response.addHeader("Set-Cookie", cookieHeader);
-        response.addCookie(refreshTokenCookie);
     }
+
+    // /api/v1/auth/me
+//    현재 로그인한 사용자 정보 조회
+//
+//    토큰에서 사용자 정보를 추출하여 반환
+//    프로필 표시, 개인화된 UI 등에 필요
 
     /**
      * DataBox를 TokenResponseDTO로 변환

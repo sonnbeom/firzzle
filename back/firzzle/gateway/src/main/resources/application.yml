@@ -80,6 +80,27 @@ spring:
               args:
                 enabled: true
 
+        # llm 서비스 - JWT 필터 적용
+        - id: llm-service-v1
+          uri: lb://llm-server
+          predicates:
+            - Path=/api/v1/llm/**
+          filters:
+            - RewritePath=/api/v1/llm/(?<segment>.*), /api/v1/${segment}
+            - name: JwtAuthFilter
+              args:
+                enabled: false
+
+        - id: llm-service-v2
+          uri: lb://llm-server
+          predicates:
+            - Path=/api/v2/llm/**
+          filters:
+            - RewritePath=/api/v2/llm/(?<segment>.*), /api/v2/${segment}
+            - name: JwtAuthFilter
+              args:
+                enabled: true
+
         # Admin 서비스 - JWT 필터 적용 (추가 역할 검증 필요)
         - id: admin-service-v1
           uri: lb://admin-server
@@ -90,7 +111,7 @@ spring:
             - name: JwtAuthFilter
               args:
                 enabled: false
-#                adminOnly: true  # Admin 역할만 접근 가능
+                adminOnly: false  # Admin 역할만 접근 가능
 
         - id: admin-service-v2
           uri: lb://admin-server
@@ -101,14 +122,14 @@ spring:
             - name: JwtAuthFilter
               args:
                 enabled: false
-#                adminOnly: true  # Admin 역할만 접근 가능
+                adminOnly: false  # Admin 역할만 접근 가능
 
 # JWT 설정
 jwt:
   secret: your-secret-key-should-be-at-least-32-bytes-long
   access-token-validity-seconds: 3600
   refresh-token-validity-seconds: 604800
-  issuer: firzzle.site  # issuer 추가
+  issuer: firzzle.site
 
 ---
 # 로컬 환경 설정
@@ -121,7 +142,8 @@ spring:
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins:
+            # allowedOrigins 대신 allowedOriginPatterns 사용
+            allowedOriginPatterns:
               - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)"
               - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)"
               - "ENC(Xfl3MDQKHLlZc//V9ypP/nYRO9U1MLq5e8LYoOwxz3DLgHZsT2CrCnGqlZHoYIFF)"
@@ -165,7 +187,8 @@ spring:
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins:
+            # allowedOrigins 대신 allowedOriginPatterns 사용
+            allowedOriginPatterns:
               - "ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)"
               - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)" # 개발 끝나면 삭제
               - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)" # 개발 끝나면 삭제
@@ -214,7 +237,8 @@ spring:
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins:
+            # allowedOrigins 대신 allowedOriginPatterns 사용
+            allowedOriginPatterns:
               - "ENC(Sk5QIMzl37FUMqw26umoe1S/VB5h0RI+v4+QKw06PTruXIYe7i8QnQ2dvMvY9VhC)"
               - "ENC(4oSfuwc+2mk3Mkj5schdfE5ZpoY7x57OWCdk9qOOFGFwqgwpL4tCciVnOMotgokh)" # 개발 끝나면 삭제
               - "ENC(d3W0CSvqFFRIzhWTQAyFeaU/+abWyRcUJGwuwzJbvL4DSxprFWKLsC6zQO8Rqjc9)" # 개발 끝나면 삭제
