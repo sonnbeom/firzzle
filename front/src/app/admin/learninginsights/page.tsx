@@ -24,9 +24,9 @@ interface InsightCardProps {
   endDate: Date;
 }
 
-const LearnigInsightPage = () => {
-  const [startDate, setStartDate] = useState<Date>(new Date('2024-04-19'));
-  const [endDate, setEndDate] = useState<Date>(new Date('2024-05-18'));
+const LearningInsightPage = () => {
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
 
   const generateDates = (startDate: Date, days: number) => {
     const dates = [];
@@ -43,12 +43,17 @@ const LearnigInsightPage = () => {
   const handleDateChange = ({
     startDate: newStart,
     endDate: newEnd,
+    formattedStart,
+    formattedEnd,
   }: {
     startDate: Date;
     endDate: Date;
+    formattedStart: string;
+    formattedEnd: string;
   }) => {
     setStartDate(newStart);
     setEndDate(newEnd);
+    console.log('Formatted dates:', formattedStart, formattedEnd);
   };
 
   const dates = generateDates(startDate, 30);
@@ -116,7 +121,11 @@ const LearnigInsightPage = () => {
 
   return (
     <div className='flex flex-col gap-6 p-6'>
-      <DateRangeSelector onChange={handleDateChange} />
+      <DateRangeSelector
+        onChange={handleDateChange}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+      />
       {insightCards.map((cardProps, index) => (
         <CurveGraphCard key={index} {...cardProps} />
       ))}
@@ -124,4 +133,4 @@ const LearnigInsightPage = () => {
   );
 };
 
-export default LearnigInsightPage;
+export default LearningInsightPage;

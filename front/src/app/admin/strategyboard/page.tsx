@@ -30,8 +30,24 @@ interface ChartData {
 }
 
 const StrategyBoardPage = () => {
-  const [startDate, setStartDate] = useState<Date>(new Date('2024-04-19'));
-  const [endDate, setEndDate] = useState<Date>(new Date('2024-05-18'));
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+
+  const handleDateChange = ({
+    startDate: newStart,
+    endDate: newEnd,
+    formattedStart,
+    formattedEnd,
+  }: {
+    startDate: Date;
+    endDate: Date;
+    formattedStart: string;
+    formattedEnd: string;
+  }) => {
+    setStartDate(newStart);
+    setEndDate(newEnd);
+    console.log('Formatted dates:', formattedStart, formattedEnd);
+  };
 
   const generateDates = (startDate: Date, days: number) => {
     const dates = [];
@@ -43,17 +59,6 @@ const StrategyBoardPage = () => {
       );
     }
     return dates;
-  };
-
-  const handleDateChange = ({
-    startDate: newStart,
-    endDate: newEnd,
-  }: {
-    startDate: Date;
-    endDate: Date;
-  }) => {
-    setStartDate(newStart);
-    setEndDate(newEnd);
   };
 
   const dates = generateDates(startDate, 30);
@@ -122,7 +127,11 @@ const StrategyBoardPage = () => {
 
   return (
     <div className='flex flex-col gap-6 p-6'>
-      <DateRangeSelector onChange={handleDateChange} />
+      <DateRangeSelector
+        onChange={handleDateChange}
+        initialStartDate={startDate}
+        initialEndDate={endDate}
+      />
       {graphData.map((cardProps, index) => (
         <CurveGraphCard key={index} {...cardProps} />
       ))}
