@@ -3,6 +3,7 @@ package com.firzzle.auth.controller;
 import com.firzzle.auth.dto.KakaoLoginRequestDTO;
 import com.firzzle.auth.dto.TokenRequestDTO;
 import com.firzzle.auth.dto.TokenResponseDTO;
+import com.firzzle.auth.dto.UserResponseDTO;
 import com.firzzle.auth.service.AuthService;
 import com.firzzle.auth.service.OAuthRedirectService;
 import com.firzzle.common.exception.BusinessException;
@@ -333,6 +334,9 @@ public class AuthController {
 
             logger.info("카카오 로그인 성공 - 리다이렉트: {}", redirectUrl);
 
+            // 로그인 조회 => ELK
+            log(userLoginLog());
+
             response.sendRedirect(redirectUrl);
         } catch (BusinessException e) {
             logger.error("카카오 콜백 처리 중 비즈니스 예외 발생: {}", e.getMessage());
@@ -395,11 +399,60 @@ public class AuthController {
         response.addHeader("Set-Cookie", cookieHeader);
     }
 
-    // /api/v1/auth/me
-//    현재 로그인한 사용자 정보 조회
-//
-//    토큰에서 사용자 정보를 추출하여 반환
-//    프로필 표시, 개인화된 UI 등에 필요
+    /**
+     * 현재 로그인한 사용자 정보 조회 API
+     * @param request HTTP 요청 객체
+     * @return 사용자 정보 응답
+     */
+    @GetMapping(value = "/me", produces = "application/json;charset=UTF-8")
+    @Operation(summary = "현재 로그인한 사용자 정보 조회", description = "인증된 사용자의 프로필 정보를 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "사용자 정보 조회 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 - 유효하지 않은 토큰 또는 권한 없음"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "사용자 정보를 찾을 수 없음"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류 - 사용자 정보 조회 중 내부 서버 오류"
+            )
+    })
+    public ResponseEntity<Response<UserResponseDTO>> getCurrentUser(
+            HttpServletRequest request) {
+
+        logger.info("현재 로그인한 사용자 정보 조회 요청");
+
+        try {
+            RequestBox box = RequestManager.getBox(request);
+            String uuid =  box.getString("uuid");
+            logger.debug("사용자 정보 조회 요청 - uuid: {}", uuid);
+
+            DataBox userDataBox = authService.getUserInfo(box);
+            UserResponseDTO userResponseDTO = convertToUserResponseDTO(userDataBox);
+
+            Response<UserResponseDTO> response = Response.<UserResponseDTO>builder()
+                    .status(Status.OK)
+                    .data(userResponseDTO)
+                    .build();
+
+            return ResponseEntity.ok(response);
+        } catch (BusinessException e) {
+            logger.error("사용자 정보 조회 중 비즈니스 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("사용자 정보 조회 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 정보 조회 중 오류가 발생했습니다.");
+        }
+    }
 
     /**
      * DataBox를 TokenResponseDTO로 변환
@@ -448,6 +501,33 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("날짜 변환 중 오류 발생: {}", e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * DataBox를 UserResponseDTO로 변환
+     * @param dataBox 데이터 박스
+     * @return 사용자 응답 DTO
+     */
+    private UserResponseDTO convertToUserResponseDTO(DataBox dataBox) {
+        if (dataBox == null) {
+            return null;
+        }
+
+        try {
+            return UserResponseDTO.builder()
+                    .uuid(dataBox.getString("d_uuid"))
+                    .username(dataBox.getString("d_username"))
+                    .email(dataBox.getString("d_email"))
+                    .name(dataBox.getString("d_name"))
+                    .role(dataBox.getString("d_role"))
+                    .profileImageUrl(dataBox.getString("d_profile_image_url"))
+                    .lastLogin(parseDateTime(dataBox.getString("d_last_login")))
+                    .signupType(dataBox.getString("d_signup_type"))
+                    .build();
+        } catch (Exception e) {
+            logger.error("UserResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
+            return new UserResponseDTO();
         }
     }
 }

@@ -31,7 +31,7 @@ public class JasyptConfig {
     public static void main(String[] args) {
         ArrayList<String> encryptList = new ArrayList<>();
         ArrayList<String> decryptList = new ArrayList<>();
-        encryptList.add("firzzle1234"); //암호화 대상 문자 추가
+        encryptList.add("firzzletest@gmail.com"); //암호화 대상 문자 추가
         //복호화 대상 문자열 추가 ENC() 괄호 내부 값으로 넣기
         decryptList.add("xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg");
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();

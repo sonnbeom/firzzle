@@ -20,7 +20,7 @@ spring:
 playwright:
   # Playwright 브라우저 옵션 (headless 여부 등)
   chromium:
-    headless: true
+#    headless: true
     args:
       - "--no-sandbox"
       - "--disable-setuid-sandbox"
@@ -106,8 +106,8 @@ app:
   youtube:
   # Playwright 로그인에 사용할 환경변수
     credentials:
-      id: ENC(sacYT0XXczagA4gjRSdL07rstIRTcGSbwnpL3xqRdwI=)
-      pw: ENC(csLpQhPUVGAUcEEWr4QgioOZUdk/aZacmKIt2V7PoeY=)
+      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
+      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
     # 쿠키 파일 경로
     cookies-path: ${app.file-storage.upload-dir}/cookies.txt
 
@@ -156,8 +156,8 @@ app:
   youtube:
   # Playwright 로그인에 사용할 환경변수
     credentials:
-      id: ENC(J0jPnLW3xJv4ccK2gXgbFpC/dl4FnKqhTMBMnHXM07M=)
-      pw: ENC(3tXF4dqz8ehBwb/ynejJxDb8nST5OoyDId1bDg/QyDg=)
+      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
+      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
     # 쿠키 파일 경로
     cookies-path: ${app.file-storage.upload-dir}/cookies.txt
 
@@ -221,8 +221,8 @@ app:
   youtube:
   # Playwright 로그인에 사용할 환경변수
     credentials:
-      id: ENC(J0jPnLW3xJv4ccK2gXgbFpC/dl4FnKqhTMBMnHXM07M=)
-      pw: ENC(3tXF4dqz8ehBwb/ynejJxDb8nST5OoyDId1bDg/QyDg=)
+      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
+      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
     # 쿠키 파일 경로
     cookies-path: ${app.file-storage.upload-dir}/cookies.txt
 

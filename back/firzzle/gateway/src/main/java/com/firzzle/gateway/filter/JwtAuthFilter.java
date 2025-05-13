@@ -1,5 +1,8 @@
 package com.firzzle.gateway.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.firzzle.gateway.response.Response;
+import com.firzzle.gateway.response.Status;
 import com.firzzle.jwt.config.JwtConfig;
 import com.firzzle.jwt.provider.JwtTokenProvider;
 import com.firzzle.jwt.util.JwtTokenUtil;
@@ -10,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -239,6 +244,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     private Mono<Void> onError(ServerWebExchange exchange, String message, HttpStatus status) {
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(status);
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         // 로깅 레벨 상황에 맞게 조정
         if (status == HttpStatus.UNAUTHORIZED) {
@@ -249,7 +255,22 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             logger.error("서버 오류 응답: {}, 상태: {}", message, status);
         }
 
-        return response.setComplete();
+        // Response 객체 생성 (GlobalExceptionHandler와 동일한 형식)
+        Response<Void> responseBody = Response.<Void>builder()
+                .status(Status.FAIL)
+                .message(message)
+                .build();
+
+        // JSON으로 변환 (Jackson 사용)
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            byte[] responseBytes = objectMapper.writeValueAsBytes(responseBody);
+            DataBuffer buffer = response.bufferFactory().wrap(responseBytes);
+            return response.writeWith(Mono.just(buffer));
+        } catch (Exception e) {
+            logger.error("JSON 변환 중 오류 발생", e);
+            return response.setComplete();
+        }
     }
 
     /**
