@@ -67,7 +67,7 @@ public class CookieRenewService {
             page.setDefaultTimeout(60_000);
             page.setDefaultNavigationTimeout(60_000);
 
-            // 1) 로그인 페이지 접근
+            // 1) 로그인 페이지 접근.
             page.navigate("https://accounts.google.com/signin/v2/identifier?service=youtube");
             page.waitForLoadState(LoadState.NETWORKIDLE);
 
