@@ -41,21 +41,6 @@ public class KakaoOAuthService {
     private final OAuthRedirectService oAuthRedirectService;
 
     /**
-     * 사용자 역할에 따른 기본 범위 설정
-     * 개인 별로 지정 가능
-     */
-    public List<String> getDefaultScopes(String role) {
-        // 기존 코드 유지
-        if ("admin".equalsIgnoreCase(role)) {
-            return List.of("content:read", "content:write", "user:read", "user:write", "admin:read", "admin:write");
-        } else if ("business".equalsIgnoreCase(role)) {
-            return List.of("content:read", "content:write", "user:read", "user:write");
-        } else {
-            return List.of("content:read", "content:write", "user:read", "user:write");
-        }
-    }
-
-    /**
      * 인증 코드로 카카오 액세스 토큰 요청
      * 고정 URI
      */
