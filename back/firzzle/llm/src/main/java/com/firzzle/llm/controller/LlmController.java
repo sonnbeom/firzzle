@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 public class LlmController {
 
     private final RegistrationService registrationService;
-    private final learningChatService runningChatService;
+    private final learningChatService learningChatService;
 
     @PostMapping("/summary")
     @Operation(summary = "요약 생성", description = "업로드된 텍스트를 요약합니다.")
@@ -60,13 +60,13 @@ public class LlmController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청 (질문 누락 등)"),
             @ApiResponse(responseCode = "500", description = "서버 오류 (LLM 처리 중 오류)")
     })
-    public CompletableFuture<ResponseEntity<Response<String>>> tryRunningChat(
+    public CompletableFuture<ResponseEntity<Response<String>>> trylearningChat(
     		@Parameter(description = "사용자 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
     		@Valid @RequestBody learningChatRequestDTO request,
             @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
             @RequestHeader(value = "X-User-UUID", required = false) String userID) {
 
-        return runningChatService.runningChat(userContentSeq, request, userID)
+        return learningChatService.learningChat(userContentSeq, request, userID)
                 .thenApply(result -> ResponseEntity.ok(
                         Response.<String>builder()
                                 .status(Status.OK)

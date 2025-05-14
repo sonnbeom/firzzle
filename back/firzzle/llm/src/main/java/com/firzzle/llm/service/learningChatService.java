@@ -1,7 +1,5 @@
 package com.firzzle.llm.service;
 
-import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -31,31 +29,34 @@ public class learningChatService {
 	
 	 // RAG 기반 실시간 대화 응답 생성 (최근 대화 맥락 없이 context만 활용)
     @Async
-    public CompletableFuture<String> runningChat(Long contentSeq,learningChatRequestDTO request, String userId) {
+    public CompletableFuture<String> learningChat(Long contentSeq, learningChatRequestDTO request, String userId) {
         String question = request.getQuestion();
+        logger.info("📥 [learningChat 시작] contentSeq={}, userId={}, question={}", contentSeq, userId, question);
+
         List<Float> vector = embeddingService.embed(question);
 
         return ragService.searchTopPayloadsByContentSeq(QdrantCollections.SCRIPT, vector, contentSeq)
                 .toFuture()
                 .thenCompose(contents -> {
-                	String context = contents.stream().limit(5).collect(Collectors.joining("\n"));
+                    logger.debug("🔍 [벡터 검색 결과] top contents count={}", contents.size());
 
-                    // ✅ context가 없으면 바로 기본 응답 반환
+                    String context = contents.stream().limit(5).collect(Collectors.joining("\n"));
+
                     if (context.isEmpty()) {
+                        logger.info("⚠️ [context 없음] 기본 응답 반환");
                         return CompletableFuture.completedFuture(
                                 "해당 내용은 영상에서 언급되지 않았어요. 다른 질문이 있으신가요? 궁금한 점을 말씀해 주시면 최대한 도와드릴게요!"
                         );
                     }
 
-                    ChatCompletionRequest chatRequest =
-                            promptFactory.createRunningChatRequest(question, context);
+                    ChatCompletionRequest chatRequest = promptFactory.createLearningChatRequest(question, context);
+                    logger.debug("📤 [OpenAI 요청 전] 생성된 prompt context 일부=\n{}", context.substring(0, Math.min(context.length(), 300)));
 
                     return openAiClient.getChatCompletionAsync(chatRequest);
                 })
                 .exceptionally(e -> {
-                    logger.error("❌ runningChat 처리 중 오류", e);
+                    logger.error("❌ learningChat 처리 중 오류", e);
                     return "답변 생성 중 오류가 발생했습니다.";
                 });
     }
-
 }
