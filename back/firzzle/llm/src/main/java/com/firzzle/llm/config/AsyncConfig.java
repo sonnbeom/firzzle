@@ -14,7 +14,7 @@ public class AsyncConfig {
     public Executor asyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(10);  // 동시 요청 처리 수
-        executor.setMaxPoolSize(100);
+        executor.setMaxPoolSize(100); //
         executor.setQueueCapacity(300);
         executor.setThreadNamePrefix("LLM-");
         executor.initialize();
