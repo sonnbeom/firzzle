@@ -14,7 +14,7 @@ export const logout = async () => {
     const accessToken = (await getCookie('accessToken')).value;
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/logout`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`,
       {
         method: 'POST',
         headers: {
