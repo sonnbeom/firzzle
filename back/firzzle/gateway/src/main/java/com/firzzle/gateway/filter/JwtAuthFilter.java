@@ -192,6 +192,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     private boolean hasAccessToService(Claims claims, String servicePath) {
         // JwtTokenProvider에서 audience 리스트 가져오기
         List<String> audiences = JwtTokenProvider.getAudienceList(claims);
+        logger.info("getSize : {}, claims : {}", audiences.size(), claims);
 
         // audiences가 null이거나 비어있으면 접근 불가
         if (audiences == null || audiences.isEmpty()) {
