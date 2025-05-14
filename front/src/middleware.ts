@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
     // 원래 요청의 URL에서 '/api'를 제거하고 백엔드 URL로 변경
     const backendUrl = new URL(
       request.nextUrl.pathname.replace(/^\/api/, ''),
-      process.env.BACKEND_API_URL,
+      process.env.NEXT_PUBLIC_API_BASE_URL,
     );
 
     // 쿼리 파라미터 복사
