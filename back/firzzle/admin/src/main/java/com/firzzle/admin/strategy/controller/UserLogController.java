@@ -5,6 +5,7 @@ import com.firzzle.admin.strategy.service.UserLogService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +22,7 @@ public class UserLogController {
 
     private final UserLogService userLogService;
 
-    @GetMapping("/transitions")
+    @GetMapping(value = "/transitions", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object getTransitions(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
         List<ResponseUserLogTransitionDto> responseDto = userLogService.getGroupedTransitions(startDate, endDate);
         Response<List<ResponseUserLogTransitionDto>> response = Response.<List<ResponseUserLogTransitionDto>>builder()
