@@ -31,13 +31,13 @@ public class JasyptConfig {
     public static void main(String[] args) {
         ArrayList<String> encryptList = new ArrayList<>();
         ArrayList<String> decryptList = new ArrayList<>();
-        encryptList.add("https://694e-222-111-179-141.ngrok-free.app"); //암호화 대상 문자 추가
+        encryptList.add("http://firzzle.site:8761/eureka/"); //암호화 대상 문자 추가
         //복호화 대상 문자열 추가 ENC() 괄호 내부 값으로 넣기
-        decryptList.add("XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so");
+        decryptList.add("W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=");
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setProvider(new BouncyCastleProvider());
         encryptor.setPoolSize(2);
-        encryptor.setPassword("firzzle_new"); // 암호화 키
+        encryptor.setPassword("secretKey"); // 암호화 키
         encryptor.setAlgorithm("PBEWITHSHA256AND128BITAES-CBC-BC");
         System.out.println("============암호화=============");
         for (String target : encryptList) {
