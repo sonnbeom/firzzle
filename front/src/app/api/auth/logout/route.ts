@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { removeCookie } from '@/actions/auth';
 import { api } from '@/api/common/apiInstance';
 
+// 로그아웃
 export async function POST(request: NextRequest) {
   try {
     const response = await api.post('/auth/logout');

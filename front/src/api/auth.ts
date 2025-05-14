@@ -1,12 +1,3 @@
-import { api } from './common/apiInstance';
-
-// 토큰 갱신
-export const refreshToken = async (retryCount: number) => {
-  return await api.post('/auth/refresh', {
-    retryCount: retryCount + 1,
-  });
-};
-
 // 로그아웃
 export const logout = async () => {
   const response = await fetch('/api/auth/logout', {
