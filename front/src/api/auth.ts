@@ -14,15 +14,17 @@ export const logout = async () => {
     const accessToken = (await getCookie('accessToken')).value;
 
     const response = await fetch(
-      `/api/auth/logout`, // 로컬 /api 경로로 요청
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`,
       {
         method: 'POST',
         headers: {
-          Accept: 'application/json;charset=UTF-8',
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
       },
     );
+
+    console.log(response);
 
     if (response.status === 200) {
       removeCookie('accessToken');
