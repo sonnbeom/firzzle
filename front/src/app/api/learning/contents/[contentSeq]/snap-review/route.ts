@@ -11,10 +11,7 @@ export async function GET(
     );
     return NextResponse.json(response);
   } catch (error) {
-    return NextResponse.json(
-      { message: '스냅리뷰 조회에 실패하였습니다.' },
-      { status: 500 },
-    );
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
