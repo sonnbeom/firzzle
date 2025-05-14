@@ -10,7 +10,6 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-
   ai:
     openai:
       api-key: ENC(T2d/CMHeJB/CwlAq+ID4gcQqyLTlfTzPFvtJkCKXCzQ7+bm6DmUK6gSURhSVbnwWR2FojzJSzn3F91AgrT8VYz2EIG0/j6KkyiJySQS9BUmj3NucnYiClsDAgD718VFua02pMNNY9VHIdjYP+/vrBDj6zLpAnbc/I4j+cGfM/GpZCvgKa28+6+9HfXk+/CQUf6hiPDLb7lNWU3fXXLf3BSmsZ8TGn3i071hhmISZsx0OKRDwC5u/cM5ZXxRkGDnb)
@@ -19,7 +18,7 @@ spring:
         model: gpt-4o-mini
       summary:
         model: gpt-4o-mini
-      runningchat:
+      learningchat:
         model: gpt-4o-mini
 
 
@@ -74,7 +73,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 qdrant:
-  host: ENC(C2ZP/PpLLp3B7YKf4DVzfZ74Qe68l9aMK+mK6ob32jw86CGWhnGEimghMYbnaihW)
+  host: http://localhost:6333
   api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:

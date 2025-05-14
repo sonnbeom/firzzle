@@ -77,7 +77,7 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        // 최소한의 설정만 포함하고 나머지는 application.yml에 위임
+        // 최소한의 설정만 포함하고 나머지는 application.yml에 위임.
         CorsConfiguration configuration = new CorsConfiguration();
 
         // CORS를 위한 기본 설정만 유지, 세부사항은 application.yml에서 관리
