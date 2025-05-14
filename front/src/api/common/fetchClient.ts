@@ -60,6 +60,7 @@ export class FetchClient {
       Object.assign(
         {
           'Content-Type': contentType,
+          Accept: 'application/json;charset=UTF-8',
           Authorization: withAuth ? `Bearer ${accessToken}` : '',
         },
         headers,
