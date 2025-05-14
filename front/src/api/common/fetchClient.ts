@@ -157,7 +157,7 @@ export class FetchClient {
   }
 
   // POST 요청
-  public post<TResponse = unknown, TBody = unknown>(
+  public post<TResponse = unknown, TBody = undefined>(
     url: string,
     options?: FetchOptions<TBody>,
   ) {
