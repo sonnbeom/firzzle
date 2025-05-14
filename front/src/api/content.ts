@@ -1,10 +1,21 @@
 import { InfiniteScrollRequest } from '@/types/common';
-import { ContentListResponse, ContentResponse } from '@/types/content';
+import { ContentResponse } from '@/types/content';
+import { ContentListResponse } from '@/types/content';
 import { api } from './common/apiInstance';
 
 // 학습 컨텐츠 분석
 export const postContent = async () => {
-  return await api.post('/learning/contents');
+  const response = await fetch('/api/learning/contents', {
+    method: 'POST',
+  });
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
+  return data.message;
 };
 
 // 학습 컨텐츠 정보 조회

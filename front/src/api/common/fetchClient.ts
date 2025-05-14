@@ -1,6 +1,5 @@
 import { getCookie } from '@/actions/auth';
 import { ApiResponseWithData, ApiResponseWithoutData } from '@/types/common';
-import { refreshToken } from '../auth';
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
 };
@@ -127,15 +126,22 @@ export class FetchClient {
 
         if (error.message === 'Unauthorized') {
           // 토큰 갱신 API
-          const response = await refreshToken(retryCount);
+          const response = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            body: JSON.stringify({
+              retryCount: retryCount + 1,
+            }),
+          });
 
-          if (response.message === '토큰 갱신 성공') {
+          if (response.status === 200) {
             return this.request(url, {
               ...options,
               retryCount: retryCount + 1,
             });
           } else {
-            throw new Error(response.message);
+            const data = await response.json();
+
+            throw new Error(data.message);
           }
         }
 
