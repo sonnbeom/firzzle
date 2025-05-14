@@ -17,6 +17,8 @@ import { TransitionsResponse, DateRangeData } from '@/types/chart';
 const StrategyBoardPage = () => {
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const [formattedStart, setFormattedStart] = useState<string>('');
+  const [formattedEnd, setFormattedEnd] = useState<string>('');
 
   // 상단 3개 차트 데이터
   const [loginRateData, setLoginRateData] =
@@ -37,14 +39,8 @@ const StrategyBoardPage = () => {
     try {
       const data =
         option === '요약노트' // '요약노트'
-          ? await getSummaryLevelRate(
-              startDate.toISOString(),
-              endDate.toISOString(),
-            )
-          : await getLikeSnapReviewRate(
-              startDate.toISOString(),
-              endDate.toISOString(),
-            );
+          ? await getSummaryLevelRate(formattedStart, formattedEnd)
+          : await getLikeSnapReviewRate(formattedStart, formattedEnd)
       setSelectedChartData(data);
     } catch (error) {
       console.error('선택 차트 데이터 불러오기 실패:', error);

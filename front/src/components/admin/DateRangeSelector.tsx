@@ -15,65 +15,61 @@ const DateRangeSelector = ({
   initialEndDate,
 }: DateRangeSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [state, setState] = useState([
-    {
+  const [dateRange, setDateRange] = useState({
+    startDate: initialStartDate || new Date(),
+    endDate: initialEndDate || new Date(),
+  });
+  const [tempRange, setTempRange] = useState(dateRange);
+
+  useEffect(() => {
+    // 초기값이 변경되면 dateRange도 업데이트
+    setDateRange({
       startDate: initialStartDate || new Date(),
       endDate: initialEndDate || new Date(),
-      key: 'selection',
-    },
-  ]);
+    });
+  }, [initialStartDate, initialEndDate]);
 
-  const [tempState, setTempState] = useState(state);
-
-  // 초기값에 대한 onChange 호출
   useEffect(() => {
-    if (onChange) {
-      const startDate = state[0].startDate;
-      const endDate = state[0].endDate;
-
-      onChange({
-        startDate,
-        endDate,
-        formattedStart: formatToLocalDate(startDate),
-        formattedEnd: formatToLocalDate(endDate),
-      });
-    }
-  }, [onChange, state]);
+    // dateRange가 변경될 때마다 onChange 호출
+    onChange?.({
+      ...dateRange,
+      formattedStart: formatToLocalDate(dateRange.startDate),
+      formattedEnd: formatToLocalDate(dateRange.endDate),
+    });
+  }, [dateRange, onChange]);
 
   const handleSelect = (ranges: RangeKeyDict) => {
     const selection = ranges.selection as Range;
-    setTempState([selection]);
+    if (selection.startDate && selection.endDate) {
+      const newRange = {
+        startDate: selection.startDate,
+        endDate: selection.endDate,
+      };
+      setTempRange(newRange);
+    }
   };
 
   const handleConfirm = () => {
-    setState(tempState);
-
-    const startDate = tempState[0].startDate;
-    const endDate = tempState[0].endDate;
-
-    onChange?.({
-      startDate,
-      endDate,
-      formattedStart: formatToLocalDate(startDate),
-      formattedEnd: formatToLocalDate(endDate),
-    });
-
+    setDateRange(tempRange);
     setIsOpen(false);
   };
 
   const handleCancel = () => {
-    setTempState(state);
+    setTempRange(dateRange); // 취소시 현재 dateRange로 되돌림
     setIsOpen(false);
   };
 
   const toggleCalendar = () => {
+    if (!isOpen) {
+      setTempRange(dateRange); // 달력 열 때 현재 dateRange로 초기화
+    }
     setIsOpen(!isOpen);
   };
 
   const formatDateRange = () => {
-    const startDate = format(state[0].startDate, 'yyyy.MM.dd');
-    const endDate = format(state[0].endDate, 'yyyy.MM.dd');
-    return `${startDate} - ${endDate}`;
+    const start = format(dateRange.startDate, 'yyyy.MM.dd');
+    const end = format(dateRange.endDate, 'yyyy.MM.dd');
+    return `${start} - ${end}`;
   };
 
   return (
@@ -105,9 +101,9 @@ const DateRangeSelector = ({
         <div className='absolute top-full left-0 z-10 mt-2 rounded-lg border bg-white shadow-lg'>
           <DateRange
             editableDateInputs={true}
-            onChange={(item) => setTempState([item.selection])}
+            onChange={handleSelect}
             moveRangeOnFirstSelection={false}
-            ranges={tempState}
+            ranges={[{ ...tempRange, key: 'selection' }]}
             months={1}
             direction='horizontal'
             locale={ko}
