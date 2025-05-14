@@ -1,5 +1,7 @@
-import { removeCookie } from '@/actions/auth';
+import { getCookie, removeCookie } from '@/actions/auth';
 import { api } from './common/apiInstance';
+
+const accessToken = (await getCookie('accessToken')).value;
 
 // 토큰 갱신
 export const refreshToken = async (retryCount: number) => {
@@ -11,12 +13,19 @@ export const refreshToken = async (retryCount: number) => {
 // 로그아웃
 export const logout = async () => {
   try {
-    const response = await api.post<undefined>('/auth/logout');
+    const response = await fetch('/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json;charset=UTF-8',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
-    if (response.status === 'OK') {
+    if (response.status === 200) {
       removeCookie('accessToken');
     } else {
-      throw response.message;
+      throw response.statusText;
     }
   } catch (error) {
     throw error;
