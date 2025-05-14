@@ -10,8 +10,8 @@ const HeaderButton = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      BasicToaster.default('로그아웃 되었습니다.', { id: 'logout' });
+      const response = await logout();
+      BasicToaster.default(response, { id: 'logout' });
     } catch (error) {
       BasicToaster.error(error.message, { id: 'logout', duration: 2000 });
     }

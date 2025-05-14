@@ -1,47 +1,27 @@
-import { NextResponse } from 'next/server';
-import { getCookie, removeCookie } from '@/actions/auth';
+import { NextRequest, NextResponse } from 'next/server';
+import { removeCookie } from '@/actions/auth';
+import { api } from '@/api/common/apiInstance';
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const accessToken = getCookie('accessToken');
+    const response = await api.post('/auth/logout');
 
-    if (!accessToken) {
+    if (response.status === 'OK') {
+      removeCookie('accessToken');
+      request.cookies.delete('accessToken');
       return NextResponse.json(
-        { message: 'No access token found' },
-        { status: 401 },
+        { message: '로그아웃 되었습니다.' },
+        { status: 200 },
       );
     }
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
-      },
-    );
-
-    console.log(response);
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      return NextResponse.json(
-        { message: errorData },
-        { status: response.status },
-      );
-    }
-
-    // Remove the access token cookie
-    removeCookie('accessToken');
-
-    return NextResponse.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    console.error('Logout error:', error);
     return NextResponse.json(
-      { message: 'Internal server error' },
+      { message: '로그아웃에 실패하였습니다.' },
+      { status: 400 },
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { message: '로그아웃 중 오류가 발생했습니다.' },
       { status: 500 },
     );
   }
