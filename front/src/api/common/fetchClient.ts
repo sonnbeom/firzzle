@@ -1,7 +1,6 @@
 import { getCookie } from '@/actions/auth';
 import { ApiResponseWithData, ApiResponseWithoutData } from '@/types/common';
 import { refreshToken } from '../auth';
-
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
 };
@@ -20,7 +19,7 @@ type FetchOptions<TBody = unknown, TParams = unknown> = Omit<
 
 export class FetchClient {
   private baseUrl: string;
-  private readonly MAX_RETRIES = 2;
+  private readonly MAX_RETRIES = 1;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -53,14 +52,13 @@ export class FetchClient {
       ...restOptions
     } = options;
 
-    const accessToken = (await getCookie('accessToken')).value;
+    const accessToken = await getCookie('accessToken');
 
     // 헤더 객체 생성
     const allHeaders = new Headers(
       Object.assign(
         {
           'Content-Type': contentType,
-          Accept: 'application/json;charset=UTF-8',
           Authorization: withAuth ? `Bearer ${accessToken}` : '',
         },
         headers,
@@ -157,10 +155,7 @@ export class FetchClient {
   }
 
   // POST 요청
-  public post<TResponse = unknown, TBody = undefined>(
-    url: string,
-    options?: FetchOptions<TBody>,
-  ) {
+  public post<TResponse, TBody>(url: string, options?: FetchOptions<TBody>) {
     return this.request<TResponse>(url, { method: 'POST', ...options });
   }
 
