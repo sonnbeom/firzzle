@@ -22,6 +22,7 @@ export const logout = async () => {
           Authorization: `Bearer ${accessToken}`,
         },
         credentials: 'omit',
+        mode: 'cors',
       },
     );
 
