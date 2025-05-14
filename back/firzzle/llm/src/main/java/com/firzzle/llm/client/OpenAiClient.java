@@ -27,10 +27,10 @@ public class OpenAiClient {
 
     private WebClient webClient;
 
-    @Value("${ai.openai.api-key}")
+    @Value("${spring.ai.openai.api-key}")
     private String apiKey;
 
-    @Value("${ai.openai.base-url}")
+    @Value("${spring.ai.openai.base-url}")
     private void setBaseUrl(String baseUrl) {
         HttpClient httpClient = HttpClient.create()
             .resolver(DefaultAddressResolverGroup.INSTANCE); // 시스템 DNS 사용
@@ -43,14 +43,14 @@ public class OpenAiClient {
             .build();
     }
 
-    @Value("${ai.openai.timeline.model}")
+    @Value("${spring.ai.openai.timeline.model}")
     private String timelineModel;
 
-    @Value("${ai.openai.summary.model}")
+    @Value("${spring.ai.openai.summary.model}")
     private String summaryModel;
     
-    @Value("${ai.openai.runningchat.model}")
-    private String runningChatModel;
+    @Value("${spring.ai.openai.learningchat.model}")
+    private String learningChatModel;
 
     @Async("llmExecutor")
     public CompletableFuture<String> getChatCompletionAsync(ChatCompletionRequest chatCompletionRequest) {
@@ -58,7 +58,7 @@ public class OpenAiClient {
         String model = switch (chatCompletionRequest.getModelType()) {
             case TIMELINE -> timelineModel;
             case SUMMARY -> summaryModel;
-            case RUNNINGCHAT -> runningChatModel;
+            case RUNNINGCHAT -> learningChatModel;
         };
 
         // ✅ 메시지 구성
