@@ -1,21 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import { removeCookie, setCookie } from '@/actions/auth';
 import { api } from '@/api/common/apiInstance';
+import { TokenResponse } from '@/types/auth';
 
 // 토큰 갱신
 export async function POST(request: NextRequest) {
   try {
     const { retryCount } = await request.json();
 
-    const response = await api.post('/auth/refresh', {
+    const response = await api.post<TokenResponse>('/auth/refresh', {
       retryCount: retryCount,
     });
 
     if (response.status === 'OK') {
+      const accessToken = response.data.accessToken;
+      setCookie('accessToken', accessToken);
+
       return NextResponse.json({ message: response.message }, { status: 200 });
     }
 
+    removeCookie('accessToken');
+    request.cookies.delete('accessToken');
+
     return NextResponse.json({ message: response.message }, { status: 400 });
   } catch (error) {
+    removeCookie('accessToken');
+    request.cookies.delete('accessToken');
+
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

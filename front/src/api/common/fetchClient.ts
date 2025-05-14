@@ -14,7 +14,6 @@ type FetchOptions<TBody = unknown, TParams = unknown> = Omit<
   contentType?: string; // 요청 컨텐츠 타입
   params?: Params<TParams>; // URL 쿼리 파라미터
   retryCount?: number; // 재시도 횟수
-  currentPath: string;
 };
 
 export class FetchClient {
@@ -167,7 +166,10 @@ export class FetchClient {
   }
 
   // POST 요청
-  public post<TResponse, TBody>(url: string, options?: FetchOptions<TBody>) {
+  public post<TResponse, TBody = undefined>(
+    url: string,
+    options?: FetchOptions<TBody>,
+  ) {
     return this.request<TResponse>(url, { method: 'POST', ...options });
   }
 
