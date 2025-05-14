@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { updateFrameComments } from '@/api/snap';
+import { useEffect, useState } from 'react';
+import { getContentSnapReview, updateFrameComments } from '@/api/snap';
 import {
   UpdateFrameCommentsRequest,
-  UpdateFrameCommentsResponse,
   Frame,
 } from '@/types/snapReview';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
@@ -13,14 +12,23 @@ import TimeStamp from '../common/TimeStamp';
 
 interface ReviewCardProps {
   contentId: string;
-  reviews: Frame[];
 }
 
-const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
+const ReviewCard = ({ contentId }: ReviewCardProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [localReviews, setLocalReviews] = useState<
-    Frame[] | UpdateFrameCommentsResponse[]
-  >(reviews);
+  const [localReviews, setLocalReviews] = useState<Frame[]>([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await getContentSnapReview(contentId);
+        setLocalReviews(response.data.frames || []);
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      }
+    };
+    fetchReviews();
+  }, [contentId]);
 
   const handleEditClick = (id: string) => {
     setEditingId(id);
@@ -38,7 +46,7 @@ const ReviewCard = ({ contentId, reviews }: ReviewCardProps) => {
         })),
       };
 
-      const response = await updateFrameComments(Number(contentId), request);
+      const response = await updateFrameComments(contentId, request);
 
       // 응답으로 받은 데이터로 상태 업데이트
       setLocalReviews(response.data);
