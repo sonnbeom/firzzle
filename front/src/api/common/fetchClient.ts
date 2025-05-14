@@ -1,5 +1,7 @@
 import { getCookie } from '@/actions/auth';
 import { ApiResponseWithData, ApiResponseWithoutData } from '@/types/common';
+import { determinePathType } from '@/utils/determinePathType';
+
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
 };
@@ -53,9 +55,12 @@ export class FetchClient {
 
     const accessToken = await getCookie('accessToken');
 
-    // 경로 타입 결정
-    const currentPath = window.location.pathname.split('content').pop() || '';
-    const pathType = determinePathType(currentPath);
+    // Referer 헤더에서 경로 추출 및 타입 결정
+    const currentPath = headers?.['Referer'] || headers?.['referer'];
+    let pathType = null;
+    if (currentPath) {
+      pathType = determinePathType(currentPath);
+    }
 
     // 헤더 객체 생성
     const allHeaders = new Headers(
