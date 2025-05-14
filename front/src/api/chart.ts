@@ -24,7 +24,7 @@ export const getEducateChangeRate = async (
   endDate: string,
 ) => {
   const { data } = await api.get<TransitionsResponse>(
-    `/admin/strategy/conversion/transitions`,
+    `/admin/strategy/learning-rate`,
     {
       params: {
         startDate,
