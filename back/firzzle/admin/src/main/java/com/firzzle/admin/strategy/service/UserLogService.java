@@ -22,19 +22,63 @@ public class UserLogService {
 
     private final LoggingCommonService loggingCommonService;
 
+//    public List<ResponseUserLogTransitionDto> getGroupedTransitions(LocalDate startDate, LocalDate endDate) {
+//        List<UserActionLog> logs = loggingCommonService.getLogsFromES(startDate, endDate, "PREFERENCE");
+//
+//        Map<String, Map<String, Integer>> dailyCounts = new TreeMap<>();
+//
+//        for (UserActionLog log : logs) {
+//            String date = log.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate().toString();
+//            String path = log.getFromContent() + "=>" + log.getToContent();
+////
+//
+//            if ("SUMMARY=>RECOMMEND_CONTENT".equals(path) || "SUMMARY=>RECOMMEND_EXPERT".equals(path)) {
+//                path = "SUMMARY=>RECOMMEND";
+//            }
+//
+//            Map<String, Integer> pathMap = dailyCounts.computeIfAbsent(date, d -> new HashMap<>());
+//            pathMap.put(path, pathMap.getOrDefault(path, 0) + 1);
+//        }
+//
+//        List<ResponseUserLogTransitionDto> result = new ArrayList<>();
+//
+//        // 시작일부터 종료일까지 반복
+//        LocalDate current = startDate;
+//        while (!current.isAfter(endDate)) {
+//            String key = current.toString();
+//            Map<String, Integer> transitions = dailyCounts.getOrDefault(key, new HashMap<>());
+//            result.add(ResponseUserLogTransitionDto.builder()
+//                    .date(key)
+//                    .transitions(transitions)
+//                    .build());
+//            current = current.plusDays(1);
+//        }
+//
+//        return result;
+//    }
+
     public List<ResponseUserLogTransitionDto> getGroupedTransitions(LocalDate startDate, LocalDate endDate) {
         List<UserActionLog> logs = loggingCommonService.getLogsFromES(startDate, endDate, "PREFERENCE");
 
         Map<String, Map<String, Integer>> dailyCounts = new TreeMap<>();
 
         for (UserActionLog log : logs) {
-            String date = log.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate().toString();
-            String path = log.getFromContent() + "=>" + log.getToContent();
+            String from = log.getFromContent();
+            String to = log.getToContent();
 
+            // from 또는 to가 null, 빈 문자열, 혹은 URL일 경우 스킵
+            if (from == null || to == null || from.isBlank() || to.isBlank() || from.toLowerCase().startsWith("http")) {
+                continue;
+            }
+
+            String path = from + "=>" + to;
+
+            // 예외 처리: 특정 경로는 통합
             if ("SUMMARY=>RECOMMEND_CONTENT".equals(path) || "SUMMARY=>RECOMMEND_EXPERT".equals(path)) {
                 path = "SUMMARY=>RECOMMEND";
             }
 
+            String date = log.getTimestamp().atZone(ZoneOffset.UTC).toLocalDate().toString();
             Map<String, Integer> pathMap = dailyCounts.computeIfAbsent(date, d -> new HashMap<>());
             pathMap.put(path, pathMap.getOrDefault(path, 0) + 1);
         }
