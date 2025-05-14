@@ -21,19 +21,18 @@ export const logout = async () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        mode: 'cors',
         credentials: 'include',
       },
     );
 
-    console.log(response);
-
-    if (response.status === 200) {
-      removeCookie('accessToken');
-    } else {
-      throw response.statusText;
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Logout failed: ${errorData}`);
     }
+
+    removeCookie('accessToken');
   } catch (error) {
+    console.error('Logout error:', error);
     throw error;
   }
 };
