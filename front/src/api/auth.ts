@@ -13,10 +13,6 @@ export const logout = async () => {
     method: 'POST',
   });
 
-  if (!response.ok) {
-    throw new Error('로그아웃 중 오류가 발생했습니다.');
-  }
-
   const data = await response.json();
 
   if (response.status !== 200) {

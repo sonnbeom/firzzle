@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
     if (response.status === 'OK') {
       removeCookie('accessToken');
       request.cookies.delete('accessToken');
+
       return NextResponse.json(
         { message: '로그아웃 되었습니다.' },
         { status: 200 },
@@ -20,9 +21,8 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   } catch (error) {
-    return NextResponse.json(
-      { message: '로그아웃 중 오류가 발생했습니다.' },
-      { status: 500 },
-    );
+    console.log(error);
+
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }

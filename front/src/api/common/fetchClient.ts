@@ -59,7 +59,6 @@ export class FetchClient {
       Object.assign(
         {
           'Content-Type': contentType,
-          Accept: 'application/json;charset=UTF-8',
           Authorization: withAuth ? `Bearer ${accessToken}` : '',
         },
         headers,
@@ -156,10 +155,7 @@ export class FetchClient {
   }
 
   // POST 요청
-  public post<TResponse = unknown, TBody = unknown>(
-    url: string,
-    options?: FetchOptions<TBody>,
-  ) {
+  public post<TResponse, TBody>(url: string, options?: FetchOptions<TBody>) {
     return this.request<TResponse>(url, { method: 'POST', ...options });
   }
 
