@@ -36,12 +36,5 @@ export interface DataSet {
 export interface CurveGraphCardProps {
   title?: string;
   description?: string;
-  tags?: {
-    text: string;
-    color: string;
-  }[];
   dataSets: DataSet[];
-  mode?: {
-    text: string;
-  };
 }

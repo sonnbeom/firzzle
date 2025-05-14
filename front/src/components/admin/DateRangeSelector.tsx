@@ -105,12 +105,13 @@ const DateRangeSelector = ({
         <div className='absolute top-full left-0 z-10 mt-2 rounded-lg border bg-white shadow-lg'>
           <DateRange
             editableDateInputs={true}
-            onChange={handleSelect}
-            moveRangeOnFirstSelection={true}
+            onChange={(item) => setTempState([item.selection])}
+            moveRangeOnFirstSelection={false}
             ranges={tempState}
             months={1}
             direction='horizontal'
             locale={ko}
+            maxDate={new Date()}
             dateDisplayFormat='yyyy.MM.dd'
           />
           <div className='flex justify-end gap-2 border-t p-3'>

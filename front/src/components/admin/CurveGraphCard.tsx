@@ -14,7 +14,6 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
-import BasicBadge from '@/components/common/BasicBadge';
 import BasicPopOver from '@/components/common/BasicPopOver';
 import { CurveGraphCardProps } from '@/types/chart';
 
@@ -32,11 +31,9 @@ ChartJS.register(
 const CurveGraphCard = ({
   title,
   description,
-  tags,
   dataSets,
-  mode,
 }: CurveGraphCardProps) => {
-  // 색 랜덤 지정
+  // 색 지정
   const predefinedColors = [
     '#4A90E2', // 하늘색
     '#50C878', // 에메랄드
@@ -121,12 +118,9 @@ const CurveGraphCard = ({
 
   return (
     <div className='h-[300px] w-full rounded-lg bg-white p-4 shadow-sm lg:rounded-2xl lg:p-6'>
-      {(title || tags?.length || mode || description) && (
+      {(title || description) && (
         <div className='mb-3 flex flex-wrap items-center justify-between gap-2 lg:mb-4'>
           <div className='flex flex-wrap items-center gap-2'>
-            {tags?.map((tag, index) => (
-              <BasicBadge key={index} text={tag.text} color={tag.color} />
-            ))}
             {title && <span className='text-base font-medium'>{title}</span>}
             {description && (
               <BasicPopOver
