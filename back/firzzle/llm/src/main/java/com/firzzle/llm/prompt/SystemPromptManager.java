@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SystemPromptManager {
 
-    public String getRunningChatSystemPrompt() {
+    public String getLearningChatSystemPrompt() {
         return """
         당신은 학생을 도와주는 똑똑한 AI 튜터입니다.
         주어진 영상 스크립트를 기반으로 질문에 답변하세요.

@@ -14,11 +14,11 @@ public class PromptFactory {
 	 private final SystemPromptManager systemPromptManager;
 
 	 
-	 public ChatCompletionRequest createRunningChatRequest(String question, String context) {
+	 public ChatCompletionRequest createLearningChatRequest(String question, String context) {
         return ChatCompletionRequest.builder()
-                .systemMessage(systemPromptManager.getRunningChatSystemPrompt())
+                .systemMessage(systemPromptManager.getLearningChatSystemPrompt())
                 .userPrompt(userPromptManager.getlearningChatUserPrompt(question, context, ""))
-                .modelType(ModelType.RUNNINGCHAT)
+                .modelType(ModelType.LEARNINGCHAT)
                 .temperature(0.7)
                 .topP(1.0)
                 .maxTokens(1024)

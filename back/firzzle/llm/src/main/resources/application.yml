@@ -73,7 +73,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 qdrant:
-  host: ENC(a/ouu/mzdNsTfGZEb5GtfZZxpgAiSQ96G93Z5GUSkjsIUfBQWOZNBmSGAbNB1f1TAluTD+ARvOrSzgyz1W1YZg==)
+  host: http://localhost:6333
   api-key: ENC(xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg)
 
 server:
@@ -84,7 +84,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: ENC(a/ouu/mzdNsTfGZEb5GtfZZxpgAiSQ96G93Z5GUSkjsIUfBQWOZNBmSGAbNB1f1TAluTD+ARvOrSzgyz1W1YZg)
+      defaultZone: http://localhost:8761
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
