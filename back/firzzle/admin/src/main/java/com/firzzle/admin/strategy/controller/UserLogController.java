@@ -31,7 +31,7 @@ public class UserLogController {
                 .build();
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/learning-rate")
+    @GetMapping(value = "/learning-rate", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object getLearningRate(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
         List<ResponseUserLogTransitionDto> responseDto = userLogService.getLearningRate(startDate, endDate);
         Response<List<ResponseUserLogTransitionDto>> response = Response.<List<ResponseUserLogTransitionDto>>builder()
@@ -40,7 +40,7 @@ public class UserLogController {
                 .build();
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/login-rate")
+    @GetMapping(value = "/login-rate", produces = MediaType.APPLICATION_JSON_VALUE)
     public Object getLoginRate(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate) {
         List<ResponseUserLogTransitionDto> responseDto = userLogService.getLoginRate(startDate, endDate);
         Response<List<ResponseUserLogTransitionDto>> response = Response.<List<ResponseUserLogTransitionDto>>builder()
