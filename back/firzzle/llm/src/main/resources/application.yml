@@ -10,17 +10,16 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-
-ai:
-  openai:
-    api-key: ENC(T2d/CMHeJB/CwlAq+ID4gcQqyLTlfTzPFvtJkCKXCzQ7+bm6DmUK6gSURhSVbnwWR2FojzJSzn3F91AgrT8VYz2EIG0/j6KkyiJySQS9BUmj3NucnYiClsDAgD718VFua02pMNNY9VHIdjYP+/vrBDj6zLpAnbc/I4j+cGfM/GpZCvgKa28+6+9HfXk+/CQUf6hiPDLb7lNWU3fXXLf3BSmsZ8TGn3i071hhmISZsx0OKRDwC5u/cM5ZXxRkGDnb)
-    base-url: https://api.openai.com/v1
-    timeline:
-      model: gpt-4o-mini
-    summary:
-      model: gpt-4o-mini
-    runningchat:
-      model: gpt-4o-mini
+  ai:
+    openai:
+      api-key: ENC(T2d/CMHeJB/CwlAq+ID4gcQqyLTlfTzPFvtJkCKXCzQ7+bm6DmUK6gSURhSVbnwWR2FojzJSzn3F91AgrT8VYz2EIG0/j6KkyiJySQS9BUmj3NucnYiClsDAgD718VFua02pMNNY9VHIdjYP+/vrBDj6zLpAnbc/I4j+cGfM/GpZCvgKa28+6+9HfXk+/CQUf6hiPDLb7lNWU3fXXLf3BSmsZ8TGn3i071hhmISZsx0OKRDwC5u/cM5ZXxRkGDnb)
+      base-url: https://api.openai.com/v1
+      timeline:
+        model: gpt-4o-mini
+      summary:
+        model: gpt-4o-mini
+      learningchat:
+        model: gpt-4o-mini
 
 
 # 공통 설정
