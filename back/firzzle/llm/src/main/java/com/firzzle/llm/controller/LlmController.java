@@ -1,84 +1,82 @@
 package com.firzzle.llm.controller;
 
-import java.util.concurrent.CompletableFuture;
+import com.firzzle.llm.dto.LlmRequest;
+import com.firzzle.llm.dto.learningChatRequestDTO;
+import com.firzzle.llm.service.RegistrationService;
+import com.firzzle.llm.service.learningChatService;
+import com.firzzle.common.response.Response;
+import com.firzzle.common.response.Status;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.concurrent.CompletableFuture;
 
-import com.firzzle.llm.dto.*;
-import com.firzzle.llm.service.*;
-
-import lombok.RequiredArgsConstructor;
-
-/**
- * @Class Name : LlmController.java
- * @Description : Llm 기능 API 컨트롤러
- * @author Firzzle
- * @since 2025. 4. 30.
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
+@Tag(name = "LLM API", description = "LLM 기반 요약 및 러닝챗 기능")
 public class LlmController {
 
     private final RegistrationService registrationService;
-    private final RunningChatService runningChatService;
+    private final learningChatService runningChatService;
 
-    /**
-     * 🎯 업로드된 파일로부터 요약문을 생성하는 API
-     * @param String 요약할 텍스트
-     * @return 요약 결과 (LLM 기반 처리).
-     */
     @PostMapping("/summary")
-    public CompletableFuture<ResponseEntity<String>> postSummary(@RequestBody LlmRequest request) {
-        return registrationService.summarizeContents(request)
-                .thenApply(ResponseEntity::ok)
-                .exceptionally(e -> {
-                    e.printStackTrace();
-                    return ResponseEntity.status(500).body("요약 생성 중 오류 발생: " + e.getMessage());
-                });
-    }
-    
-	 /**
-	  * 🎯 영상 내용을 바탕으로 사용자와 토론을 진행하는 API
-	  * @param 사용자의 질문 
-	  * @return 요약 결과 (LLM 기반 처리)
-	  */
-	 @PostMapping("/runningchat")
-	 public  CompletableFuture<ResponseEntity<String>> TryRunningChat(@RequestBody RunningChatRequest request) {
-        return runningChatService.runningChat(request)
-                .thenApply(result -> ResponseEntity.ok(result))
-                .exceptionally(e -> {
-                    e.printStackTrace();
-                    return ResponseEntity.status(500).body("LLM 처리 중 오류 발생: " + e.getMessage());
-                });
-	 }
-    
-    /**
-     * 🎯 테스트용 API
-     * @Body prompt 입력 프롬프트 
-     * @return 요약 결과 (LLM 기반 처리)
-     */
-    @PostMapping("/chat-test")
-    public CompletableFuture<ResponseEntity<String>> ChatTest(@RequestBody String question) {
-        return runningChatService.testGptResponse(question)
-            .thenApply(result -> ResponseEntity.ok(result))
-            .exceptionally(e -> {
-                e.printStackTrace();
-                return ResponseEntity.status(500).body("LLM 처리 중 오류 발생: " + e.getMessage());
-            });
-    }
+    @Operation(summary = "요약 생성", description = "업로드된 텍스트를 요약합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "요약 생성 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (요약 텍스트 누락 등)"),
+            @ApiResponse(responseCode = "500", description = "서버 오류 (요약 중 내부 문제)")
+    })
+    public CompletableFuture<ResponseEntity<Response<String>>> postSummary(
+            @Valid @RequestBody LlmRequest request) {
 
+        return registrationService.summarizeContents(request)
+                .thenApply(summary -> ResponseEntity.ok(
+                        Response.<String>builder()
+                                .status(Status.OK)
+                                .message("요약 생성 성공")
+                                .data(summary)
+                                .build()))
+                .exceptionally(e -> ResponseEntity.status(500).body(
+                        Response.<String>builder()
+                                .status(Status.FAIL)
+                                .message("요약 생성 중 오류: " + e.getMessage())
+                                .build()));
+    }
     
-    /**
-     * 🎯 테스트용 API
-     * @Body prompt 입력 프롬프트 
-     * @return 요약 결과 (LLM 기반 처리)
-     */
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
-    	runningChatService.register(request.getId(), request.getContent());
-        return ResponseEntity.ok("✅ 등록 완료");
+    @PostMapping("/{contentSeq}/chat")
+    @Operation(summary = "러닝챗 질문", description = "영상 기반 사용자 질문에 대해 LLM이 응답합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "질문 응답 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청 (질문 누락 등)"),
+            @ApiResponse(responseCode = "500", description = "서버 오류 (LLM 처리 중 오류)")
+    })
+    public CompletableFuture<ResponseEntity<Response<String>>> tryRunningChat(
+    		@Parameter(description = "사용자 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
+    		@Valid @RequestBody learningChatRequestDTO request,
+            @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
+            @RequestHeader(value = "X-User-UUID", required = false) String userID) {
+
+        return runningChatService.runningChat(userContentSeq, request, userID)
+                .thenApply(result -> ResponseEntity.ok(
+                        Response.<String>builder()
+                                .status(Status.OK)
+                                .message("질문 응답 성공")
+                                .data(result)
+                                .build()))
+                .exceptionally(e -> ResponseEntity.status(500).body(
+                        Response.<String>builder()
+                                .status(Status.FAIL)
+                                .message("러닝챗 오류: " + e.getMessage())
+                                .build()));
     }
 }

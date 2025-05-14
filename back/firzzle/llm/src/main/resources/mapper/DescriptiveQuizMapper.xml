@@ -2,4 +2,40 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.firzzle.llm.mapper.DescriptiveQuizMapper">
 
+    <!-- AI 서술형 시험 문제 등록 -->
+    <insert id="insertAiExam" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="examSeq">
+        INSERT INTO fb_ai_exam (
+            content_seq,
+            question_content,
+            model_answer,
+            start_time,
+            reference_script,
+            indate
+        ) VALUES (
+            #{contentSeq},
+            #{questionContent},
+            #{modelAnswer},
+            #{startTime},
+            #{referenceScript},
+            #{indate}
+        )
+    </insert>
+
+    <!-- 특정 콘텐츠에 대한 서술형 시험 문제 리스트 조회 -->
+    <select id="selectAiExamList" resultType="DataBox" parameterType="RequestBox">
+        SELECT
+            exam_seq,
+            content_seq,
+            question_content,
+            model_answer,
+            start_time,
+            reference_script,
+            indate
+        FROM
+            fb_ai_exam
+        WHERE
+            content_seq = #{contentSeq}
+        ORDER BY
+            exam_seq DESC
+    </select>
 </mapper>

@@ -33,7 +33,7 @@ public class JasyptConfig {
         ArrayList<String> decryptList = new ArrayList<>();
         encryptList.add(""); //암호화 대상 문자 추가
         //복호화 대상 문자열 추가 ENC() 괄호 내부 값으로 넣기
-        decryptList.add("xm/TDmm1PYlsben6eRKzYylTd6z4OrK4dGFl5DXeLAaLtrTdq2UZeHsNr8EeR7lg");
+        decryptList.add("W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=");
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setProvider(new BouncyCastleProvider());
         encryptor.setPoolSize(2);
