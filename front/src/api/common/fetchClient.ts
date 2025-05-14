@@ -14,6 +14,7 @@ type FetchOptions<TBody = unknown, TParams = unknown> = Omit<
   contentType?: string; // 요청 컨텐츠 타입
   params?: Params<TParams>; // URL 쿼리 파라미터
   retryCount?: number; // 재시도 횟수
+  currentPath: string;
 };
 
 export class FetchClient {
@@ -53,6 +54,10 @@ export class FetchClient {
 
     const accessToken = await getCookie('accessToken');
 
+    // 경로 타입 결정
+    const currentPath = window.location.pathname.split('content').pop() || '';
+    const pathType = determinePathType(currentPath);
+
     // 헤더 객체 생성
     const allHeaders = new Headers(
       Object.assign(
@@ -60,6 +65,7 @@ export class FetchClient {
           'Content-Type': contentType,
           Authorization: withAuth ? `Bearer ${accessToken}` : '',
         },
+        pathType ? { 'Path-Type': pathType } : {},
         headers,
       ),
     );
