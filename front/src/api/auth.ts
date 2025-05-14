@@ -11,7 +11,7 @@ export const refreshToken = async (retryCount: number) => {
 // 로그아웃
 export const logout = async () => {
   try {
-    const response = await api.post('/auth/logout');
+    const response = await api.post<undefined>('/auth/logout');
 
     if (response.status === 'OK') {
       removeCookie('accessToken');
