@@ -13,14 +13,17 @@ export const logout = async () => {
   try {
     const accessToken = (await getCookie('accessToken')).value;
 
-    const response = await fetch('/auth/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json;charset=UTF-8',
-        Authorization: `Bearer ${accessToken}`,
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/logout`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json;charset=UTF-8',
+          Authorization: `Bearer ${accessToken}`,
+        },
       },
-    });
+    );
 
     if (response.status === 200) {
       removeCookie('accessToken');
