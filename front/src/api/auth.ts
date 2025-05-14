@@ -21,6 +21,8 @@ export const logout = async () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
+        mode: 'cors',
+        credentials: 'include',
       },
     );
 
