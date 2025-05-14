@@ -6,6 +6,21 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  # S3 이미지 저장
+  cloud:
+    aws:
+      credentials:
+        access-key: ENC(MH3DsW5DO9DSw5aP/gdY/o1cjnNi7QSEAnnQl4aY5FbrcUYsJdiBlXcUknRJEIML)
+        secret-key: ENC(7VVjL2sGQ2LJyrum4kIQtV4iR4lmX0kujH9A1pk3UnEHylYousond8y8Bl0FKflNGtZW5l5IPKFslQhv257fNQ==)
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: ENC(AsfY/vDz1TICh9gXi/tN7HR+3l1/bTqe1ZiEAJrYoX0=)
+
+aws:
+  s3:
+    bucket: ENC(AsfY/vDz1TICh9gXi/tN7HR+3l1/bTqe1ZiEAJrYoX0=)
+    baseUrl: ENC(rDEAsV6F9TSsxfRew5GM+A9HMwtk/SI7M9jGfiL9v/gE2My+/qGMU9ANT8bc2mWGrBjfEbXBkk4LccGpR4GO4A==)
 
 # 애플리케이션 설정
 app:

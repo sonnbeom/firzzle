@@ -1,4 +1,4 @@
-package com.firzzle.common.s3;
+package com.firzzle.common.config;
 
 import lombok.Getter;
 import lombok.Setter;

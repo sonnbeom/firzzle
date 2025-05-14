@@ -1,4 +1,4 @@
-package com.firzzle.common.s3;
+package com.firzzle.common.library;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
