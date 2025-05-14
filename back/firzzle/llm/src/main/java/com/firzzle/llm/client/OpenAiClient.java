@@ -27,10 +27,10 @@ public class OpenAiClient {
 
     private WebClient webClient;
 
-    @Value("${spring.ai.openai.api-key}")
+    @Value("${ai.openai.api-key}")
     private String apiKey;
 
-    @Value("${spring.ai.openai.base-url}")
+    @Value("${ai.openai.base-url}")
     private void setBaseUrl(String baseUrl) {
         HttpClient httpClient = HttpClient.create()
             .resolver(DefaultAddressResolverGroup.INSTANCE); // 시스템 DNS 사용
@@ -43,13 +43,13 @@ public class OpenAiClient {
             .build();
     }
 
-    @Value("${spring.ai.openai.timeline.model}")
+    @Value("${ai.openai.timeline.model}")
     private String timelineModel;
 
-    @Value("${spring.ai.openai.summary.model}")
+    @Value("${ai.openai.summary.model}")
     private String summaryModel;
     
-    @Value("${spring.ai.openai.runningchat.model}")
+    @Value("${ai.openai.runningchat.model}")
     private String runningChatModel;
 
     @Async("llmExecutor")
