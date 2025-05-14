@@ -58,7 +58,7 @@ public class OpenAiClient {
         String model = switch (chatCompletionRequest.getModelType()) {
             case TIMELINE -> timelineModel;
             case SUMMARY -> summaryModel;
-            case RUNNINGCHAT -> learningChatModel;
+            case LEARNINGCHAT -> learningChatModel;
         };
 
         // ✅ 메시지 구성
