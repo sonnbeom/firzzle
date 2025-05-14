@@ -18,7 +18,6 @@ export const logout = async () => {
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Accept: 'application/json;charset=UTF-8',
           Authorization: `Bearer ${accessToken}`,
         },
