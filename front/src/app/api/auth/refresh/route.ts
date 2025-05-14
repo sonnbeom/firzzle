@@ -1,5 +1,4 @@
-import { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { removeCookie, setCookie } from '@/actions/auth';
 import { api } from '@/api/common/apiInstance';
 import { TokenResponse } from '@/types/auth';
