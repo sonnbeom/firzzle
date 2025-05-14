@@ -69,6 +69,15 @@ external:
     url: ENC(q9n58yBVTV0QE0ZNNxrbiNKX24FlOF70bYww3Z4Q5WGblZv9tGcJzhq5rW7TUowBfruGhsH6HZypaDjV6zNr/g==)
     key: ENC(NvfpCyz8FQxDsP3jIHJ442NqU0IA29d3TAYYdwW0o5G0JuEniYlbbIlm8UjB4fnj)
 
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
+server:
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 ---
 # local 환경
 spring:

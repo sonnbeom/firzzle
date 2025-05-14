@@ -1,7 +1,6 @@
 package com.firzzle.auth.controller;
 
 import com.firzzle.auth.dto.KakaoLoginRequestDTO;
-import com.firzzle.auth.dto.TokenRequestDTO;
 import com.firzzle.auth.dto.TokenResponseDTO;
 import com.firzzle.auth.dto.UserResponseDTO;
 import com.firzzle.auth.dto.*;
@@ -13,8 +12,6 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.logging.dto.UserActionLog;
-import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -37,7 +35,6 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -258,6 +255,7 @@ public class AuthController {
         try {
             // 쿠키에서 리프레시 토큰 추출
             String refreshToken = extractRefreshTokenFromCookie(request);
+//            if (!StringUtils.isBlank(refreshToken)) {
             if (!refreshToken.isBlank()) {
                 RequestBox box = RequestManager.getBox(request);
                 box.put("refreshToken", refreshToken);
@@ -318,6 +316,7 @@ public class AuthController {
         try {
             // 쿠키에서 리프레시 토큰 추출
             String refreshToken = extractRefreshTokenFromCookie(request);
+//            if (!StringUtils.isBlank(refreshToken)) {
             if (!refreshToken.isBlank()) {
                 RequestBox box = RequestManager.getBox(request);
                 box.put("refreshToken", refreshToken);
