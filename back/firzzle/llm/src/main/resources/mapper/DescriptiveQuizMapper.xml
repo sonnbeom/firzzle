@@ -38,5 +38,4 @@
         ORDER BY
             exam_seq DESC
     </select>
-
 </mapper>
