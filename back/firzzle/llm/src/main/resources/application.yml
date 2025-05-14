@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8080
 
 spring:
   config:
@@ -208,7 +208,7 @@ eureka:
   instance:
     preferIpAddress: true
     ip-address: ENC(5IT1nt5OqCBjYMDxZhtVLY5mBWFTmHTcFKm74jqKV54nDpETIeydg3WO0Ftt8Pkb)
-    non-secure-port: ${SERVER_PORT:8082}  # 명시적으로 포트 지정
+    non-secure-port: ${SERVER_PORT:8082}  # 명시적으로 포트 지정.
     securePortEnabled: false
     healthCheckUrl: http://ENC(5IT1nt5OqCBjYMDxZhtVLY5mBWFTmHTcFKm74jqKV54nDpETIeydg3WO0Ftt8Pkb):${SERVER_PORT:8082}/actuator/health
     homePageUrl: http://ENC(5IT1nt5OqCBjYMDxZhtVLY5mBWFTmHTcFKm74jqKV54nDpETIeydg3WO0Ftt8Pkb):${SERVER_PORT:8082}/
