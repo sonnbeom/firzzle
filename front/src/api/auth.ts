@@ -1,8 +1,6 @@
 import { getCookie, removeCookie } from '@/actions/auth';
 import { api } from './common/apiInstance';
 
-const accessToken = (await getCookie('accessToken')).value;
-
 // 토큰 갱신
 export const refreshToken = async (retryCount: number) => {
   return await api.post('/auth/refresh', {
@@ -13,6 +11,8 @@ export const refreshToken = async (retryCount: number) => {
 // 로그아웃
 export const logout = async () => {
   try {
+    const accessToken = (await getCookie('accessToken')).value;
+
     const response = await fetch('/auth/logout', {
       method: 'POST',
       headers: {
