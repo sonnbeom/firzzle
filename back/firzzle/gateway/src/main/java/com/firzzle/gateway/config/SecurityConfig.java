@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -70,6 +71,13 @@ public class SecurityConfig {
                             logger.info("HttpStatus.FORBIDDEN : {}", ex.getMessage());
                             return exchange.getResponse().setComplete();
                         })
+                )
+
+                // 로깅용
+                .headers(headers -> headers
+                        .referrerPolicy(referrerPolicy ->
+                                referrerPolicy.policy(ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.NO_REFERRER_WHEN_DOWNGRADE)
+                        )
                 )
 
                 .build();
