@@ -21,6 +21,7 @@ export const logout = async () => {
           Accept: 'application/json;charset=UTF-8',
           Authorization: `Bearer ${accessToken}`,
         },
+        credentials: 'omit',
       },
     );
 
