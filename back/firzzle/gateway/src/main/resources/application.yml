@@ -131,6 +131,15 @@ jwt:
   refresh-token-validity-seconds: 604800
   issuer: firzzle.site
 
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
+server:
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 ---
 # 로컬 환경 설정
 spring:

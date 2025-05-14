@@ -54,6 +54,15 @@ jasypt:
     bean: jasyptStringEncryptor
   secret-key: ${JASYPT_SECRET_KEY}
 
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
+server:
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 ---
 # 로컬 환경 설정
 spring:

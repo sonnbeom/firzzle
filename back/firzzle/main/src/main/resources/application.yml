@@ -1,5 +1,12 @@
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
 server:
   port: 0
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   application:
