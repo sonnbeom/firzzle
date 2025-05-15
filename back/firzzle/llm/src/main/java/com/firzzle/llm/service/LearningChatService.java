@@ -45,11 +45,9 @@ public class LearningChatService {
     @Transactional
     public CompletableFuture<LearningChatResponseDTO> learningChat(Long userContentSeq, LearningChatRequestDTO request) {
         String question = request.getQuestion();
-        logger.info("📥 [learningChat 시작] userContentSeq={}, userId={}, question={}", userContentSeq question);
+        logger.info("📥 [learningChat 시작] userContentSeq={}, userId={}, question={}", userContentSeq, question);
 
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
-
-
 
         Long contentSeq = userContent.getContentSeq();
         List<Float> vector = embeddingService.embed(question);
@@ -77,7 +75,7 @@ public class LearningChatService {
                     if (context.isEmpty()) {
                         logger.info("⚠️ [context 없음] 기본 응답 반환");
                         String defaultAnswer = "해당 내용은 영상에서 언급되지 않았어요. 다른 질문이 있으신가요? 궁금한 점을 말씀해 주시면 최대한 도와드릴게요!";
-                        insertChat(contentSeq, userSeqFromUUID, question, defaultAnswer);
+                        insertChat(contentSeq, userContent.getUserSeq(), question, defaultAnswer);
                         return CompletableFuture.completedFuture(new LearningChatResponseDTO(defaultAnswer));
                     }
 
@@ -87,7 +85,7 @@ public class LearningChatService {
 
                     return openAiClient.getChatCompletionAsync(chatRequest)
                             .thenApply(answer -> {
-                                insertChat(contentSeq, userSeqFromUUID, question, answer);
+                                insertChat(contentSeq, userContent.getUserSeq(), question, answer);
                                 return new LearningChatResponseDTO(answer);
                             });
                 })
@@ -109,17 +107,10 @@ public class LearningChatService {
      * @return 채팅 목록
      */
     @Transactional
-    public List<ChatHistoryResponseDTO> getChatsByContentAndUser(String userId, Long userContentSeq, String lastIndate, int limit) {
-        // UUID로 userSeq 조회
-        Long userSeqFromUUID = userMapper.selectUserSeqByUuid(userId);
-
+    public List<ChatHistoryResponseDTO> getChatsByContentAndUser( Long userContentSeq, String lastIndate, int limit) {
+       
         // userContentSeq로 contentSeq와 userSeq 가져옴
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
-
-        // 사용자 인증 확인
-        if (!userSeqFromUUID.equals(userContent.getUserSeq())) {
-            throw new IllegalArgumentException("사용자 인증 정보가 일치하지 않습니다.");
-        }
 
         // 채팅 목록 조회
         List<ChatDTO> chatList = chatMapper.selectChatsByCursor(
