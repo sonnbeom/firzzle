@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserPromptManager {
 
-    public String getlearningChatUserPrompt(String question, String context, String previous_) {
+    public String getlearningChatUserPrompt(String question, String context, String previous) {
         return String.format("""
             사용자 질문과 관련된 영상 문맥입니다.
 
@@ -14,7 +14,10 @@ public class UserPromptManager {
 
             [질문]
             %s
-        """, context, question);
+            
+            [이전 대화]
+            %s
+        """, context, question, previous);
     }
 
     public String getSummaryUserPrompt(String transcript) {

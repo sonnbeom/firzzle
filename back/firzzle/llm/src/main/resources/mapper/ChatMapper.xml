@@ -11,17 +11,23 @@
         )
     </insert>
 
-    <select id="selectChatsWithPagination" resultType="com.firzzle.llm.dto.ChatDTO">
-        SELECT
-            chat_seq, content_seq, user_seq, question, answer, indate
-        FROM fb_ai_chats
-        WHERE content_seq = #{contentSeq}
-          AND user_seq = #{userSeq}
-          <if test="lastChatSeq != null">
-              AND chat_seq &lt; #{lastChatSeq}
-          </if>
-        ORDER BY chat_seq DESC
-        LIMIT #{limit}
-    </select>
+	<select id="selectChatsByCursor" resultType="com.firzzle.llm.dto.ChatHistoryResponseDTO">
+	    SELECT
+	        chat_seq,
+	        question,
+	        answer,
+	        indate
+	    FROM
+	        fb_ai_chats
+	    WHERE
+	        content_seq = #{contentSeq}
+	        AND user_seq = #{userSeq}
+	        <if test="lastIndate != null">
+	            AND indate &lt; #{lastIndate}
+	        </if>
+	    ORDER BY
+	        indate DESC
+	    LIMIT #{limit}
+	</select>
 
 </mapper>
