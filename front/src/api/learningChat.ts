@@ -1,8 +1,22 @@
 import { api } from './common/apiInstance';
 
 // 학습모드 채팅 전송
-export const postLearningChat = async () => {
-  return await api.post(`/chat`);
+export const postLearningChat = async (
+  contentSeq: string,
+  question: string,
+) => {
+  const response = await fetch(`/api/llm/${contentSeq}/chat`, {
+    method: 'POST',
+    body: JSON.stringify({ question }),
+  });
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
+  return data.data;
 };
 
 // 시험모드 채팅 전송
