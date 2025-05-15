@@ -36,7 +36,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     // 개발 모드 플래그 - true로 설정하면 JWT 검증 없이 개발용 사용자 정보 사용
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     // 개발 환경에서 사용할 고정 사용자 정보
     private static final String DEV_UUID = "07f670f0-2853-11f0-aeb6-c68431894852";
@@ -192,6 +192,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     private boolean hasAccessToService(Claims claims, String servicePath) {
         // JwtTokenProvider에서 audience 리스트 가져오기
         List<String> audiences = JwtTokenProvider.getAudienceList(claims);
+        logger.info("getSize : {}, claims : {}", audiences.size(), claims);
 
         // audiences가 null이거나 비어있으면 접근 불가
         if (audiences == null || audiences.isEmpty()) {

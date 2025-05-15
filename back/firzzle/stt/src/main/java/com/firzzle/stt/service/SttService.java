@@ -1,169 +1,140 @@
 package com.firzzle.stt.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import com.firzzle.stt.kafka.producer.SttConvertedProducer;
-import com.firzzle.common.exception.BusinessException;
-import com.firzzle.common.exception.ErrorCode;
-import com.firzzle.stt.dto.ContentDTO;
-import com.firzzle.stt.util.*;
-
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.firzzle.common.exception.BusinessException;
+import com.firzzle.common.exception.ErrorCode;
+import com.firzzle.stt.dto.ContentDTO;
+import com.firzzle.stt.dto.LlmRequest;
+import com.firzzle.stt.dto.UserContentDTO;
+import com.firzzle.stt.kafka.producer.SttConvertedProducer;
+import com.firzzle.stt.mapper.UserContentMapper;
+import com.firzzle.stt.util.SubtitleUtil;
+import com.firzzle.stt.util.TimeUtil;
+
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.file.*;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class SttService {
 
-    @Autowired
-    private SttConvertedProducer sttConvertedProducer;
-
     private static final Logger logger = LoggerFactory.getLogger(SttService.class);
+    private static final boolean DEV_MODE = false;
 
     @Value("${app.file-storage.upload-dir}")
-    private String uploadDir; // 파일 업로드 디렉토리
+    private String uploadDir;
 
-    private final ContentService contentService; 
+    @Value("${external.api.url:http://localhost:8085}")
+    private String externalUrl;
 
-    /**
-     * 유튜브 URL을 기반으로 자막을 추출하고, 메타데이터를 파싱하여 DB에 저장하고,
-     * 자막 텍스트를 Kafka로 전송한다.
-     *
-     * @param url 유튜브 영상 URL
-     * @return 스크립트 텍스트
-     */
-    public String transcribeFromYoutube(String url) throws Exception {
+    @Value("${external.api.key}")
+    private String secretKey;
+
+    private final WebClient.Builder webClientBuilder;
+    private final ContentService contentService;
+    private final SttConvertedProducer sttConvertedProducer;
+    private final UserContentMapper userContentMapper; // ✅ Mapper 주입
+
+    public LlmRequest transcribeFromYoutube(Long userSeq, String url) throws Exception {
         String videoId = contentService.extractYoutubeId(url);
 
-        if (contentService.isContentExistsByVideoId(videoId)) 
-            return null;
+        return DEV_MODE
+                ? extractSubtitleViaLocalProxy(userSeq, url, videoId)
+                : extractSubtitleDirect(userSeq, url, videoId);
+    }
 
-        String UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                + "(KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36";
+    public LlmRequest extractSubtitleViaLocalProxy(Long userSeq, String url, String videoId) throws Exception {
+        WebClient webClient = webClientBuilder
+                .baseUrl(externalUrl)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("X-API-KEY", secretKey)
+                .build();
 
-        // 자막 다운로드
-        String COOKIE_PATH = "/data/firzzle/cookies.txt";
+        Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
 
-        
-        // 클라우드 환경에서 실행되는 코드 
-        ProcessBuilder scriptsExtractor = new ProcessBuilder(
-            "yt-dlp",
-            "--user-agent", UA,
-            "--cookies", COOKIE_PATH,
-            "--no-check-certificate",
-            "--referer", "https://www.youtube.com",
-            "--write-auto-sub",
-            "--sub-lang", "ko",
-            "--sub-format", "vtt",
-            "--convert-subs", "srt",
-            "--skip-download",
-            "--output", videoId + ".%(ext)s",
-            url
-        );
-        
-// 		  로컬환경에서 실행하는 코드 
-//        ProcessBuilder scriptsExtractor = new ProcessBuilder(
-//            "yt-dlp",
-//            "--no-check-certificate",
-//            "--referer", "https://www.youtube.com",
-//            "--write-auto-sub",
-//            "--sub-lang", "ko",
-//            "--sub-format", "vtt",
-//            "--convert-subs", "srt",
-//            "--skip-download",
-//            "--output", videoId + ".%(ext)s",
-//            url
-//        );
-        
-        scriptsExtractor.directory(new File(uploadDir));
-        scriptsExtractor.redirectErrorStream(true);
-        runAndPrint(scriptsExtractor);
+        Map<String, Object> response = webClient.post()
+                .uri("/api/v1/extract")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .block();
+
+        if (response == null || !response.containsKey("script")) {
+            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+        }
+
+        ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+        return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
+    }
+
+    public LlmRequest extractSubtitleDirect(Long userSeq, String url, String videoId) throws Exception {
+        runAndPrint(new ProcessBuilder(
+                "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
+                "--write-auto-sub", "--sub-lang", "ko", "--sub-format", "vtt", "--convert-subs", "srt",
+                "--skip-download", "--output", videoId + ".%(ext)s", url
+        ).directory(new File(uploadDir)).redirectErrorStream(true));
 
         String scripts = printDownloadedFiles(videoId);
         if (scripts == null) {
             throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
         }
 
-        // 메타데이터 추출
         ProcessBuilder metadataExtractor = new ProcessBuilder(
-            "yt-dlp",
-            "--user-agent", UA,
-            "--cookies", COOKIE_PATH,
-            "--no-check-certificate",
-            "--referer", "https://www.youtube.com",
-            "--skip-download",
-            "--print", "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s",
-            "--encoding", "utf-8",
-            url
-        );
-        metadataExtractor.redirectErrorStream(true);
+                "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
+                "--skip-download", "--print",
+                "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s",
+                "--encoding", "utf-8", url
+        ).redirectErrorStream(true);
 
-        Process process = metadataExtractor.start();
-        BufferedReader reader = new BufferedReader(
-            new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
-        );
-
-        List<String> lines = new ArrayList<>();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            lines.add(line);
-        }
-
-        String title = lines.size() > 0 ? lines.get(0) : "";
-        StringBuilder descBuilder = new StringBuilder();
-        for (int i = 1; i < lines.size() - 3; i++) {
-            descBuilder.append(lines.get(i)).append(" ");
-        }
-
-        String description = descBuilder.toString().trim();
-        String category = lines.size() >= 3 ? lines.get(lines.size() - 3) : "";
-        String thumbnail = lines.size() >= 2 ? lines.get(lines.size() - 2) : "";
-        String durationStr = lines.size() >= 1 ? lines.get(lines.size() - 1) : "";
-
-        ContentDTO contentDTO = new ContentDTO();
-        contentDTO.setVideoId(videoId);
-        contentDTO.setUrl(url);
-        contentDTO.setTitle(title);
-        contentDTO.setDescription(description);
-        contentDTO.setCategory(category);
-        contentDTO.setThumbnailUrl(thumbnail);
-        contentDTO.setDuration(Long.parseLong(durationStr));
-
-        return scripts;
+        List<String> lines = readProcessOutput(metadataExtractor.start());
+        ContentDTO contentDTO = parseMetadata(videoId, url, lines);
+        return processFinalResult(userSeq, contentDTO, scripts);
     }
 
-    /**
-     * 자막 파일(.srt) 읽어서 텍스트로 변환
-     *
-     * @param videoId 유튜브 영상 ID
-     * @return 변환된 스크립트 텍스트
-     */
-    public String printDownloadedFiles(String videoId) throws IOException {
-        Path workingDir = Paths.get(uploadDir);
-        Path srtPath = workingDir.resolve(videoId + ".ko.srt");
+    @Transactional
+    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script) {
+        contentService.insertContent(contentDTO);
+        saveUserContent(userSeq, contentDTO.getContentSeq());
 
+        if (script != null) {
+            sttConvertedProducer.sendSttResult(contentDTO.getContentSeq(), script);
+        } else {
+            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+        }
+        return new LlmRequest(contentDTO.getContentSeq(), script);
+    }
+
+    private void saveUserContent(Long userSeq, Long contentSeq) {
+        UserContentDTO userContentDTO = new UserContentDTO();
+        userContentDTO.setUserSeq(userSeq);
+        userContentDTO.setContentSeq(contentSeq);
+        userContentDTO.setLastAccessedAt(TimeUtil.getCurrentTimestamp14());
+        userContentDTO.setIndate(TimeUtil.getCurrentTimestamp14());
+        userContentMapper.insertUserContent(userContentDTO); // ✅ Mapper 방식
+    }
+
+    public String printDownloadedFiles(String videoId) throws IOException {
+        Path srtPath = Paths.get(uploadDir).resolve(videoId + ".ko.srt");
         if (Files.exists(srtPath)) {
-            // 텍스트 추출
             String result = SubtitleUtil.cleanSrtToText(srtPath);
-            // 파일 삭제
             try {
                 Files.deleteIfExists(srtPath);
-                logger.info("✅ 자막 파일 삭제 완료: " + srtPath);
+                logger.info("✅ 자막 파일 삭제 완료: {}", srtPath);
             } catch (IOException e) {
-                logger.warn("⚠️ 자막 파일 삭제 실패: " + srtPath, e);
+                logger.warn("⚠️ 자막 파일 삭제 실패: {}", srtPath, e);
             }
             return result;
         } else {
@@ -172,39 +143,69 @@ public class SttService {
         }
     }
 
-    /**
-     * ProcessBuilder로 실행한 외부 명령어의 출력 결과를 로깅하고 예외 처리
-     *
-     * @param pb 실행할 프로세스 빌더
-     * @throws Exception 프로세스 실행 오류
-     */
     private void runAndPrint(ProcessBuilder pb) throws Exception {
-    Process process = pb.start();
-    List<String> outputLines = new ArrayList<>();
+        Process process = pb.start();
+        List<String> outputLines = readProcessOutput(process);
 
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-        String line;
-        while ((line = reader.readLine()) != null) {
-            logger.info("[process] " + line);
-            outputLines.add(line);
+        String allOutput = String.join("\n", outputLines);
+        logger.error("📌 yt-dlp 전체 로그:\n{}", allOutput);
+
+        int exitCode = process.waitFor();
+        if (exitCode != 0) {
+            if (allOutput.contains("Unsupported URL") || allOutput.contains("HTTP Error 404")) {
+                throw new BusinessException(ErrorCode.INVALID_YOUTUBE_URL);
+            } else if (allOutput.contains("No subtitles") || allOutput.contains("There are no subtitles")) {
+                throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+            } else {
+                throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
+            }
         }
     }
 
-    int exitCode = process.waitFor();
-    String allOutput = String.join("\n", outputLines);
-    logger.error("📌 yt-dlp 전체 로그:\n{}", allOutput); // ✅ 로그 전체 출력
-
-    if (exitCode != 0) {
-        if (allOutput.contains("ERROR: Unsupported URL") || allOutput.contains("HTTP Error 404")) {
-            throw new BusinessException(ErrorCode.INVALID_YOUTUBE_URL);
+    private List<String> readProcessOutput(Process process) throws IOException {
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                logger.info("[process] {}", line);
+                lines.add(line);
+            }
         }
+        return lines;
+    }
 
-        if (allOutput.contains("No subtitles") || allOutput.contains("There are no subtitles")) {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+    private ContentDTO mapToContentDTO(String videoId, String url, Map<String, Object> response) {
+        ContentDTO contentDTO = new ContentDTO();
+        contentDTO.setVideoId(videoId);
+        contentDTO.setUrl(url);
+        contentDTO.setTitle((String) response.getOrDefault("title", ""));
+        contentDTO.setDescription((String) response.getOrDefault("description", ""));
+        contentDTO.setCategory((String) response.getOrDefault("category", ""));
+        contentDTO.setThumbnailUrl((String) response.getOrDefault("thumbnail", ""));
+
+        Object durationObj = response.get("duration");
+        if (durationObj instanceof Number) {
+            contentDTO.setDuration(((Number) durationObj).longValue());
+        } else if (durationObj instanceof String) {
+            contentDTO.setDuration(Long.parseLong((String) durationObj));
         }
+        return contentDTO;
+    }
 
-        throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
+    private ContentDTO parseMetadata(String videoId, String url, List<String> lines) {
+        String title = lines.size() > 0 ? lines.get(0) : "";
+        StringBuilder descBuilder = new StringBuilder();
+        for (int i = 1; i < lines.size() - 3; i++) descBuilder.append(lines.get(i)).append(" ");
+
+        ContentDTO contentDTO = new ContentDTO();
+        contentDTO.setVideoId(videoId);
+        contentDTO.setUrl(url);
+        contentDTO.setTitle(title);
+        contentDTO.setDescription(descBuilder.toString().trim());
+        contentDTO.setCategory(lines.size() >= 3 ? lines.get(lines.size() - 3) : "");
+        contentDTO.setThumbnailUrl(lines.size() >= 2 ? lines.get(lines.size() - 2) : "");
+        contentDTO.setDuration(Long.parseLong(lines.size() >= 1 ? lines.get(lines.size() - 1) : "0"));
+        return contentDTO;
     }
 }
-}
-

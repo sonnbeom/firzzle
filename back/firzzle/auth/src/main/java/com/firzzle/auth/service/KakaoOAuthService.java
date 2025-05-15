@@ -41,21 +41,6 @@ public class KakaoOAuthService {
     private final OAuthRedirectService oAuthRedirectService;
 
     /**
-     * 사용자 역할에 따른 기본 범위 설정
-     * 개인 별로 지정 가능
-     */
-    public List<String> getDefaultScopes(String role) {
-        // 기존 코드 유지
-        if ("admin".equalsIgnoreCase(role)) {
-            return List.of("content:read", "content:write", "user:read", "user:write", "admin:read", "admin:write");
-        } else if ("business".equalsIgnoreCase(role)) {
-            return List.of("content:read", "content:write", "user:read", "user:write");
-        } else {
-            return List.of("content:read", "content:write", "user:read", "user:write");
-        }
-    }
-
-    /**
      * 인증 코드로 카카오 액세스 토큰 요청
      * 고정 URI
      */
@@ -107,7 +92,7 @@ public class KakaoOAuthService {
             params.add("grant_type", "authorization_code");
             params.add("client_id", kakaoOAuthConfig.getRegistration().getKakao().getClientId());
 //            params.add("client_secret", kakaoOAuthConfig.getRegistration().getKakao().getClientSecret());
-            params.add("redirect_uri", "https://firzzle.site/api/v1/auth/kakao/callback"); // 백엔드 URI 설정
+            params.add("redirect_uri", "https://firzzle.site/service/api/v1/auth/kakao/callback"); // 백엔드 URI 설정
             params.add("code", code);
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);

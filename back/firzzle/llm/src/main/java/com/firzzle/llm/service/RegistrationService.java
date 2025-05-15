@@ -3,10 +3,11 @@ package com.firzzle.llm.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firzzle.llm.client.*;
+import com.firzzle.llm.domain.ContentBlock;
+import com.firzzle.llm.domain.ModelType;
+import com.firzzle.llm.domain.TimeLine;
 import com.firzzle.llm.dto.*;
 import com.firzzle.llm.prompt.*;
-import com.firzzle.llm.repository.TestRepository;
-import com.firzzle.llm.entity.*;
 import com.firzzle.llm.util.*;
 
 import lombok.RequiredArgsConstructor;
@@ -30,21 +31,18 @@ import java.util.stream.Collectors;
 public class RegistrationService {
 
     private final OpenAiClient openAiClient;
-    private final QdrantClient qdrantClient;
-    private final SummaryPrompt summaryPrompt;
-    private final RunnigChatPrompt runningChatPrompt;
     private final EmbeddingService embeddingService;
     private final OxQuizService oxQuizService;
     private final RagService ragService;
     private final SummaryService summaryService;
     private final DescriptiveQuiz descriptiveQuiz;
-    private final TestRepository testRepository;
+    private final PromptFactory promptFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
     
     // 전체 자막 콘텐츠를 요약하는 비동기 함수
     @Async
-    public CompletableFuture<String> summarizeContents(LlmRequest request) {
+    public CompletableFuture<String> summarizeContents(LlmRequestDTO request) {
         String content = request.getScript();
         List<String> scriptLines = Arrays.asList(content.split("\n"));
 
@@ -67,9 +65,9 @@ public class RegistrationService {
     // 전체 자막 텍스트에서 주요 대주제를 추출하는 함수
     @Async
     private CompletableFuture<List<TimeLine>> extractTimeLine(String content) {
-        String instruction = summaryPrompt.createInstruction();
+    	ChatCompletionRequestDTO timelinePrompt = promptFactory.createTimelineyRequest(content);
     
-        return openAiClient.getChatCompletionAsync(instruction, content, ModelType.TIMELINE)
+        return openAiClient.getChatCompletionAsync(timelinePrompt)
                 .thenApply(response -> {
                     try {
                         ObjectMapper mapper = new ObjectMapper();
@@ -97,11 +95,11 @@ public class RegistrationService {
                 continue;
             }
 
-            String prompt = summaryPrompt.createInstruction2();
+            ChatCompletionRequestDTO summaryPrompt = promptFactory.createSummaryRequest(rawText);
 
             // ✅ JSON 응답을 List<ContentBlock>으로 파싱
             CompletableFuture<List<ContentBlock>> future = openAiClient
-                .getChatCompletionAsync(prompt, rawText, ModelType.SUMMARY)
+                .getChatCompletionAsync(summaryPrompt)
                 .thenApplyAsync(JsonParser::parseToContentBlockList); // 타입 명시 생략 가능
 
             futures.add(future);
@@ -202,8 +200,6 @@ public class RegistrationService {
             failed.completeExceptionally(e);
             return failed;
         }
-        
-        
     }
     
     private String getNextBlockTime(List<ContentBlock> blocks, ContentBlock current) {

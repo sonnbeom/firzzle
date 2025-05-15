@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -72,12 +73,19 @@ public class SecurityConfig {
                         })
                 )
 
+                // 로깅용
+                .headers(headers -> headers
+                        .referrerPolicy(referrerPolicy ->
+                                referrerPolicy.policy(ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.NO_REFERRER_WHEN_DOWNGRADE)
+                        )
+                )
+
                 .build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        // 최소한의 설정만 포함하고 나머지는 application.yml에 위임
+        // 최소한의 설정만 포함하고 나머지는 application.yml에 위임.
         CorsConfiguration configuration = new CorsConfiguration();
 
         // CORS를 위한 기본 설정만 유지, 세부사항은 application.yml에서 관리

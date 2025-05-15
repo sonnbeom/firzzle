@@ -17,14 +17,6 @@ spring:
 #   working:
 #     dir: ${WHISPER_WORKING_DIR}
 
-playwright:
-  # Playwright 브라우저 옵션 (headless 여부 등)
-  chromium:
-#    headless: true
-    args:
-      - "--no-sandbox"
-      - "--disable-setuid-sandbox"
-
 # Swagger 설정
 springdoc:
   api-docs:
@@ -71,6 +63,21 @@ decorator:
 
 logging:
   config: classpath:logback/logback-local.xml
+
+external:
+  api:
+    url: ENC(q9n58yBVTV0QE0ZNNxrbiNKX24FlOF70bYww3Z4Q5WGblZv9tGcJzhq5rW7TUowBfruGhsH6HZypaDjV6zNr/g==)
+    key: ENC(NvfpCyz8FQxDsP3jIHJ442NqU0IA29d3TAYYdwW0o5G0JuEniYlbbIlm8UjB4fnj)
+
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
+server:
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 ---
 # local 환경
 spring:
@@ -103,13 +110,6 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
-  youtube:
-  # Playwright 로그인에 사용할 환경변수
-    credentials:
-      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
-      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
-    # 쿠키 파일 경로
-    cookies-path: ${app.file-storage.upload-dir}/cookies.txt
 
 server:
   port: 8080
@@ -153,13 +153,6 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
-  youtube:
-  # Playwright 로그인에 사용할 환경변수
-    credentials:
-      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
-      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
-    # 쿠키 파일 경로
-    cookies-path: ${app.file-storage.upload-dir}/cookies.txt
 
 server:
   port: 8080
@@ -172,12 +165,6 @@ eureka:
       defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
-yt-dlp:
-  # yt-dlp 호출 시 기본적으로 추가할 옵션
-  default-opts:
-    - "--cookies=${app.youtube.cookies-path}"
-    - "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36"
-
 
 decorator:
   datasource:
@@ -218,19 +205,6 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
-  youtube:
-  # Playwright 로그인에 사용할 환경변수
-    credentials:
-      id: ENC(uGKU452ctw0f4SQUyLOnTjsfJQJaQM4JXq1tfD6o4ET6CqtRfiI9Ru5JQ0Q0F6YR)
-      pw: ENC(APWaHsL5qls7dPNLnOJtYfyhKinS4PX8XJFndtTenTk=)
-    # 쿠키 파일 경로
-    cookies-path: ${app.file-storage.upload-dir}/cookies.txt
-
-yt-dlp:
-  # yt-dlp 호출 시 기본적으로 추가할 옵션
-  default-opts:
-    - "--cookies=${app.youtube.cookies-path}"
-    - "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36"
 
 server:
   port: 8080

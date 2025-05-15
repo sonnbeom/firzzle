@@ -21,7 +21,7 @@ public class OAuthRedirectService {
 
     private final HttpServletRequest request;
 
-    @Value("${oauth2.client-local-url:http://localhost:3000}")
+    @Value("${oauth2.client-local-url:https://localhost:3000}")
     private String clientLocalUrl;
 
     @Value("${oauth2.client-api-url:https://firzzle.site}")

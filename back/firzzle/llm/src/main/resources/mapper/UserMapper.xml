@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firzzle.llm.mapper.UserMapper">
+    <!-- UserMapper.xml -->
+    <select id="selectUserSeqByUuid" parameterType="string" resultType="long">
+        SELECT user_seq
+        FROM fb_ai_users
+        WHERE uuid = #{uuid}
+        AND delete_yn = 'N'
+    </select>
+
+</mapper>

@@ -137,28 +137,144 @@ public class JwtTokenProvider {
         Set<String> result = new HashSet<>();
         Object audObj = claims.get("aud");
 
+        // 디버깅: 객체 타입 확인
+        logger.info("Audience object type: {}", (audObj != null ? audObj.getClass().getName() : "null"));
+
         if (audObj == null) {
             return result;
         }
 
+        // 문자열인 경우
         if (audObj instanceof String) {
             result.add((String) audObj);
-        } else if (audObj instanceof List) {
-            for (Object item : (List<?>) audObj) {
+        }
+        // 컬렉션 타입인 경우 (ArrayList, LinkedList 등의 부모 클래스)
+        else if (audObj instanceof Collection) {
+            for (Object item : (Collection<?>) audObj) {
                 if (item instanceof String) {
                     result.add((String) item);
+                } else {
+                    // 타입이 String이 아닌 경우 toString()을 시도
+                    result.add(String.valueOf(item));
                 }
             }
         }
+        // 배열인 경우
+        else if (audObj.getClass().isArray()) {
+            Object[] array = (Object[]) audObj;
+            for (Object item : array) {
+                if (item instanceof String) {
+                    result.add((String) item);
+                } else {
+                    // 타입이 String이 아닌 경우 toString()을 시도
+                    result.add(String.valueOf(item));
+                }
+            }
+        }
+        // 기타 단일 객체인 경우 toString으로 추가
+        else {
+            result.add(String.valueOf(audObj));
+        }
+
+        // 디버깅: 결과 확인
+        logger.info("Extracted audience set: {}", result);
 
         return result;
+    }
+
+    /**
+     * 사용자 역할에 따른 기본 권한 범위 설정
+     * @param role 사용자 역할
+     * @return 권한 범위 목록
+     */
+    public List<String> getDefaultScopes(String role) {
+        if ("admin".equalsIgnoreCase(role)) {
+            return List.of(
+                    // 기본 권한
+                    "content:read", "content:write",
+                    "user:read", "user:write",
+                    "admin:read", "admin:write",
+
+                    // Auth 서비스 권한
+                    "auth:read", "auth:write", "auth:admin",
+
+                    // Learning 서비스 권한
+                    "learning:read", "learning:write", "learning:admin",
+                    "learning:create", "learning:delete", "learning:update",
+
+                    // Main 서비스 권한
+                    "main:read", "main:write", "main:admin",
+                    "main:create", "main:delete", "main:update",
+
+                    // LLM 서비스 권한
+                    "llm:read", "llm:write", "llm:admin",
+                    "llm:create", "llm:generate", "llm:configure",
+
+                    // Admin 서비스 권한
+                    "admin:users", "admin:reports", "admin:configuration",
+                    "admin:system", "admin:billing", "admin:analytics",
+
+                    // STT 서비스 권한
+                    "stt:read", "stt:write", "stt:admin",
+                    "stt:transcribe", "stt:configure"
+            );
+        } else if ("business".equalsIgnoreCase(role)) {
+            return List.of(
+                    // 기본 권한
+                    "content:read", "content:write",
+                    "user:read", "user:write",
+
+                    // Auth 서비스 권한
+                    "auth:read",
+
+                    // Learning 서비스 권한
+                    "learning:read", "learning:write",
+                    "learning:create", "learning:update",
+
+                    // Main 서비스 권한
+                    "main:read", "main:write",
+                    "main:create", "main:update",
+
+                    // LLM 서비스 권한
+                    "llm:read", "llm:write",
+                    "llm:generate", "llm:configure",
+
+                    // STT 서비스 권한
+                    "stt:read", "stt:transcribe"
+            );
+        } else {
+            return List.of(
+                    // 기본 권한
+                    "content:read", "content:write",
+                    "user:read",
+
+                    // Auth 서비스 권한
+                    "auth:read",
+
+                    // Learning 서비스 권한
+                    "learning:read",
+                    "learning:create",
+
+                    // Main 서비스 권한
+                    "main:read",
+
+                    // LLM 서비스 권한
+                    "llm:read",
+                    "llm:generate",
+
+                    // STT 서비스 권한
+                    "stt:read", "stt:transcribe"
+            );
+        }
     }
 
     /**
      * Claims에서 대상 서비스(audience) 정보를 List로 변환하여 추출
      */
     public static List<String> getAudienceList(Claims claims) {
-        return new ArrayList<>(getAudienceSet(claims));
+        List<String> result = new ArrayList<>(getAudienceSet(claims));
+        logger.info("Audience list size: {}", result.size());
+        return result;
     }
 
     /**
