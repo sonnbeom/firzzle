@@ -8,5 +8,4 @@ export type SendLearningChatRequest = {
 // 학습모드 채팅 전송 응답
 export type SendLearningChatResponse = {
   answer: string;
-  referenceTime: number;
 };

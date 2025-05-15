@@ -24,12 +24,10 @@ const LearningChatContent = ({ contentId }: LearningChatContentProps) => {
         />
         {currentMode === '시험모드' && <NewChatButton />}
       </div>
-
-      {/* 채팅 내역 필드 */}
+      w{/* 채팅 내역 필드 */}
       <div className='flex-1 overflow-y-auto'>
         <ChatHistory currentMode={currentMode} />
       </div>
-
       {/* 채팅 입력 필드 */}
       <ChatTextAreaField mode={currentMode} contentId={contentId} />
     </div>
