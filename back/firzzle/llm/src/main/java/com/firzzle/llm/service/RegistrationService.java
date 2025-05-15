@@ -42,7 +42,7 @@ public class RegistrationService {
     
     // 전체 자막 콘텐츠를 요약하는 비동기 함수
     @Async
-    public CompletableFuture<String> summarizeContents(LlmRequest request) {
+    public CompletableFuture<String> summarizeContents(LlmRequestDTO request) {
         String content = request.getScript();
         List<String> scriptLines = Arrays.asList(content.split("\n"));
 
@@ -65,7 +65,7 @@ public class RegistrationService {
     // 전체 자막 텍스트에서 주요 대주제를 추출하는 함수
     @Async
     private CompletableFuture<List<TimeLine>> extractTimeLine(String content) {
-    	ChatCompletionRequest timelinePrompt = promptFactory.createTimelineyRequest(content);
+    	ChatCompletionRequestDTO timelinePrompt = promptFactory.createTimelineyRequest(content);
     
         return openAiClient.getChatCompletionAsync(timelinePrompt)
                 .thenApply(response -> {
@@ -95,7 +95,7 @@ public class RegistrationService {
                 continue;
             }
 
-            ChatCompletionRequest summaryPrompt = promptFactory.createSummaryRequest(rawText);
+            ChatCompletionRequestDTO summaryPrompt = promptFactory.createSummaryRequest(rawText);
 
             // ✅ JSON 응답을 List<ContentBlock>으로 파싱
             CompletableFuture<List<ContentBlock>> future = openAiClient
