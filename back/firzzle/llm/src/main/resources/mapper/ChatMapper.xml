@@ -11,7 +11,7 @@
         )
     </insert>
 
-	<select id="selectChatsByCursor" resultType="com.firzzle.llm.dto.ChatHistoryResponseDTO">
+	<select id="selectChatsByCursor" resultType="com.firzzle.llm.dto.ChatDTO">
 	    SELECT
 	        chat_seq,
 	        question,
@@ -28,6 +28,20 @@
 	    ORDER BY
 	        indate DESC
 	    LIMIT #{limit}
+	</select>
+	
+	<select id="selectRandomUnsolvedExam" resultType="com.firzzle.llm.dto.ExamDTO">
+	    SELECT *
+	    FROM fb_ai_exams e
+	    WHERE e.content_seq = #{contentSeq}
+	      AND NOT EXISTS (
+	          SELECT 1
+	          FROM fb_ai_exams_answer a
+	          WHERE a.exam_seq = e.exam_seq
+	            AND a.user_seq = #{userSeq}
+	      )
+	    ORDER BY RAND()
+	    LIMIT 1
 	</select>
 
 </mapper>

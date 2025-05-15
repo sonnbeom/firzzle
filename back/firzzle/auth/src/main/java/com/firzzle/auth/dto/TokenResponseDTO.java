@@ -22,5 +22,5 @@ public class TokenResponseDTO {
     private String refreshToken;
     private long expiresIn;
     private String tokenType;
-    private LocalDateTime issuedAt;
+    private String issuedAt;
 }

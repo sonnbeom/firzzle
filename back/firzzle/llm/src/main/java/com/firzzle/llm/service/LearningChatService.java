@@ -1,5 +1,6 @@
 package com.firzzle.llm.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -42,24 +43,21 @@ public class LearningChatService {
     // RAG 기반 실시간 대화 응답 생성 및 DB 저장
     @Async
     @Transactional
-    public CompletableFuture<LearningChatResponseDTO> learningChat(Long userContentSeq, LearningChatRequestDTO request, String userId) {
+    public CompletableFuture<LearningChatResponseDTO> learningChat(Long userContentSeq, LearningChatRequestDTO request) {
         String question = request.getQuestion();
-        logger.info("📥 [learningChat 시작] userContentSeq={}, userId={}, question={}", userContentSeq, userId, question);
+        logger.info("📥 [learningChat 시작] userContentSeq={}, userId={}, question={}", userContentSeq question);
 
-        Long userSeqFromUUID = userMapper.selectUserSeqByUuid(userId);
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
 
-        if (!userSeqFromUUID.equals(userContent.getUserSeq())) {
-            throw new IllegalArgumentException("사용자 인증 정보가 일치하지 않습니다.");
-        }
+
 
         Long contentSeq = userContent.getContentSeq();
         List<Float> vector = embeddingService.embed(question);
 
         // ✅ 이전 응답 2개 불러오기
-        List<ChatHistoryResponseDTO> previousChats = chatMapper.selectChatsByCursor(
+        List<ChatDTO> previousChats = chatMapper.selectChatsByCursor(
             contentSeq,
-            userSeqFromUUID,
+            userContent.getUserSeq(),
             null, // 최신순으로부터
             2
         );
@@ -123,13 +121,27 @@ public class LearningChatService {
             throw new IllegalArgumentException("사용자 인증 정보가 일치하지 않습니다.");
         }
 
-        // lastIndate가 null이면 최신부터 조회 (XML에서 처리됨)
-        return chatMapper.selectChatsByCursor(
+        // 채팅 목록 조회
+        List<ChatDTO> chatList = chatMapper.selectChatsByCursor(
                 userContent.getContentSeq(),
                 userContent.getUserSeq(),
-                lastIndate, // null이면 XML에서 조건 생략됨
+                lastIndate,
                 limit
         );
+
+        // ChatDTO를 ChatHistoryResponseDTO로 분리 (question, answer 각각 하나의 응답)
+        return chatList.stream()
+                .flatMap(chat -> {
+                    List<ChatHistoryResponseDTO> items = new ArrayList<>();
+                    if (chat.getQuestion() != null) {
+                        items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getQuestion(), chat.getIndate(), 0));
+                    }
+                    if (chat.getAnswer() != null) {
+                        items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getAnswer(), chat.getIndate(), 1));
+                    }
+                    return items.stream();
+                })
+                .collect(Collectors.toList());
     }
 
     private void insertChat(Long contentSeq, Long userSeq, String question, String answer) {
@@ -141,4 +153,5 @@ public class LearningChatService {
         chat.setIndate(TimeUtil.getCurrentTimestamp14());
         chatMapper.insertChat(chat);
     }
+
 }

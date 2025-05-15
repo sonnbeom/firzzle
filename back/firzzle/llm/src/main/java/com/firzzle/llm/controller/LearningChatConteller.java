@@ -95,5 +95,20 @@ public class LearningChatConteller {
                 .data(messages)
                 .build());
     }
+    
+//    @GetMapping("/exam/{contentSeq}/next")
+//    public ResponseEntity<Response<ExamDTO>> getNextExam(
+//            @RequestHeader("X-User-UUID") String userUUID,
+//            @PathVariable Long contentSeq
+//    ) {
+//        Long userSeq = userMapper.selectUserSeqByUuid(userUUID);
+//        ExamDTO nextExam = learningChatService.getRandomUnsolvedExam(userSeq, contentSeq);
+//
+//        return ResponseEntity.ok(Response.<ExamDTO>builder()
+//                .status(Status.OK)
+//                .message("랜덤 문제 조회 성공")
+//                .data(nextExam)
+//                .build());
+//    }
 
 }
