@@ -350,7 +350,7 @@ public class AuthController {
         // 루트 경로의 쿠키 삭제
         ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")               // 루트 경로
                 .maxAge(0)               // 즉시 만료
                 .sameSite("None")
@@ -445,11 +445,11 @@ public class AuthController {
 
         // HTTP-Only 쿠키 생성
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-                .httpOnly(true)          // JavaScript에서 접근 불가능
-                .secure(false)            // HTTPS 전송만 허용
-                .path("/")               // 모든 경로에서 사용 가능
-                .maxAge(cookieMaxAge)    // 쿠키 유효 기간
-                .sameSite("None")        // 크로스 사이트 요청 설정
+                .httpOnly(true)                 // JavaScript에서 접근 불가능
+                .secure(true)                   // HTTPS 전송만 허용
+                .path("/service/api/v1/auth")   // auth 경로에서 사용 가능
+                .maxAge(cookieMaxAge)           // 쿠키 유효 기간
+                .sameSite("None")               // 크로스 사이트 요청 설정
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
