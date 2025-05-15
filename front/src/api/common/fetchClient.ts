@@ -79,9 +79,6 @@ export class FetchClient {
     }
 
     try {
-      const cookieHeader = allHeaders.get('cookie');
-      console.log('cookieHeader: ', cookieHeader);
-
       // fetch 요청 응답
       const response = await fetch(apiUrl, {
         ...restOptions,
@@ -101,10 +98,6 @@ export class FetchClient {
         throw new Error(response.statusText);
       }
 
-      if (!response.ok) {
-        throw new Error('오류가 발생했습니다. 다시 시도해주세요.');
-      }
-
       // 204 No Content 응답 처리
       if (response.status === 204) {
         return {
@@ -120,6 +113,10 @@ export class FetchClient {
       // 응답 데이터 파싱
       const responseData = await response.json();
 
+      if (!response.ok) {
+        throw new Error(responseData.message);
+      }
+
       const dataResponse = responseData as ApiResponseWithData<TResponse>;
 
       // 응답 데이터의 status가 FAIL인 경우 예외처리
@@ -129,6 +126,8 @@ export class FetchClient {
 
       return dataResponse;
     } catch (error) {
+      console.log('error: ', retryCount);
+
       // 재시도
       if (retryCount < this.MAX_RETRIES) {
         await new Promise((resolve) =>
