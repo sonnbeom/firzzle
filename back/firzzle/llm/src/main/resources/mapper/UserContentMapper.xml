@@ -1,9 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.firzzle.llm.mapper.UserContentMapper">
-    <select id="selectContentSeqByUserContentSeq" resultType="int">
-        SELECT content_seq
-        FROM fb_ai_user_contents
-        WHERE user_content_seq = #{userContentSeq}
-    </select>
+        <!-- 등록 -->
+    <insert id="insertUserContent" parameterType="com.firzzle.llm.dto.UserContentDTO" useGeneratedKeys="true" keyProperty="userContentSeq">
+        INSERT INTO fb_ai_user_contents (
+            user_seq,
+            content_seq,
+            progress,
+            last_accessed_at,
+            indate
+        ) VALUES (
+            #{userSeq},
+            #{contentSeq},
+            #{progress},
+            #{lastAccessedAt},
+            #{indate}
+        )
+    </insert>
+
+	<!-- user_content_seq로 content_seq 조회 -->
+	<select id="selectContentSeqByUserContentSeq" parameterType="java.lang.Long" resultType="java.lang.Long">
+	    SELECT
+	        content_seq
+	    FROM fb_ai_user_contents
+	    WHERE user_content_seq = #{userContentSeq}
+	</select>
+	
+	<!-- user_content_seq로 user_seq 조회 -->
+	<select id="selectUserSeqByUserContentSeq" parameterType="java.lang.Long" resultType="java.lang.Long">
+	    SELECT
+	        user_seq
+	    FROM fb_ai_user_contents
+	    WHERE user_content_seq = #{userContentSeq}
+	</select>
+	
+	<!-- user_content_seq로 user_seq와 content_seq 한 번에 조회 -->
+	<select id="selectUserAndContentByUserContentSeq" parameterType="long" resultType="com.firzzle.llm.dto.UserContentDTO">
+	    SELECT
+	        user_seq,
+	        content_seq
+	    FROM fb_ai_user_contents
+	    WHERE user_content_seq = #{userContentSeq}
+	</select>
 </mapper>

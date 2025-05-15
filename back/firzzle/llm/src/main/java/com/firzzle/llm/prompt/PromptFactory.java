@@ -3,7 +3,7 @@ package com.firzzle.llm.prompt;
 import org.springframework.stereotype.Component;
 
 import com.firzzle.llm.domain.ModelType;
-import com.firzzle.llm.dto.ChatCompletionRequest;
+import com.firzzle.llm.dto.ChatCompletionRequestDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,8 +14,8 @@ public class PromptFactory {
 	 private final SystemPromptManager systemPromptManager;
 
 	 
-	 public ChatCompletionRequest createLearningChatRequest(String question, String context) {
-        return ChatCompletionRequest.builder()
+	 public ChatCompletionRequestDTO createLearningChatRequest(String question, String context) {
+        return ChatCompletionRequestDTO.builder()
                 .systemMessage(systemPromptManager.getLearningChatSystemPrompt())
                 .userPrompt(userPromptManager.getlearningChatUserPrompt(question, context, ""))
                 .modelType(ModelType.LEARNINGCHAT)
@@ -25,8 +25,8 @@ public class PromptFactory {
                 .build();
      }
 
-     public ChatCompletionRequest createSummaryRequest(String transcript) {
-         return ChatCompletionRequest.builder()
+     public ChatCompletionRequestDTO createSummaryRequest(String transcript) {
+         return ChatCompletionRequestDTO.builder()
                 .systemMessage(systemPromptManager.getSummarySystemPrompt())
                 .userPrompt(transcript)
                 .modelType(ModelType.SUMMARY)
@@ -36,8 +36,8 @@ public class PromptFactory {
                 .build();
 	 }
      
-     public ChatCompletionRequest createTimelineyRequest(String transcript) {
-         return ChatCompletionRequest.builder()
+     public ChatCompletionRequestDTO createTimelineyRequest(String transcript) {
+         return ChatCompletionRequestDTO.builder()
                 .systemMessage(systemPromptManager.getTimelineSystemPrompt())
                 .userPrompt(transcript)
                 .modelType(ModelType.TIMELINE)

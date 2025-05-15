@@ -42,6 +42,7 @@ public class LoggingFilter implements GlobalFilter, Ordered {
         if (DEV_MODE) {
             // 개발 모드일 때만 더 상세한 정보 로깅
             logger.info("요청 헤더: {}", request.getHeaders());
+            logger.info("쿠키: {}", request.getCookies());  // 쿠키 로깅 추가
             logger.info("쿼리 파라미터: {}", request.getQueryParams());
         }
 
@@ -64,6 +65,7 @@ public class LoggingFilter implements GlobalFilter, Ordered {
             if (DEV_MODE) {
                 // 개발 모드일 때만 더 상세한 정보 로깅
                 logger.info("응답 헤더: {}", exchange.getResponse().getHeaders());
+                logger.info("응답 쿠키: {}", exchange.getResponse().getCookies());  // 응답 쿠키 로깅 추가
             }
         }));
     }

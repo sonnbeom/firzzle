@@ -1,7 +1,7 @@
 package com.firzzle.llm.kafka.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.firzzle.llm.dto.LlmRequest;
+import com.firzzle.llm.dto.LlmRequestDTO;
 import com.firzzle.llm.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
 
@@ -23,9 +23,9 @@ public class SttConvertedConsumer {
 
         try {
             // ✅ JSON 문자열 → LlmRequest 객체로 역직렬화
-            LlmRequest requestObj = objectMapper.readValue(message, LlmRequest.class);
+            LlmRequestDTO requestObj = objectMapper.readValue(message, LlmRequestDTO.class);
 
-            LlmRequest request = new LlmRequest();
+            LlmRequestDTO request = new LlmRequestDTO();
             request.setContentSeq(requestObj.getContentSeq());
             request.setScript(requestObj.getScript()); // 🎯 스크립트만 추출
 

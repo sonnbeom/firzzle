@@ -2,9 +2,10 @@ package com.firzzle.auth.service;
 
 import com.firzzle.auth.dao.TokenDAO;
 import com.firzzle.auth.dao.UserDAO;
-import com.firzzle.auth.dto.TokenResponseDTO;
+import com.firzzle.common.constant.CubeOneItem;
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
+import com.firzzle.common.library.AESUtil;
 import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
@@ -19,8 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -208,6 +207,61 @@ public class AuthService {
     }
 
     /**
+     * 관리자 로그인 처리
+     */
+    @Transactional
+    public DataBox adminLogin(RequestBox box) {
+        try {
+            String username = box.getString("username");
+            String password = box.getString("password");
+
+            // 1. 사용자명으로 사용자 조회
+            RequestBox usernameBox = new RequestBox("requestbox");
+            usernameBox.put("username", username);
+            DataBox userDataBox = userDAO.selectUserByUsername(usernameBox);
+
+            // 2. 사용자가 존재하지 않는 경우
+            if (userDataBox == null) {
+                throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "잘못된 사용자명 또는 비밀번호입니다.");
+            }
+
+            // 3. 비밀번호 검증
+            String encryptedPassword = AESUtil.encrypt(password, CubeOneItem.PWD);
+            String storedPassword = userDataBox.getString("d_password");
+            logger.info("encryptedPassword: {}, storedPassword: {}", encryptedPassword, storedPassword);
+            if (!storedPassword.equals(encryptedPassword)) {
+                throw new BusinessException(ErrorCode.INVALID_CREDENTIALS, "잘못된 사용자명 또는 비밀번호입니다.");
+            }
+
+            // 4. 관리자 권한 확인
+            String role = userDataBox.getString("d_role");
+            if (!"admin".equals(role)) {
+                throw new BusinessException(ErrorCode.ACCESS_DENIED, "관리자 권한이 없습니다.");
+            }
+
+            // 5. 계정 활성화 여부 확인
+            String activeYn = userDataBox.getString("d_active_yn");
+            if (!"Y".equals(activeYn)) {
+                throw new BusinessException(ErrorCode.ACCOUNT_DISABLED, "계정이 비활성화되었습니다.");
+            }
+
+            // 6. 마지막 로그인 시간 업데이트
+            String uuid = userDataBox.getString("d_uuid");
+            updateLastLoginTime(userDataBox);
+
+            // 7. 권한 범위 설정 및 JWT 토큰 발급
+            List<String> scopes = jwtTokenProvider.getDefaultScopes(role);
+            return createTokenPair(uuid, role, scopes);
+
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("관리자 로그인 처리 중 오류: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "관리자 로그인 처리 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
      * 사용자 처리 및 토큰 생성
      */
     private DataBox processUserAndCreateToken(RequestBox kakaoUserInfo) {
@@ -234,7 +288,7 @@ public class AuthService {
             String role = userDataBox.getString("d_role");
 
             // 권한 범위 설정
-            List<String> scopes = kakaoOAuthService.getDefaultScopes(role);
+            List<String> scopes = jwtTokenProvider.getDefaultScopes(role);
 
             // JWT 토큰 발급
             return createTokenPair(uuid, role, scopes);

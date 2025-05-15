@@ -50,7 +50,7 @@ public class RagService {
         // Qdrant 검색 요청 구성
         Map<String, Object> request = Map.of(
             "vector", vector,
-            "limit", 10,  // 넉넉하게 검색하고
+            "limit", 20,  // 넉넉하게 검색하고
             "with_payload", true,
             "filter", Map.of(
                 "must", List.of(
@@ -66,7 +66,7 @@ public class RagService {
                     Double sb = ((Number) b.get("score")).doubleValue();
                     return -Double.compare(sa, sb); // 내림차순 정렬
                 })
-                .limit(3)
+                .limit(5)
                 .map(result -> {
                     Map<String, Object> payload = (Map<String, Object>) result.get("payload");
                     return payload != null ? payload.getOrDefault("content", "").toString() : "";
@@ -75,8 +75,5 @@ public class RagService {
                 .collect(Collectors.toList())
             );
     }
-    
-    
-    
-    
+
 }
