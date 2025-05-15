@@ -54,7 +54,7 @@ const StrategyBoardPage = () => {
     setSelectedOption(value);
   }, []);
 
-  // 💡 날짜, 옵션 변경 시 데이터 불러오기
+  // 날짜, 옵션 변경 시 데이터 불러오기
   useEffect(() => {
     if (!isLoading && formattedStart && formattedEnd) {
       fetchData(formattedStart, formattedEnd);

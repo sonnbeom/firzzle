@@ -41,7 +41,7 @@ const DateRangeSelector = ({
   const handleConfirm = () => {
     setDateRange(tempRange);
     setIsOpen(false);
-    // 💡 확정 시점에만 onChange 호출
+    // 확정 시점에만 onChange 호출
     onChange?.({
       ...tempRange,
       formattedStart: formatToLocalDate(tempRange.startDate),
@@ -49,11 +49,13 @@ const DateRangeSelector = ({
     });
   };
 
+  // 취소시 현재 dateRange로 되돌림
   const handleCancel = () => {
     setTempRange(dateRange);
     setIsOpen(false);
   };
 
+  // 달력 열 때 현재 dateRange로 초기화
   const toggleCalendar = () => {
     if (!isOpen) setTempRange(dateRange);
     setIsOpen(!isOpen);
