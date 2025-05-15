@@ -45,6 +45,8 @@ public enum ErrorCode {
     EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "MSG_0000070106", "외부 API 호출 중 오류가 발생했습니다"),
     NOT_SUPPORTED_OAUTH(HttpStatus.BAD_REQUEST, "MSG_0000070107", "지원되지 않는 OAuth 제공자입니다"),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "MSG_0000070108", "유효하지 않은 토큰입니다"),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "MSG_0000070109", "잘못된 사용자명 또는 비밀번호입니다"),
+    ACCOUNT_DISABLED(HttpStatus.FORBIDDEN, "MSG_0000070110", "계정이 비활성화되었습니다"),
 
     // =========== JWT ===========
     JWT_EXPIRED(HttpStatus.UNAUTHORIZED, "MSG_0000070201", "토큰이 만료되었습니다"),
@@ -100,7 +102,22 @@ public enum ErrorCode {
     AI_MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000071108", "요청한 AI 모델을 찾을 수 없습니다"),
     AI_PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000071109", "요청한 프롬프트를 찾을 수 없습니다"),
     AI_REQUEST_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "MSG_0000071110", "너무 많은 AI 요청이 발생했습니다"),
-    AI_RESPONSE_PARSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000071111", "AI 응답 파싱에 실패했습니다");
+    AI_RESPONSE_PARSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000071111", "AI 응답 파싱에 실패했습니다"),
+
+    // AI 모듈 아래에 S3 모듈을 추가합니다 (71201부터 시작)
+// =========== S3 Module ===========
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000071201", "S3 업로드에 실패했습니다"),
+    S3_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000071202", "S3 파일 삭제에 실패했습니다"),
+    S3_DOWNLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000071203", "S3 파일 다운로드에 실패했습니다"),
+    S3_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000071204", "S3 파일을 찾을 수 없습니다"),
+    S3_INVALID_FILE(HttpStatus.BAD_REQUEST, "MSG_0000071205", "유효하지 않은 파일입니다"),
+    S3_ACCESS_DENIED(HttpStatus.FORBIDDEN, "MSG_0000071206", "S3 리소스에 대한 접근이 거부되었습니다"),
+    S3_BUCKET_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000071207", "S3 버킷을 찾을 수 없습니다"),
+    S3_CLIENT_NOT_INITIALIZED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000071208", "S3 클라이언트가 초기화되지 않았습니다"),
+    S3_INVALID_PRESIGNED_URL(HttpStatus.BAD_REQUEST, "MSG_0000071209", "유효하지 않은 사전 서명 URL입니다"),
+    S3_FILE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "MSG_0000071210", "파일 크기가 너무 큽니다"),
+    S3_INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "MSG_0000071211", "지원하지 않는 파일 타입입니다"),
+    S3_CONFIG_MISSING(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000071212", "S3 설정 정보가 누락되었습니다");
 
     private final HttpStatus status;
     private final String messageKey;

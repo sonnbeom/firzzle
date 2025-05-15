@@ -12,7 +12,7 @@ spring:
         - id: auth-public-v1
           uri: lb://auth-server
           predicates:
-            - Path=/api/v1/auth/login/**, /api/v1/auth/refresh, /api/v1/auth/kakao/callback, /api/v1/auth/public/**, /api/v1/auth/logout
+            - Path=/api/v1/auth/login/**, /api/v1/auth/refresh, /api/v1/auth/kakao/callback, /api/v1/auth/public/**, /api/v1/auth/logout, /api/v1/auth/admin/login
           filters:
             - RewritePath=/api/v1/auth/(?<segment>.*), /api/v1/${segment}
 
@@ -22,10 +22,10 @@ spring:
           predicates:
             - Path=/api/v1/auth/**
           filters:
-            - RewritePath=/api/v1/auth/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: true
+            - RewritePath=/api/v1/auth/(?<segment>.*), /api/v1/${segment}
 
         # v2 인증 서비스
         - id: auth-service-v2
@@ -33,10 +33,10 @@ spring:
           predicates:
             - Path=/api/v2/auth/**
           filters:
-            - RewritePath=/api/v2/auth/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: true
+            - RewritePath=/api/v2/auth/(?<segment>.*), /api/v2/${segment}
 
         # Learning 서비스 - JWT 필터 적용
         - id: learning-service-v1
@@ -44,20 +44,20 @@ spring:
           predicates:
             - Path=/api/v1/learning/**
           filters:
-            - RewritePath=/api/v1/learning/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: false # true # 개발용으로 false 처리
+            - RewritePath=/api/v1/learning/(?<segment>.*), /api/v1/${segment}
 
         - id: learning-service-v2
           uri: lb://learning-server
           predicates:
             - Path=/api/v2/learning/**
           filters:
-            - RewritePath=/api/v2/learning/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: true
+            - RewritePath=/api/v2/learning/(?<segment>.*), /api/v2/${segment}
 
         # Main 서비스 - JWT 필터 적용
         - id: main-service-v1
@@ -65,20 +65,20 @@ spring:
           predicates:
             - Path=/api/v1/main/**
           filters:
-            - RewritePath=/api/v1/main/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: true
+            - RewritePath=/api/v1/main/(?<segment>.*), /api/v1/${segment}
 
         - id: main-service-v2
           uri: lb://main-server
           predicates:
             - Path=/api/v2/main/**
           filters:
-            - RewritePath=/api/v2/main/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: true
+            - RewritePath=/api/v2/main/(?<segment>.*), /api/v2/${segment}
 
         # llm 서비스 - JWT 필터 적용
         - id: llm-service-v1
@@ -86,20 +86,20 @@ spring:
           predicates:
             - Path=/api/v1/llm/**
           filters:
-            - RewritePath=/api/v1/llm/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: false
+            - RewritePath=/api/v1/llm/(?<segment>.*), /api/v1/${segment}
 
         - id: llm-service-v2
           uri: lb://llm-server
           predicates:
             - Path=/api/v2/llm/**
           filters:
-            - RewritePath=/api/v2/llm/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: true
+            - RewritePath=/api/v2/llm/(?<segment>.*), /api/v2/${segment}
 
         # Admin 서비스 - JWT 필터 적용 (추가 역할 검증 필요)
         - id: admin-service-v1
@@ -107,22 +107,22 @@ spring:
           predicates:
             - Path=/api/v1/admin/**
           filters:
-            - RewritePath=/api/v1/admin/(?<segment>.*), /api/v1/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: false
                 adminOnly: false  # Admin 역할만 접근 가능
+            - RewritePath=/api/v1/admin/(?<segment>.*), /api/v1/${segment}
 
         - id: admin-service-v2
           uri: lb://admin-server
           predicates:
             - Path=/api/v2/admin/**
           filters:
-            - RewritePath=/api/v2/admin/(?<segment>.*), /api/v2/${segment}
             - name: JwtAuthFilter
               args:
                 enabled: false
                 adminOnly: false  # Admin 역할만 접근 가능
+            - RewritePath=/api/v2/admin/(?<segment>.*), /api/v2/${segment}
 
 # JWT 설정
 jwt:
@@ -130,6 +130,15 @@ jwt:
   access-token-validity-seconds: 3600
   refresh-token-validity-seconds: 604800
   issuer: firzzle.site
+
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
+server:
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 ---
 # 로컬 환경 설정
