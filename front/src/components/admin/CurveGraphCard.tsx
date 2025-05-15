@@ -11,11 +11,12 @@ import {
   Tooltip,
   Legend,
   Filler,
+  type LegendItem,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
-import BasicBadge from '@/components/common/BasicBadge';
 import BasicPopOver from '@/components/common/BasicPopOver';
+import { CurveGraphCardProps } from '@/types/chart';
 
 ChartJS.register(
   CategoryScale,
@@ -28,41 +29,12 @@ ChartJS.register(
   Filler,
 );
 
-interface DataPoint {
-  x: string; // x축 날짜
-  y: number; // y축 값
-}
-
-interface DataSet {
-  label: string;
-  data: DataPoint[];
-}
-
-interface CurveGraphCardProps {
-  title?: string;
-  description?: string;
-  tags?: {
-    text: string;
-    color: string;
-  }[];
-  dataSets: DataSet[];
-  startDate: Date;
-  endDate: Date;
-  mode?: {
-    text: string;
-    color: string;
-  };
-}
-
 const CurveGraphCard = ({
   title,
   description,
-  tags,
   dataSets,
-  startDate,
-  endDate,
-  mode,
 }: CurveGraphCardProps) => {
+  // 색 지정
   const predefinedColors = [
     '#4A90E2', // 하늘색
     '#50C878', // 에메랄드
@@ -110,15 +82,16 @@ const CurveGraphCard = ({
         position: 'bottom' as const,
         align: 'center' as const,
         labels: {
-          boxWidth: 8,
-          boxHeight: 8,
+          boxWidth: 10,
+          boxHeight: 10,
           usePointStyle: true,
           pointStyle: 'circle',
-          padding: 15,
-          itemSpacing: 30,
+          padding: 20,
+          itemSpacing: 60,
           font: {
             size: 14,
           },
+          filter: (legendItem: LegendItem) => legendItem.text !== '',
         },
       },
     },
@@ -146,13 +119,10 @@ const CurveGraphCard = ({
   };
 
   return (
-    <div className='h-[300px] w-full rounded-lg bg-white p-4 shadow-sm lg:rounded-2xl lg:p-6'>
-      {(title || tags?.length || mode || description) && (
+    <div className='h-[250px] w-full rounded-lg bg-white p-4 shadow-sm lg:rounded-2xl lg:p-6'>
+      {(title || description) && (
         <div className='mb-3 flex flex-wrap items-center justify-between gap-2 lg:mb-4'>
           <div className='flex flex-wrap items-center gap-2'>
-            {tags?.map((tag, index) => (
-              <BasicBadge key={index} text={tag.text} color={tag.color} />
-            ))}
             {title && <span className='text-base font-medium'>{title}</span>}
             {description && (
               <BasicPopOver
