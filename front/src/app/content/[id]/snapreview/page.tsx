@@ -11,9 +11,7 @@ interface PageProps {
 const SnapReviewPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
-  async function getSnapReviewData(
-    id: string,
-  ): Promise<SnapReview | null> {
+  async function getSnapReviewData(id: string): Promise<SnapReview | null> {
     try {
       const response = await getContentSnapReview(Number(id));
       return response.data;
@@ -33,10 +31,7 @@ const SnapReviewPage = async ({ params }: PageProps) => {
     <div className='relative min-h-screen w-full px-2 md:px-4'>
       <div className='space-y-6'>
         <div className='space-y-10 pb-20'>
-          <ReviewCard
-            contentId={id}
-            reviews={snapData.frames || []}
-          />
+          <ReviewCard contentId={id} reviews={snapData.frames || []} />
         </div>
       </div>
     </div>

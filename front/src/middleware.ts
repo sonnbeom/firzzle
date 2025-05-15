@@ -1,7 +1,17 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  const cookieHeader = request.headers.get('cookie');
+  // 전체 쿠키 헤더 로깅
+  console.log('전체 쿠키 헤더:', cookieHeader);
+
+  // 개별 쿠키 값들 로깅
+  const cookies = request.cookies;
+  console.log('쿠키 목록:');
+  cookies.getAll().forEach((cookie) => {
+    console.log(`- ${cookie.name}: ${cookie.value}`);
+  });
+
   const accessToken = request.cookies.get('accessToken')?.value;
 
   const { pathname } = request.nextUrl;

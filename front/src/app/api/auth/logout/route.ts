@@ -5,7 +5,14 @@ import { api } from '@/api/common/apiInstance';
 // 로그아웃
 export async function POST(request: NextRequest) {
   try {
-    const response = await api.post('/auth/logout');
+    const cookieHeader = request.headers.get('cookie');
+    console.log(cookieHeader);
+
+    const response = await api.post('/auth/logout', {
+      headers: {
+        Cookie: cookieHeader,
+      },
+    });
 
     if (response.status === 'OK') {
       removeCookie('accessToken');

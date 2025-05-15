@@ -4,7 +4,7 @@ import Icons from './Icons';
 interface TabButtonProps {
   title: string;
   isActive: boolean;
-  route: string;
+  route?: string;
   iconId?: 'snapbook' | 'content';
   className?: string;
 }

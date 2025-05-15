@@ -1,6 +1,5 @@
 import { getCookie } from '@/actions/auth';
 import { ApiResponseWithData, ApiResponseWithoutData } from '@/types/common';
-import { determinePathType } from '@/utils/determinePathType';
 
 type Params<T = unknown> = {
   [K in keyof T]?: string | number | boolean | null | undefined;
@@ -20,7 +19,7 @@ type FetchOptions<TBody = unknown, TParams = unknown> = Omit<
 
 export class FetchClient {
   private baseUrl: string;
-  private readonly MAX_RETRIES = 1;
+  private readonly MAX_RETRIES = 2;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -55,13 +54,6 @@ export class FetchClient {
 
     const accessToken = await getCookie('accessToken');
 
-    // Referer 헤더에서 경로 추출 및 타입 결정
-    const currentPath = headers?.['Referer'] || headers?.['referer'];
-    let pathType = null;
-    if (currentPath) {
-      pathType = determinePathType(currentPath);
-    }
-
     // 헤더 객체 생성
     const allHeaders = new Headers(
       Object.assign(
@@ -69,7 +61,6 @@ export class FetchClient {
           'Content-Type': contentType,
           Authorization: withAuth ? `Bearer ${accessToken}` : '',
         },
-        pathType ? { 'Path-Type': pathType } : {},
         headers,
       ),
     );
@@ -93,7 +84,14 @@ export class FetchClient {
         ...restOptions,
         headers: allHeaders,
         body: body ? JSON.stringify(body) : undefined,
+        credentials: 'include',
       });
+
+      const setCookie = response.headers.get('set-cookie');
+
+      if (setCookie) {
+        console.log(setCookie);
+      }
 
       // 401 에러 처리
       if (response.status === 401) {

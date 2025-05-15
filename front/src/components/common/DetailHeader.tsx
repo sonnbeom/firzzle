@@ -1,10 +1,20 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useIsActiveTab } from '@/hooks/useIsActiveTab';
+import { determinePathType } from '@/utils/determinePathType';
 import TabButton from './TabButton';
 
-const TabHeader = () => {
+const DetailHeader = () => {
   const { contentSeq, isActive } = useIsActiveTab();
+  const pathname = usePathname();
+  const [pathType, setPathType] = useState('');
+
+  useEffect(() => {
+    setPathType(determinePathType(pathname));
+    console.log('pathType', pathType);
+  }, [pathname]);
 
   return (
     <div className='flex w-full justify-around gap-4 overflow-x-auto pb-1 lg:overflow-x-hidden lg:pb-0'>
@@ -38,4 +48,4 @@ const TabHeader = () => {
   );
 };
 
-export default TabHeader;
+export default DetailHeader;
