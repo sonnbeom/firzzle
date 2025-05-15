@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  type LegendItem,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 
@@ -90,6 +91,7 @@ const CurveGraphCard = ({
           font: {
             size: 14,
           },
+          filter: (legendItem: LegendItem) => legendItem.text !== '',
         },
       },
     },

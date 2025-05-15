@@ -61,7 +61,7 @@ const TopCharts = ({
   functionChangeData,
 }: TopChartsProps) => {
   return (
-    <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+    <div className='flex flex-col gap-6'>
       {loginRateData && (
         <CurveGraphCard
           title='로그인 완료율'

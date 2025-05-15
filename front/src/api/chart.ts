@@ -1,20 +1,17 @@
-import { TransitionsResponse } from '@/types/chart';
-import { api } from './common/apiInstance';
-
 // 기간별 기능 전환율 조회
 export const getFunctionChangeRate = async (
   startDate: string,
   endDate: string,
 ) => {
-  const { data } = await api.get<TransitionsResponse>(
-    `/admin/strategy/transitions`,
-    {
-      params: {
-        startDate,
-        endDate,
-      },
-    },
+  const response = await fetch(
+    `/api/admin?endpoint=transitions&startDate=${startDate}&endDate=${endDate}`,
   );
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
 
@@ -23,29 +20,29 @@ export const getEducateChangeRate = async (
   startDate: string,
   endDate: string,
 ) => {
-  const { data } = await api.get<TransitionsResponse>(
-    `/admin/strategy/learning-rate`,
-    {
-      params: {
-        startDate,
-        endDate,
-      },
-    },
+  const response = await fetch(
+    `/api/admin?endpoint=learning-rate&startDate=${startDate}&endDate=${endDate}`,
   );
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
 
 // 방문자 대비 로그인 전환률 조회
 export const getLoginUserRate = async (startDate: string, endDate: string) => {
-  const { data } = await api.get<TransitionsResponse>(
-    `/admin/strategy/login-rate`,
-    {
-      params: {
-        startDate,
-        endDate,
-      },
-    },
+  const response = await fetch(
+    `/api/admin?endpoint=login-rate&startDate=${startDate}&endDate=${endDate}`,
   );
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
 
@@ -54,15 +51,15 @@ export const getSummaryLevelRate = async (
   startDate: string,
   endDate: string,
 ) => {
-  const { data } = await api.get<TransitionsResponse>(
-    `/admin/learning/summary-level`,
-    {
-      params: {
-        startDate,
-        endDate,
-      },
-    },
+  const response = await fetch(
+    `/api/admin?endpoint=summary-level&startDate=${startDate}&endDate=${endDate}`,
   );
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
 
@@ -71,14 +68,14 @@ export const getLikeSnapReviewRate = async (
   startDate: string,
   endDate: string,
 ) => {
-  const { data } = await api.get<TransitionsResponse>(
-    `/admin/learning/snap-review`,
-    {
-      params: {
-        startDate,
-        endDate,
-      },
-    },
+  const response = await fetch(
+    `/api/admin?endpoint=snap-review&startDate=${startDate}&endDate=${endDate}`,
   );
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
