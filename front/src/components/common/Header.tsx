@@ -1,8 +1,18 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import HeaderButton from './HeaderButton';
 
 const Header = () => {
+  const pathname = usePathname();
+
+  // share 페이지에서는 Header를 숨김
+  if (pathname?.startsWith('/share/')) {
+    return null;
+  }
+
   return (
     <div className='flex w-full items-center justify-between border-b border-gray-300 px-6 py-4 lg:py-5'>
       <Link
