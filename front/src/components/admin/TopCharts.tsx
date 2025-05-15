@@ -33,21 +33,21 @@ const getEducationData = (data: TransitionsResponse): DataSet[] => [
 
 const getFunctionChangeData = (data: TransitionsResponse): DataSet[] => [
   {
-    label: 'SUMMARY=>QUIZ',
+    label: 'SUMMARY > QUIZ',
     data: data.map(({ date, transitions }) => ({
       x: date,
       y: transitions['SUMMARY=>QUIZ_READ'] || 0,
     })),
   },
   {
-    label: 'QUIZ=>SNAP_REVIEW',
+    label: 'QUIZ > SNAP_REVIEW',
     data: data.map(({ date, transitions }) => ({
       x: date,
       y: transitions['QUIZ_READ=>SNAP_REVIEW_READ'] || 0,
     })),
   },
   {
-    label: 'SNAP_REVIEW=>RECOMMEND',
+    label: 'SNAP_REVIEW > RECOMMEND',
     data: data.map(({ date, transitions }) => ({
       x: date,
       y: transitions['SNAP_REVIEW_READ=>RECOMMEND'] || 0,

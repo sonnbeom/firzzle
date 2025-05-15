@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import BottomChart from '@/components/admin/BottomChart';
 import DateRangeSelector from '@/components/admin/DateRangeSelector';
 import TopCharts from '@/components/admin/TopCharts';
@@ -8,10 +8,18 @@ import useStrategyData from '@/hooks/useStrategyData';
 import { DateRangeData } from '@/types/chart';
 
 const StrategyBoardPage = () => {
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
-  const [formattedStart, setFormattedStart] = useState<string>('');
-  const [formattedEnd, setFormattedEnd] = useState<string>('');
+  const today = new Date();
+  const weekAgo = new Date(today);
+  weekAgo.setDate(today.getDate() - 7);
+
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+  const [startDate, setStartDate] = useState<Date>(weekAgo);
+  const [endDate, setEndDate] = useState<Date>(today);
+  const [formattedStart, setFormattedStart] = useState<string>(
+    formatDate(weekAgo),
+  );
+  const [formattedEnd, setFormattedEnd] = useState<string>(formatDate(today));
   const [selectedOption, setSelectedOption] = useState<string>('요약노트');
 
   const {
@@ -22,31 +30,42 @@ const StrategyBoardPage = () => {
       selectedChartData,
     },
     actions: { fetchData, fetchSelectedData },
+    isLoading,
   } = useStrategyData();
 
-  // 날짜 변경 핸들러
-  const handleDateChange = async ({
-    startDate: newStart,
-    endDate: newEnd,
-    formattedStart,
-    formattedEnd,
-  }: DateRangeData) => {
-    setStartDate(newStart);
-    setEndDate(newEnd);
-    setFormattedStart(formattedStart);
-    setFormattedEnd(formattedEnd);
+  const handleDateChange = useCallback(
+    async ({
+      startDate: newStart,
+      endDate: newEnd,
+      formattedStart,
+      formattedEnd,
+    }: DateRangeData) => {
+      if (isLoading) return;
 
-    await fetchData(formattedStart, formattedEnd);
-    await fetchSelectedData(selectedOption, formattedStart, formattedEnd);
-  };
+      setStartDate(newStart);
+      setEndDate(newEnd);
+      setFormattedStart(formattedStart);
+      setFormattedEnd(formattedEnd);
+    },
+    [isLoading],
+  );
 
-  // 드롭다운 선택 핸들러
-  const handleOptionChange = async (value: string) => {
+  const handleOptionChange = useCallback((value: string) => {
     setSelectedOption(value);
-    if (formattedStart && formattedEnd) {
-      await fetchSelectedData(value, formattedStart, formattedEnd);
+  }, []);
+
+  // 💡 날짜, 옵션 변경 시 데이터 불러오기
+  useEffect(() => {
+    if (!isLoading && formattedStart && formattedEnd) {
+      fetchData(formattedStart, formattedEnd);
     }
-  };
+  }, [formattedStart, formattedEnd]);
+
+  useEffect(() => {
+    if (!isLoading && formattedStart && formattedEnd && selectedOption) {
+      fetchSelectedData(selectedOption, formattedStart, formattedEnd);
+    }
+  }, [selectedOption, formattedStart, formattedEnd]);
 
   return (
     <div className='flex flex-col gap-6 p-6'>

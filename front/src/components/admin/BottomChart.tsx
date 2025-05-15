@@ -12,14 +12,14 @@ interface BottomChartProps {
 
 const getSummaryNoteData = (data: TransitionsResponse): DataSet[] => [
   {
-    label: '',
+    label: 'DIFFICULT',
     data: data.map(({ date, transitions }) => ({
       x: date,
       y: transitions.DIFFICULT || 0,
     })),
   },
   {
-    label: '',
+    label: 'EASY',
     data: data.map(({ date, transitions }) => ({
       x: date,
       y: transitions.EASY || 0,
@@ -32,7 +32,7 @@ const getSnapReviewData = (data: TransitionsResponse): DataSet[] => [
     label: '',
     data: data.map(({ date, transitions }) => ({
       x: date,
-      y: transitions.START_LEARNING
+      y: transitions.START_LEARNING && transitions.SNAP_REVIEW_INPUT
         ? (transitions.SNAP_REVIEW_INPUT / transitions.START_LEARNING) * 100
         : 0,
     })),

@@ -22,47 +22,40 @@ const DateRangeSelector = ({
   const [tempRange, setTempRange] = useState(dateRange);
 
   useEffect(() => {
-    // 초기값이 변경되면 dateRange도 업데이트
     setDateRange({
       startDate: initialStartDate || new Date(),
       endDate: initialEndDate || new Date(),
     });
   }, [initialStartDate, initialEndDate]);
 
-  useEffect(() => {
-    // dateRange가 변경될 때마다 onChange 호출
-    onChange?.({
-      ...dateRange,
-      formattedStart: formatToLocalDate(dateRange.startDate),
-      formattedEnd: formatToLocalDate(dateRange.endDate),
-    });
-  }, [dateRange, onChange]);
-
   const handleSelect = (ranges: RangeKeyDict) => {
     const selection = ranges.selection as Range;
     if (selection.startDate && selection.endDate) {
-      const newRange = {
+      setTempRange({
         startDate: selection.startDate,
         endDate: selection.endDate,
-      };
-      setTempRange(newRange);
+      });
     }
   };
 
   const handleConfirm = () => {
     setDateRange(tempRange);
     setIsOpen(false);
+    // 💡 확정 시점에만 onChange 호출
+    onChange?.({
+      ...tempRange,
+      formattedStart: formatToLocalDate(tempRange.startDate),
+      formattedEnd: formatToLocalDate(tempRange.endDate),
+    });
   };
 
   const handleCancel = () => {
-    setTempRange(dateRange); // 취소시 현재 dateRange로 되돌림
+    setTempRange(dateRange);
     setIsOpen(false);
   };
 
   const toggleCalendar = () => {
-    if (!isOpen) {
-      setTempRange(dateRange); // 달력 열 때 현재 dateRange로 초기화
-    }
+    if (!isOpen) setTempRange(dateRange);
     setIsOpen(!isOpen);
   };
 

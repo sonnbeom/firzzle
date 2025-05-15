@@ -9,6 +9,8 @@ import {
 import { TransitionsResponse } from '@/types/chart';
 
 const useStrategyData = () => {
+  const [isMainLoading, setIsMainLoading] = useState(false);
+  const [isSelectedLoading, setIsSelectedLoading] = useState(false);
   const [loginRateData, setLoginRateData] =
     useState<TransitionsResponse | null>(null);
   const [educationStartData, setEducationStartData] =
@@ -19,18 +21,28 @@ const useStrategyData = () => {
     useState<TransitionsResponse | null>(null);
 
   const fetchData = async (formattedStart: string, formattedEnd: string) => {
+    if (isMainLoading) return;
+    setIsMainLoading(true);
     try {
-      const [loginRate, educationStart, functionChange] = await Promise.all([
-        getLoginUserRate(formattedStart, formattedEnd),
-        getEducateChangeRate(formattedStart, formattedEnd),
-        getFunctionChangeRate(formattedStart, formattedEnd),
-      ]);
+      // API 호출을 순차적으로 처리하여 서버 부하 감소
+      const loginRate = await getLoginUserRate(formattedStart, formattedEnd);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const educationStart = await getEducateChangeRate(formattedStart, formattedEnd);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const functionChange = await getFunctionChangeRate(formattedStart, formattedEnd);
 
       setLoginRateData(loginRate);
       setEducationStartData(educationStart);
       setFunctionChangeData(functionChange);
     } catch (error) {
       console.error('데이터 불러오기 실패:', error);
+      setLoginRateData(null);
+      setEducationStartData(null);
+      setFunctionChangeData(null);
+    } finally {
+      setIsMainLoading(false);
     }
   };
 
@@ -39,7 +51,10 @@ const useStrategyData = () => {
     formattedStart: string,
     formattedEnd: string,
   ) => {
+    if (isSelectedLoading) return;
+    setIsSelectedLoading(true);
     try {
+      await new Promise(resolve => setTimeout(resolve, 200));
       const data =
         option === '요약노트'
           ? await getSummaryLevelRate(formattedStart, formattedEnd)
@@ -47,20 +62,16 @@ const useStrategyData = () => {
       setSelectedChartData(data);
     } catch (error) {
       console.error('선택 차트 데이터 불러오기 실패:', error);
+      setSelectedChartData(null);
+    } finally {
+      setIsSelectedLoading(false);
     }
   };
 
-  return {
-    data: {
-      loginRateData,
-      educationStartData,
-      functionChangeData,
-      selectedChartData,
-    },
-    actions: {
-      fetchData,
-      fetchSelectedData,
-    },
+  return { 
+    data: { loginRateData, educationStartData, functionChangeData, selectedChartData }, 
+    actions: { fetchData, fetchSelectedData },
+    isLoading: isMainLoading || isSelectedLoading
   };
 };
 

@@ -82,12 +82,12 @@ const CurveGraphCard = ({
         position: 'bottom' as const,
         align: 'center' as const,
         labels: {
-          boxWidth: 8,
-          boxHeight: 8,
+          boxWidth: 10,
+          boxHeight: 10,
           usePointStyle: true,
           pointStyle: 'circle',
-          padding: 15,
-          itemSpacing: 30,
+          padding: 20,
+          itemSpacing: 60,
           font: {
             size: 14,
           },
@@ -119,7 +119,7 @@ const CurveGraphCard = ({
   };
 
   return (
-    <div className='h-[300px] w-full rounded-lg bg-white p-4 shadow-sm lg:rounded-2xl lg:p-6'>
+    <div className='h-[250px] w-full rounded-lg bg-white p-4 shadow-sm lg:rounded-2xl lg:p-6'>
       {(title || description) && (
         <div className='mb-3 flex flex-wrap items-center justify-between gap-2 lg:mb-4'>
           <div className='flex flex-wrap items-center gap-2'>
