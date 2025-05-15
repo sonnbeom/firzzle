@@ -5,6 +5,7 @@ import com.firzzle.llm.mapper.OxQuizMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class OxQuizService {
      * @param contentSeq 해당 콘텐츠 번호
      * @param oxQuizList 저장할 OX 퀴즈 리스트
      */
+    @Transactional
     public void saveOxQuizzes(Long contentSeq, List<OxQuizDTO> oxQuizList) {
         if (oxQuizList == null || oxQuizList.isEmpty()) return;
 
