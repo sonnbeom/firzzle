@@ -15,7 +15,7 @@ export interface ExpertListResponse extends InfiniteScrollResponse<Expert> {
   originTags?: string;
 }
 
-// 전문가 데이터 타입입
+// 전문가 데이터 타입
 export interface Expert {
   expertSeq: number;
   name: string;
