@@ -1,3 +1,5 @@
+import BasicToaster from '@/components/common/BasicToaster';
+
 // 로그아웃
 export const logout = async () => {
   const response = await fetch('/api/auth/logout', {
@@ -8,10 +10,9 @@ export const logout = async () => {
   const data = await response.json();
 
   if (response.status !== 200) {
-    throw new Error(data.message);
+    BasicToaster.error(data.message, { id: 'logout', duration: 2000 });
+  } else {
+    BasicToaster.default(data.message, { id: 'logout', duration: 2000 });
+    window.location.href = '/';
   }
-
-  window.location.href = '/';
-
-  return data.message;
 };
