@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.firzzle.llm.client.OpenAiClient;
 import com.firzzle.llm.dto.ChatCompletionRequest;
@@ -29,6 +30,7 @@ public class learningChatService {
 	
 	 // RAG 기반 실시간 대화 응답 생성 (최근 대화 맥락 없이 context만 활용)
     @Async
+    @Transactional
     public CompletableFuture<String> learningChat(Long contentSeq, learningChatRequestDTO request, String userId) {
         String question = request.getQuestion();
         logger.info("📥 [learningChat 시작] contentSeq={}, userId={}, question={}", contentSeq, userId, question);
