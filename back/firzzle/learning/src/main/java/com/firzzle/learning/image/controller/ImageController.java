@@ -69,18 +69,26 @@ public class ImageController {
             @Parameter(description = "업로드할 이미지 파일", required = true)
             @RequestParam("file") MultipartFile file,
 
-            @Parameter(description = "이미지 업로드 정보")
-            @Valid @ModelAttribute ImageUploadDTO uploadDTO,
+            @Parameter(description = "이미지 카테고리")
+            @RequestParam(value = "category", required = false) String category,
+
+            @Parameter(description = "이미지 설명")
+            @RequestParam(value = "description", required = false) String description,
+
+            @Parameter(description = "이미지 공개 여부")
+            @RequestParam(value = "isPublic", required = false) Boolean isPublic,
 
             HttpServletRequest request) {
 
-        logger.info("이미지 업로드 요청 - 파일명: {}, 카테고리: {}", file.getOriginalFilename(), uploadDTO.getCategory());
+        logger.info("이미지 업로드 요청 - 파일명: {}, 카테고리: {}", file.getOriginalFilename(), category);
 
         try {
             RequestBox box = RequestManager.getBox(request);
-            box.put("category", uploadDTO.getCategory());
-            box.put("description", uploadDTO.getDescription());
-            box.put("isPublic", uploadDTO.getIsPublic() != null ? uploadDTO.getIsPublic() : true);
+            box.put("category", category != null ? category : "");
+            box.put("description", description != null ? description : "");
+            box.put("isPublic", isPublic != null ? isPublic : true);
+
+            logger.info("box.getString(category): {}, box.getString(description): {}, box.getBoolean(isPublic): {})", box.getString("category"), box.getString("description"), box.getBoolean("isPublic"));
 
             DataBox dataBox = imageService.uploadImage(file, box);
             ImageResponseDTO imageResponseDTO = convertToImageResponseDTO(dataBox);

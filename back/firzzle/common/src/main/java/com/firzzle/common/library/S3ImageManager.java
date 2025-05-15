@@ -223,9 +223,9 @@ public class S3ImageManager {
                     .contentType(getContentType(extension));
 
             // 공개 접근 설정
-            if (isPublic) {
-                requestBuilder.acl(ObjectCannedACL.PUBLIC_READ);
-            }
+//            if (isPublic) {
+//                requestBuilder.acl(ObjectCannedACL.PUBLIC_READ);
+//            }
 
             PutObjectRequest request = requestBuilder.build();
 
