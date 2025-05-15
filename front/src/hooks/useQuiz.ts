@@ -56,7 +56,7 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
   const isAlreadySubmitted = useMemo(() => {
     if (!quizData?.submission) return false;
     // submission이 있고 모든 문제에 userAnswer가 있는지 확인
-    return quizData.content.questions.every(q => q.userAnswer !== undefined);
+    return quizData.content.questions.every((q) => q.userAnswer !== undefined);
   }, [quizData]);
 
   // 초기 선택 상태 설정
@@ -74,12 +74,6 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
     setShowAnswer(isAlreadySubmitted);
   }, [isAlreadySubmitted]);
 
-  console.log('Answer State:', {
-    showAnswer,
-    isAlreadySubmitted,
-    hasSubmission: quizData?.submission !== null,
-    userAnswers: quizData?.content.questions.map(q => q.userAnswer)
-  });
   const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(
     isAlreadySubmitted && quizData?.submission
       ? {
