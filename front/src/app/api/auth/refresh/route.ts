@@ -10,6 +10,9 @@ export async function POST(request: NextRequest) {
 
     const response = await api.post<TokenResponse>('/auth/refresh', {
       retryCount: retryCount,
+      headers: {
+        Cookie: request.headers.get('cookie'),
+      },
     });
 
     if (response.status === 'OK') {

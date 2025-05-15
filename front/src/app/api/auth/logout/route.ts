@@ -5,12 +5,9 @@ import { api } from '@/api/common/apiInstance';
 // 로그아웃
 export async function POST(request: NextRequest) {
   try {
-    const cookieHeader = request.headers.get('cookie');
-    console.log(cookieHeader);
-
     const response = await api.post('/auth/logout', {
       headers: {
-        Cookie: cookieHeader,
+        Cookie: request.headers.get('cookie'),
       },
     });
 
