@@ -92,7 +92,7 @@ public class KakaoOAuthService {
             params.add("grant_type", "authorization_code");
             params.add("client_id", kakaoOAuthConfig.getRegistration().getKakao().getClientId());
 //            params.add("client_secret", kakaoOAuthConfig.getRegistration().getKakao().getClientSecret());
-            params.add("redirect_uri", "https://firzzle.site/api/v1/auth/kakao/callback"); // 백엔드 URI 설정
+            params.add("redirect_uri", "https://firzzle.site/service/api/v1/auth/kakao/callback"); // 백엔드 URI 설정
             params.add("code", code);
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);

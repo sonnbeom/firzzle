@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firzzle.stt.mapper.UserContentMapper">
+        <!-- 등록 -->
+    <insert id="insertUserContent" parameterType="com.firzzle.stt.dto.UserContentDTO" useGeneratedKeys="true" keyProperty="userContentSeq">
+        INSERT INTO fb_ai_user_contents (
+            user_seq,
+            content_seq,
+            progress,
+            last_accessed_at,
+            indate
+        ) VALUES (
+            #{userSeq},
+            #{contentSeq},
+            0,
+            #{lastAccessedAt},
+            #{indate}
+        )
+    </insert>
+</mapper>

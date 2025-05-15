@@ -16,7 +16,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "OpenAI 챗 요청 정보")
-public class ChatCompletionRequest {
+public class ChatCompletionRequestDTO {
 
     @Schema(description = "System 메시지", example = "당신은 똑똑한 학습 도우미입니다.")
     private String systemMessage;
