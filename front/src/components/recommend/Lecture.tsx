@@ -19,7 +19,7 @@ const Lecture = () => {
   const fetchLectures = useCallback(
     async (page: number) => {
       try {
-        const response = await getRecommendations(Number(contentId), {
+        const response = await getRecommendations(contentId, {
           p_pageno: page,
           p_pagesize: itemsPerPage,
         });

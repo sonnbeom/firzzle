@@ -19,7 +19,7 @@ const Expert = () => {
   const fetchExperts = useCallback(
     async (page: number) => {
       try {
-        const response = await getExpertRecommendations(Number(contentId), {
+        const response = await getExpertRecommendations(contentId, {
           p_pageno: page,
           p_pagesize: itemsPerPage,
         });

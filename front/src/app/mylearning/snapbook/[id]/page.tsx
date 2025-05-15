@@ -15,8 +15,8 @@ interface PageProps {
 const SnapBookDetailPage = async ({ params }: PageProps) => {
   const { id } = await params;
 
-  const shareData = await checkAndCreateShareCode(Number(id)) as ShareCheck;
-  const response = await getContentSnapReview(Number(id));
+  const shareData = (await checkAndCreateShareCode(Number(id))) as ShareCheck;
+  const response = await getContentSnapReview(id);
   const snapData = response.data;
 
   if (!snapData) {
@@ -34,9 +34,7 @@ const SnapBookDetailPage = async ({ params }: PageProps) => {
             </h1>
           </Link>
           <div className='mt-4'>
-            <ShareButton 
-              shareUrl={shareData.shareUrl}
-            />
+            <ShareButton shareUrl={shareData.shareUrl} />
           </div>
         </div>
         <Review {...snapData} />
