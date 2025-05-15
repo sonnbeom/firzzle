@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.firzzle.llm.client.OpenAiClient;
 import com.firzzle.llm.dto.ChatCompletionRequestDTO;
 import com.firzzle.llm.dto.ChatDTO;
-import com.firzzle.llm.dto.ChatMessageDTO;
+import com.firzzle.llm.dto.ChatHistoryResponseDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
 import com.firzzle.llm.dto.UserContentDTO;
@@ -54,9 +54,21 @@ public class LearningChatService {
         }
 
         Long contentSeq = userContent.getContentSeq();
-
         List<Float> vector = embeddingService.embed(question);
 
+        // ✅ 이전 응답 2개 불러오기
+        List<ChatHistoryResponseDTO> previousChats = chatMapper.selectChatsByCursor(
+            contentSeq,
+            userSeqFromUUID,
+            null, // 최신순으로부터
+            2
+        );
+
+        String previousMessages = previousChats.stream()
+            .sorted((a, b) -> a.getIndate().compareTo(b.getIndate())) // 오래된 순 정렬
+            .map(chat -> "Q: " + chat.getQuestion() + "\nA: " + chat.getAnswer())
+            .collect(Collectors.joining("\n\n"));
+        logger.info(previousMessages);
         return ragService.searchTopPayloadsByContentSeq(QdrantCollections.SCRIPT, vector, contentSeq)
                 .toFuture()
                 .thenCompose(contents -> {
@@ -71,7 +83,8 @@ public class LearningChatService {
                         return CompletableFuture.completedFuture(new LearningChatResponseDTO(defaultAnswer));
                     }
 
-                    ChatCompletionRequestDTO chatRequest = promptFactory.createLearningChatRequest(question, context);
+                    // ✅ previousMessages 추가하여 prompt 구성
+                    ChatCompletionRequestDTO chatRequest = promptFactory.createLearningChatRequest(question, context, previousMessages);
                     logger.debug("📬 [OpenAI 요청 전] 생성된 prompt context 일부=\n{}", context.substring(0, Math.min(context.length(), 300)));
 
                     return openAiClient.getChatCompletionAsync(chatRequest)
@@ -86,9 +99,37 @@ public class LearningChatService {
                 });
     }
 
+
+
+    /**
+     * 무한 스크롤 방식으로 채팅 목록을 조회합니다.
+     *
+     * @param contentSeq 콘텐츠 번호
+     * @param userSeq 사용자 번호
+     * @param lastIndate 마지막 생성 시간 (null이면 최신순 최초 요청)
+     * @param limit 가져올 개수
+     * @return 채팅 목록
+     */
     @Transactional
-    public List<ChatMessageDTO> getChatMessages(Long userContentSeq, Long lastMessageId, int limit) {
-        return null;
+    public List<ChatHistoryResponseDTO> getChatsByContentAndUser(String userId, Long userContentSeq, String lastIndate, int limit) {
+        // UUID로 userSeq 조회
+        Long userSeqFromUUID = userMapper.selectUserSeqByUuid(userId);
+
+        // userContentSeq로 contentSeq와 userSeq 가져옴
+        UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+
+        // 사용자 인증 확인
+        if (!userSeqFromUUID.equals(userContent.getUserSeq())) {
+            throw new IllegalArgumentException("사용자 인증 정보가 일치하지 않습니다.");
+        }
+
+        // lastIndate가 null이면 최신부터 조회 (XML에서 처리됨)
+        return chatMapper.selectChatsByCursor(
+                userContent.getContentSeq(),
+                userContent.getUserSeq(),
+                lastIndate, // null이면 XML에서 조건 생략됨
+                limit
+        );
     }
 
     private void insertChat(Long contentSeq, Long userSeq, String question, String answer) {
