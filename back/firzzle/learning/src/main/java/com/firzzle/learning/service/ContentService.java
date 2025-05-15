@@ -58,12 +58,12 @@ public class ContentService {
         logger.debug("콘텐츠 등록 요청 - YouTube URL: {}, UUID: {}",
                 box.getString("youtubeUrl"), box.getString("uuid"));
 
-        MyBatisTransactionManager transaction = myBatisSupport.getTransactionManager();
+//        MyBatisTransactionManager transaction = myBatisSupport.getTransactionManager();
         DataBox result = null;
 
         try {
             // 트랜잭션 시작
-            transaction.start();
+//            transaction.start();
 
             // 1. YouTube ID 추출
             String videoId = extractYoutubeId(box.getString("youtubeUrl"));
@@ -98,63 +98,65 @@ public class ContentService {
                     selectBox.put("uuid", box.getString("uuid"));
                     result = contentDAO.selectContentDataBox(selectBox);
 
-                    transaction.commit();
+//                    transaction.commit();
                     return result;
                 }
             } else {
-                // 3. 신규 콘텐츠 등록
-                RequestBox insertBox = new RequestBox("insertBox");
-                insertBox.put("videoId", videoId);
-                insertBox.put("url", box.getString("youtubeUrl"));
-                insertBox.put("title", box.getString("title"));
-                insertBox.put("description", box.getString("description"));
-                insertBox.put("category", box.getString("category"));
-                insertBox.put("thumbnailUrl", generateThumbnailUrl(videoId));
-                insertBox.put("duration", 0); // 초기값, 분석 후 업데이트 예정
-                insertBox.put("processStatus", "Q"); // 대기중(Queued)
-                insertBox.put("tags", box.getString("tags"));
-
-                // 현재 시간을 YYYYMMDDHHMMSS 형식으로 추가
-                try {
-                    String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
-                    insertBox.put("indate", currentDateTime);
-                } catch (Exception e) {
-                    logger.error("현재 시간 포맷 설정 중 오류 발생: {}", e.getMessage());
-                    insertBox.put("indate", ""); // 기본값으로 설정
-                }
-
-                // 콘텐츠 등록
-                int insertResult = contentDAO.insertContent(insertBox);
-                if (insertResult == 0) {
-                    throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록에 실패했습니다.");
-                }
-
-                contentSeq = insertBox.getLong("contentSeq");
-
-                // 태그 처리
-                String tags = box.getString("tags");
-                if (StringUtils.hasText(tags)) {
-                    List<String> tagList = Arrays.stream(tags.split(","))
-                            .map(String::trim)
-                            .filter(StringUtils::hasText)
-                            .collect(Collectors.toList());
-
-                    if (!tagList.isEmpty()) {
-                        RequestBox tagBox = new RequestBox("tagBox");
-                        tagBox.put("contentSeq", contentSeq);
-                        tagBox.put("tags", tagList);
-                        contentDAO.insertContentTags(tagBox);
-                    }
-                }
+//                // 3. 신규 콘텐츠 등록
+//                RequestBox insertBox = new RequestBox("insertBox");
+//                insertBox.put("videoId", videoId);
+//                insertBox.put("url", box.getString("youtubeUrl"));
+//                insertBox.put("title", box.getString("title"));
+//                insertBox.put("description", box.getString("description"));
+//                insertBox.put("category", box.getString("category"));
+//                insertBox.put("thumbnailUrl", generateThumbnailUrl(videoId));
+//                insertBox.put("duration", 0); // 초기값, 분석 후 업데이트 예정
+//                insertBox.put("processStatus", "Q"); // 대기중(Queued)
+//                insertBox.put("tags", box.getString("tags"));
+//
+//                // 현재 시간을 YYYYMMDDHHMMSS 형식으로 추가
+//                try {
+//                    String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
+//                    insertBox.put("indate", currentDateTime);
+//                } catch (Exception e) {
+//                    logger.error("현재 시간 포맷 설정 중 오류 발생: {}", e.getMessage());
+//                    insertBox.put("indate", ""); // 기본값으로 설정
+//                }
+//
+//                // 콘텐츠 등록
+//                int insertResult = contentDAO.insertContent(insertBox);
+//                if (insertResult == 0) {
+//                    throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록에 실패했습니다.");
+//                }
+//
+//                contentSeq = insertBox.getLong("contentSeq");
+//
+//                // 태그 처리
+//                String tags = box.getString("tags");
+//                if (StringUtils.hasText(tags)) {
+//                    List<String> tagList = Arrays.stream(tags.split(","))
+//                            .map(String::trim)
+//                            .filter(StringUtils::hasText)
+//                            .collect(Collectors.toList());
+//
+//                    if (!tagList.isEmpty()) {
+//                        RequestBox tagBox = new RequestBox("tagBox");
+//                        tagBox.put("contentSeq", contentSeq);
+//                        tagBox.put("tags", tagList);
+//                        contentDAO.insertContentTags(tagBox);
+//                    }
+//                }
 
                 // 분석 작업 큐에 등록
-                sendToAnalysisQueue(contentSeq);
+                String uuid = box.getString("uuid");
+                String youtubeUrl = box.getString("youtubeUrl");
+                sendToAnalysisQueue(uuid, youtubeUrl);
 
-                logger.info("신규 콘텐츠 등록 완료 - ContentSeq: {}, Title: {}",
-                        contentSeq, box.getString("title"));
+                logger.info("신규 콘텐츠 등록 완료 - 사용자: {}, URL: {}, 제목: {}",
+                        box.getString("uuid"), box.getString("youtubeUrl"), box.getString("title"));
             }
 
-            // 4. 사용자-콘텐츠 매핑 등록
+/*            // 4. 사용자-콘텐츠 매핑 등록
             RequestBox userContentBox = new RequestBox("userContentBox");
             userContentBox.put("uuid", box.getString("uuid"));
             userContentBox.put("contentSeq", contentSeq);
@@ -180,22 +182,22 @@ public class ContentService {
             RequestBox selectBox = new RequestBox("selectBox");
             selectBox.put("contentSeq", contentSeq);
             selectBox.put("uuid", box.getString("uuid"));
-            result = contentDAO.selectContentDataBox(selectBox);
+            result = contentDAO.selectContentDataBox(selectBox);*/
 
             // 성공 시 커밋
-            transaction.commit();
+//            transaction.commit();
             return result;
 
         } catch (BusinessException e) {
-            transaction.rollback();
+//            transaction.rollback();
             throw e;
         } catch (Exception e) {
-            transaction.rollback();
+//            transaction.rollback();
             logger.error("콘텐츠 등록 중 오류 발생: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록 중 오류가 발생했습니다.");
         } finally {
             // 트랜잭션 종료
-            transaction.end();
+//            transaction.end();
         }
     }
 
@@ -506,17 +508,17 @@ public class ContentService {
     /**
      * 콘텐츠 분석 큐에 등록
      *
-     * @param contentSeq - 분석할 콘텐츠 일련번호
+     * @param uuid - 사용자 일련번호
+     * @param url - YouTube URL
      */
-    private void sendToAnalysisQueue(Long contentSeq) {
+    private void sendToAnalysisQueue(String uuid, String url) {
         try {
-            // 분석 요청 메시지 생성 (JSON 형식)
-            String message = String.format("{\"contentSeq\":%d,\"timestamp\":\"%s\"}",
-                    contentSeq, LocalDateTime.now().toString());
+            // 메시지 형식: "uuid|url"
+            String message = uuid + "|" + url;
 
-            // Kafka 메시지 발송
-            kafkaTemplate.send(contentAnalysisTopic, message);
-            logger.debug("콘텐츠 분석 큐에 등록 완료 - ContentSeq: {}", contentSeq);
+            // Kafka 메시지 발송 (to-stt 토픽으로 변경)
+            kafkaTemplate.send("to-stt", message);
+            logger.debug("콘텐츠 분석 큐에 등록 완료 - 사용자: {}, URL: {}", uuid, url);
         } catch (Exception e) {
             logger.error("콘텐츠 분석 큐 등록 중 오류 발생: {}", e.getMessage(), e);
             // 큐 등록 실패는 비즈니스 로직에 영향을 주지 않도록 예외를 던지지 않고 로그만 남김
