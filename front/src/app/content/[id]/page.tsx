@@ -13,13 +13,8 @@ interface PageProps {
 
 const Summary = async ({ params, searchParams }: PageProps) => {
   const { id } = await params;
+  const { tab = 'Easy' } = await searchParams;
   const summaryData = await getSummary(id);
-  const tabParams = await searchParams;
-  const tab = tabParams.tab || 'Easy';
-  const data = {
-    easyData: ([] = summaryData.easySections),
-    highData: ([] = summaryData.hardSections),
-  };
 
   return (
     <div className='flex w-full flex-col gap-4 lg:gap-7'>
@@ -27,8 +22,8 @@ const Summary = async ({ params, searchParams }: PageProps) => {
       <Suspense fallback={<div>Loading...</div>}>
         <SummaryContent
           level={tab}
-          easyData={data.easyData}
-          highData={data.highData}
+          easyData={summaryData.easySections}
+          highData={summaryData.hardSections}
         />
       </Suspense>
     </div>

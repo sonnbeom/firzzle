@@ -2,6 +2,7 @@
 export const logout = async () => {
   const response = await fetch('/api/auth/logout', {
     method: 'POST',
+    credentials: 'include',
   });
 
   const data = await response.json();

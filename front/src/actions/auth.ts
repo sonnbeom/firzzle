@@ -25,3 +25,9 @@ export const setCookie = async (name: string, value: string) => {
     path: '/',
   });
 };
+
+// 모든 쿠키 조회
+export const getAllCookies = async () => {
+  const cookieStore = await cookies();
+  return cookieStore.getAll();
+};

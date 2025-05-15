@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { getContent } from '@/api/content';
-import DetailHeader from '@/components/common/TabHeader';
+import DetailHeader from '@/components/common/DetailHeader';
 import LearningChatContent from '@/components/learningChat/LearningChatContent';
 import PlayerFrame from '@/components/player/PlayerFrame';
 
