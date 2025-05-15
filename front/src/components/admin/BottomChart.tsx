@@ -2,42 +2,14 @@
 
 import CurveGraphCard from '@/components/admin/CurveGraphCard';
 import BasicDropDown from '@/components/common/BasicDropDown';
-import { TransitionsResponse, DataSet } from '@/types/chart';
+import { TransitionsResponse } from '@/types/chart';
+import { convertTransitionsToDataSets, chartMappings } from '@/utils/chart';
 
 interface BottomChartProps {
   selectedOption: string;
   selectedChartData: TransitionsResponse | null;
   onOptionChange: (value: string) => void;
 }
-
-const getSummaryNoteData = (data: TransitionsResponse): DataSet[] => [
-  {
-    label: 'DIFFICULT',
-    data: data.map(({ date, transitions }) => ({
-      x: date,
-      y: transitions.DIFFICULT || 0,
-    })),
-  },
-  {
-    label: 'EASY',
-    data: data.map(({ date, transitions }) => ({
-      x: date,
-      y: transitions.EASY || 0,
-    })),
-  },
-];
-
-const getSnapReviewData = (data: TransitionsResponse): DataSet[] => [
-  {
-    label: '',
-    data: data.map(({ date, transitions }) => ({
-      x: date,
-      y: transitions.START_LEARNING && transitions.SNAP_REVIEW_INPUT
-        ? (transitions.SNAP_REVIEW_INPUT / transitions.START_LEARNING) * 100
-        : 0,
-    })),
-  },
-];
 
 const BottomChart = ({
   selectedOption,
@@ -59,8 +31,14 @@ const BottomChart = ({
         <CurveGraphCard
           dataSets={
             selectedOption === '요약노트'
-              ? getSummaryNoteData(selectedChartData)
-              : getSnapReviewData(selectedChartData)
+              ? convertTransitionsToDataSets(
+                  selectedChartData,
+                  chartMappings.summaryNote,
+                )
+              : convertTransitionsToDataSets(
+                  selectedChartData,
+                  chartMappings.snapReviewRate,
+                )
           }
         />
       )}
