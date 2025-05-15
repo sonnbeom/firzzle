@@ -104,7 +104,7 @@
         SELECT
         <include refid="contentColumns" />
         FROM
-        fb_ai_contents
+        fb_ai_contents C
         WHERE
         video_id = #{videoId}
         AND delete_yn = 'N'
