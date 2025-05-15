@@ -443,16 +443,33 @@ public class AuthController {
         // 쿠키 만료 시간 (30일)
         int cookieMaxAge = 30 * 24 * 60 * 60;
 
-        // HTTP-Only 쿠키 생성
-        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-                .httpOnly(true)                 // JavaScript에서 접근 불가능
-                .secure(true)                   // HTTPS 전송만 허용
-                .path("/service/api/v1/auth")   // auth 경로에서 사용 가능
-                .maxAge(cookieMaxAge)           // 쿠키 유효 기간
-                .sameSite("None")               // 크로스 사이트 요청 설정
-                .build();
+        // 리프레시 토큰 쿠키 설정
+        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);          // JavaScript에서 접근 불가
+        refreshTokenCookie.setSecure(true);            // HTTPS에서만 전송
+        refreshTokenCookie.setPath("/service/api/v1/auth");    // 모든 경로에서 접근 가능
+        refreshTokenCookie.setMaxAge(cookieMaxAge);    // 쿠키 유효 기간
 
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        // SameSite 속성 설정 (크로스 사이트 요청 제한)
+        // HttpServletResponse가 직접 SameSite 속성을 지원하지 않아 헤더로 추가
+        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=None",
+                refreshTokenCookie.getName(),
+                refreshTokenCookie.getValue(),
+                refreshTokenCookie.getMaxAge(),
+                refreshTokenCookie.getPath());
+
+        response.addHeader("Set-Cookie", cookieHeader);
+
+//        // HTTP-Only 쿠키 생성
+//        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+//                .httpOnly(true)                 // JavaScript에서 접근 불가능
+//                .secure(true)                   // HTTPS 전송만 허용
+//                .path("/service/api/v1/auth")   // auth 경로에서 사용 가능
+//                .maxAge(cookieMaxAge)           // 쿠키 유효 기간
+//                .sameSite("None")               // 크로스 사이트 요청 설정
+//                .build();
+//
+//        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     /**
