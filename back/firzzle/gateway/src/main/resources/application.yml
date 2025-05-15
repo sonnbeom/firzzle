@@ -1,6 +1,14 @@
 # 공통 설정 (common)
+
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
 server:
   port: 8080
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
 
 spring:
   application:
@@ -131,15 +139,6 @@ jwt:
   refresh-token-validity-seconds: 604800
   issuer: firzzle.site
 
-# 서버 (HTTP 헤더 전달 전략, UTF-8)
-server:
-  forward-headers-strategy: native
-  servlet:
-    encoding:
-      charset: UTF-8
-      enabled: true
-      force: true
-
 ---
 # 로컬 환경 설정
 spring:
@@ -157,6 +156,7 @@ spring:
               - "http://localhost:5173"
               - "http://localhost:5174"
               - "http://localhost:8080"
+              - "https://localhost:3000"
             allowedMethods:
               - GET
               - POST
@@ -203,6 +203,7 @@ spring:
               - "http://localhost:5173" # 개발 끝나면 삭제
               - "http://localhost:5174" # 개발 끝나면 삭제
               - "http://localhost:8080" # 개발 끝나면 삭제
+              - "https://localhost:3000" # 개발 끝나면 삭제
             allowedMethods:
               - GET
               - POST
@@ -253,6 +254,7 @@ spring:
               - "http://localhost:5173" # 개발 끝나면 삭제
               - "http://localhost:5174" # 개발 끝나면 삭제
               - "http://localhost:8080" # 개발 끝나면 삭제
+              - "https://localhost:3000" # 개발 끝나면 삭제
             allowedMethods:
               - GET
               - POST
