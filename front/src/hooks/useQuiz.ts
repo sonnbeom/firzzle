@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { submitQuizAnswers } from '@/api/quiz';
 import {
   QuizData,
@@ -11,7 +11,7 @@ import {
 
 // 퀴즈 답변 props 생성 유틸리티 함수
 const getAnswerProps = (
-  question: QuizData['questions'][0],
+  question: QuizData['content']['questions'][0],
   index: number,
 ): QuizAnswerProps => {
   const explanation = question.userAnswer?.explanation || '';
@@ -37,7 +37,7 @@ const getAnswerProps = (
 
 // 퀴즈 카드 props 생성 유틸리티 함수
 const getCardProps = (
-  question: QuizData['questions'][0],
+  question: QuizData['content']['questions'][0],
   index: number,
   selected: Array<number | null>,
   handleSelect: (index: number, optionSeq: number) => void,
@@ -52,47 +52,49 @@ const getCardProps = (
 };
 
 export const useQuiz = (quizData: QuizData, contentSeq: string) => {
-  // 이미 푸 문제인지 확인
+  // 이미 푼 문제인지 확인
   const isAlreadySubmitted = useMemo(() => {
-    return (
-      quizData.submission !== null &&
-      quizData.questions.every(
-        (q) => q.userAnswer !== null && q.userAnswer !== undefined,
-      )
-    );
-  }, [quizData.submission, quizData.questions]);
+    if (!quizData?.submission) return false;
+    // submission이 있고 모든 문제에 userAnswer가 있는지 확인
+    return quizData.content.questions.every(q => q.userAnswer !== undefined);
+  }, [quizData]);
 
   // 초기 선택 상태 설정
   const initialSelected = useMemo(() => {
-    if (isAlreadySubmitted) {
-      return quizData.questions.map((q) => {
-        if (!q.userAnswer) return null;
-        return q.options.findIndex(
-          (opt) => opt.optionSeq === q.userAnswer?.selectedOptionSeq,
-        );
-      });
-    }
-    return new Array(quizData.questions.length).fill(null);
-  }, [quizData.questions, isAlreadySubmitted]);
+    if (!quizData) return [];
+    return new Array(quizData.content.questions.length).fill(null);
+  }, [quizData]);
 
   const [selected, setSelected] =
     useState<Array<number | null>>(initialSelected);
   const [showAnswer, setShowAnswer] = useState(isAlreadySubmitted);
+
+  // quizData가 로드되면 showAnswer 상태 업데이트
+  useEffect(() => {
+    setShowAnswer(isAlreadySubmitted);
+  }, [isAlreadySubmitted]);
+
+  console.log('Answer State:', {
+    showAnswer,
+    isAlreadySubmitted,
+    hasSubmission: quizData?.submission !== null,
+    userAnswers: quizData?.content.questions.map(q => q.userAnswer)
+  });
   const [quizResult, setQuizResult] = useState<QuizSubmitResponse | null>(
-    isAlreadySubmitted && quizData.submission
+    isAlreadySubmitted && quizData?.submission
       ? {
           submission: {
-            seq: quizData.submission.submissionSeq,
-            contentSeq: quizData.contentSeq,
-            correctAnswers: quizData.submission.correctAnswers,
-            totalQuestions: quizData.submission.totalQuestions,
-            scorePercentage: quizData.submission.scorePercentage,
-            indate: quizData.submission.indate,
+            seq: quizData.submission?.submissionSeq || 0,
+            contentSeq: quizData.content.contentSeq,
+            correctAnswers: quizData.submission?.correctAnswers || 0,
+            totalQuestions: quizData.submission?.totalQuestions || 0,
+            scorePercentage: quizData.submission?.scorePercentage || 0,
+            indate: quizData.submission?.indate || new Date().toISOString(),
           },
-          questionResults: quizData.questions.map((q) => ({
+          questionResults: quizData.content.questions.map((q) => ({
             questionSeq: q.questionSeq,
             question: q.text,
-            selectedAnswer: q.userAnswer
+            selectedAnswer: q.userAnswer?.selectedOptionSeq
               ? q.userAnswer.selectedOptionSeq.toString()
               : '',
             correctAnswer: q.userAnswer?.isCorrect
@@ -109,7 +111,9 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
   const hasAnswered = selected.some((s) => s !== null);
 
   // 모든 문제에 답변을 선택했는지 여부
-  const isCompleted = selected.every((s) => s !== null);
+  const isCompleted =
+    selected.length === quizData?.content.questions.length &&
+    selected.every((s) => s !== null);
 
   // 답변 선택 처리
   const handleSelect = (index: number, optionSeq: number) => {
@@ -126,33 +130,50 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
     if (!isCompleted) return;
 
     const request: QuizSubmitRequest = {
-      answers: quizData.questions.map((question, index) => {
-        const selectedOption = question.options[selected[index] || 0];
+      answers: quizData.content.questions.map((question, index) => {
+        const selectedOptionIndex = selected[index];
+        if (selectedOptionIndex === null) {
+          throw new Error('모든 문제에 답변해주세요.');
+        }
+        const selectedOption = question.options.find(
+          (opt) => opt.optionSeq === selectedOptionIndex,
+        );
+        if (!selectedOption) {
+          throw new Error('선택한 답변을 찾을 수 없습니다.');
+        }
         return {
           questionSeq: question.questionSeq,
-          selectedAnswer: (selectedOption?.optionSeq || 0).toString(),
+          selectedAnswer: selectedOption.text,
         };
       }),
     };
 
     try {
       const response = await submitQuizAnswers(contentSeq, request);
-      setQuizResult(response);
-      quizData.questions = quizData.questions.map((q) => {
-        const result = response.questionResults.find(
-          (r) => r.questionSeq === q.questionSeq,
-        );
-        if (result) {
-          q.userAnswer = {
-            selectedOptionSeq: parseInt(result.selectedAnswer),
-            isCorrect: result.isCorrect,
-            explanation: result.explanation,
-          };
-        }
-        return q;
-      });
-      window.scrollTo(0, 0);
-      setShowAnswer(true);
+      if (response.submission && response.questionResults) {
+        setQuizResult(response);
+        setShowAnswer(true);
+        quizData.content.questions = quizData.content.questions.map((q) => {
+          const result = response.questionResults.find(
+            (r) => r.questionSeq === q.questionSeq,
+          );
+          if (result) {
+            return {
+              ...q,
+              userAnswer: {
+                selectedOptionSeq: parseInt(result.selectedAnswer),
+                isCorrect: result.isCorrect,
+                explanation: result.explanation,
+              },
+            };
+          }
+          return q;
+        });
+        quizData.submission = response.submission;
+        window.scrollTo(0, 0);
+      } else {
+        throw new Error('퀴즈 결과를 받아올 수 없습니다.');
+      }
     } catch (error) {
       console.error('Error submitting quiz:', error);
     }

@@ -7,8 +7,6 @@ const QuizAnswer = ({
   correct,
   explanation,
   timestamp,
-  selectedOption,
-  correctOption,
 }: QuizAnswerProps) => {
   return (
     <div className='space-y-6 py-4 md:py-6'>
@@ -16,7 +14,7 @@ const QuizAnswer = ({
       <div className='flex items-start gap-4'>
         {/* 번호 */}
         <div className='text-[24px] font-bold text-gray-900 md:text-[30px]'>
-          {Number(questionSeq.toString().slice(-1)).toString().padStart(2, '0')}
+          {questionSeq ? questionSeq.toString().padStart(2, '0') : '00'}
         </div>
 
         {/* 질문 */}
