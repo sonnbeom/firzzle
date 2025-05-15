@@ -1,9 +1,9 @@
 package com.firzzle.auth.controller;
 
 import com.firzzle.auth.dto.KakaoLoginRequestDTO;
-import com.firzzle.auth.dto.TokenRequestDTO;
 import com.firzzle.auth.dto.TokenResponseDTO;
 import com.firzzle.auth.dto.UserResponseDTO;
+import com.firzzle.auth.dto.*;
 import com.firzzle.auth.service.AuthService;
 import com.firzzle.auth.service.OAuthRedirectService;
 import com.firzzle.common.exception.BusinessException;
@@ -12,8 +12,6 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.logging.dto.UserActionLog;
-import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,16 +24,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -256,6 +255,7 @@ public class AuthController {
         try {
             // 쿠키에서 리프레시 토큰 추출
             String refreshToken = extractRefreshTokenFromCookie(request);
+//            if (!StringUtils.isBlank(refreshToken)) {
             if (!refreshToken.isBlank()) {
                 RequestBox box = RequestManager.getBox(request);
                 box.put("refreshToken", refreshToken);
@@ -316,6 +316,7 @@ public class AuthController {
         try {
             // 쿠키에서 리프레시 토큰 추출
             String refreshToken = extractRefreshTokenFromCookie(request);
+//            if (!StringUtils.isBlank(refreshToken)) {
             if (!refreshToken.isBlank()) {
                 RequestBox box = RequestManager.getBox(request);
                 box.put("refreshToken", refreshToken);
@@ -459,6 +460,7 @@ public class AuthController {
      * @param request HTTP 요청 객체
      * @return 사용자 정보 응답
      */
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('auth:read')")
     @GetMapping(value = "/me", produces = "application/json;charset=UTF-8")
     @Operation(summary = "현재 로그인한 사용자 정보 조회", description = "인증된 사용자의 프로필 정보를 반환합니다.")
     @ApiResponses(value = {
@@ -506,6 +508,87 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("사용자 정보 조회 중 예외 발생: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 정보 조회 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 관리자 로그인 API
+     * @param loginRequest 관리자 로그인 요청 정보
+     * @param request HTTP 요청 객체
+     * @param response HTTP 응답 객체
+     * @return 토큰 응답
+     */
+    @PreAuthorize("hasRole('ADMIN') and hasAuthority('auth:admin')")
+    @PostMapping(value = "/admin/login", produces = "application/json;charset=UTF-8")
+    @Operation(summary = "관리자 로그인", description = "관리자 자격 증명을 통해 사용자를 인증하고 액세스 토큰과 리프레시 토큰을 발급합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "로그인 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = TokenResponseDTO.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 - 필수 파라미터 누락"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 - 잘못된 자격 증명"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "접근 거부 - 관리자 권한 없음"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류 - 내부 서버 오류"
+            )
+    })
+    public ResponseEntity<Response<TokenResponseDTO>> adminLogin(
+            @Parameter(
+                    description = "관리자 로그인 정보 (사용자명, 비밀번호 포함)",
+                    required = true
+            )
+            @Valid @RequestBody AdminLoginRequestDTO loginRequest,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        logger.info("관리자 로그인 요청 - 사용자명: {}", loginRequest.getUsername());
+
+        try {
+            RequestBox box = RequestManager.getBox(request);
+            box.put("username", loginRequest.getUsername());
+            box.put("password", loginRequest.getPassword());
+
+            // AdminAuthService를 통한 로그인 처리
+            DataBox tokenDataBox = authService.adminLogin(box);
+            TokenResponseDTO tokenResponseDTO = convertToTokenResponseDTO(tokenDataBox);
+
+            // 리프레시 토큰을 HTTP-Only 쿠키로 설정
+            setRefreshTokenCookie(response, tokenResponseDTO.getRefreshToken());
+
+            // 응답에서 리프레시 토큰 제거
+            TokenResponseDTO responseDto = TokenResponseDTO.builder()
+                    .accessToken(tokenResponseDTO.getAccessToken())
+                    .expiresIn(tokenResponseDTO.getExpiresIn())
+                    .tokenType(tokenResponseDTO.getTokenType())
+                    .issuedAt(tokenResponseDTO.getIssuedAt())
+                    .build();
+
+            Response<TokenResponseDTO> apiResponse = Response.<TokenResponseDTO>builder()
+                    .status(Status.OK)
+                    .message("관리자 로그인 성공")
+                    .data(responseDto)
+                    .build();
+
+            return ResponseEntity.ok(apiResponse);
+        } catch (BusinessException e) {
+            logger.error("관리자 로그인 중 비즈니스 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("관리자 로그인 중 예외 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "관리자 로그인 중 오류가 발생했습니다.");
         }
     }
 
@@ -577,7 +660,7 @@ public class AuthController {
                     .name(dataBox.getString("d_name"))
                     .role(dataBox.getString("d_role"))
                     .profileImageUrl(dataBox.getString("d_profile_image_url"))
-                    .lastLogin(parseDateTime(dataBox.getString("d_last_login")))
+                    .lastLogin(FormatDate.getFormatDate(dataBox.getString("d_last_login"), "yyyy-MM-dd HH:mm:ss"))
                     .signupType(dataBox.getString("d_signup_type"))
                     .build();
         } catch (Exception e) {

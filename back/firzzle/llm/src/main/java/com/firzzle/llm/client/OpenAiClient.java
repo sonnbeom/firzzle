@@ -49,8 +49,8 @@ public class OpenAiClient {
     @Value("${spring.ai.openai.summary.model}")
     private String summaryModel;
     
-    @Value("${spring.ai.openai.runningchat.model}")
-    private String runningChatModel;
+    @Value("${spring.ai.openai.learningchat.model}")
+    private String learningChatModel;
 
     @Async("llmExecutor")
     public CompletableFuture<String> getChatCompletionAsync(ChatCompletionRequest chatCompletionRequest) {
@@ -58,7 +58,7 @@ public class OpenAiClient {
         String model = switch (chatCompletionRequest.getModelType()) {
             case TIMELINE -> timelineModel;
             case SUMMARY -> summaryModel;
-            case RUNNINGCHAT -> runningChatModel;
+            case LEARNINGCHAT -> learningChatModel;
         };
 
         // ✅ 메시지 구성
