@@ -14,10 +14,10 @@ public class PromptFactory {
 	 private final SystemPromptManager systemPromptManager;
 
 	 
-	 public ChatCompletionRequestDTO createLearningChatRequest(String question, String context) {
+	 public ChatCompletionRequestDTO createLearningChatRequest(String question, String context, String previous) {
         return ChatCompletionRequestDTO.builder()
                 .systemMessage(systemPromptManager.getLearningChatSystemPrompt())
-                .userPrompt(userPromptManager.getlearningChatUserPrompt(question, context, ""))
+                .userPrompt(userPromptManager.getlearningChatUserPrompt(question, context, previous))
                 .modelType(ModelType.LEARNINGCHAT)
                 .temperature(0.7)
                 .topP(1.0)
