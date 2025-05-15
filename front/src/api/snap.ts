@@ -22,6 +22,11 @@ export const getContentSnapReview = async (contentSeq: string) => {
     `/api/learning/contents/${contentSeq}/snap-review`,
   );
   const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
 

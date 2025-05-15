@@ -5,8 +5,12 @@ export const getQuiz = async (
   contentSeq: string,
 ): Promise<{ data: QuizData }> => {
   const response = await fetch(`/api/learning/contents/${contentSeq}/quiz`);
-
   const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
 

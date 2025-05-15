@@ -6,11 +6,12 @@ export async function GET(
   { params }: { params: Promise<{ contentSeq: string }> },
 ) {
   try {
+    const contentSeq = (await params).contentSeq;
     const response = await api.get(
-      `/learning/contents/${(await params).contentSeq}/quiz`,
+      `/learning/contents/${contentSeq}/quiz`,
     );
     if (response.status === 'OK') {
-      return NextResponse.json(response);
+      return NextResponse.json(response, { status: 200 });
     }
     return NextResponse.json(
       { message: '퀴즈 데이터를 가져오는데 실패했습니다.' },
@@ -26,10 +27,11 @@ export async function POST(
   { params }: { params: Promise<{ contentSeq: string }> },
 ) {
   try {
+    const contentSeq = (await params).contentSeq;
     const body = await request.json();
     console.log(body);
     const response = await api.post(
-      `/learning/contents/${(await params).contentSeq}/quiz`,
+      `/learning/contents/${contentSeq}/quiz`,
       { body },
     );
 

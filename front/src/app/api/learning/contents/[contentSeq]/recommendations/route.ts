@@ -11,8 +11,9 @@ export async function GET(
     const contentSeq = (await params).contentSeq;
 
     // type이 'expert'이면 전문가 추천, 아니면 일반 추천
-    const endpoint = type === 'expert' ? 'expert-recommendations' : 'recommendations';
-    
+    const endpoint =
+      type === 'expert' ? 'expert-recommendations' : 'recommendations';
+
     const response = await api.get(
       `/learning/contents/${contentSeq}/${endpoint}`,
       {
@@ -29,17 +30,15 @@ export async function GET(
     );
 
     if (response.status === 'OK') {
-      return NextResponse.json(response.data);
+      return NextResponse.json(response.data, { status: 200 });
     }
 
-    const errorMessage = type === 'expert'
-      ? '전문가 추천을 가져오는데 실패했습니다.'
-      : '추천 강의를 가져오는데 실패했습니다.';
+    const errorMessage =
+      type === 'expert'
+        ? '전문가 추천을 가져오는데 실패했습니다.'
+        : '추천 강의를 가져오는데 실패했습니다.';
 
-    return NextResponse.json(
-      { message: errorMessage },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: errorMessage }, { status: 400 });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

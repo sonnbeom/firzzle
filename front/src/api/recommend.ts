@@ -24,8 +24,12 @@ export const getRecommendations = async (
   const response = await fetch(
     `/api/learning/contents/${contentSeq}/recommendations?${params}`,
   );
-
   const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
 
@@ -44,7 +48,11 @@ export const getExpertRecommendations = async (
   const response = await fetch(
     `/api/learning/contents/${contentSeq}/recommendations?${params}`,
   );
-
   const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
   return data;
 };
