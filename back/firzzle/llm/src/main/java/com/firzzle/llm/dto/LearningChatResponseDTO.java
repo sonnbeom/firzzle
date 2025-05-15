@@ -15,12 +15,9 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "실시간 학습 챗봇 응답 정보")
-public class learningChatResponseDTO {
+public class LearningChatResponseDTO {
 
     @NotBlank
     @Schema(description = "챗봇의 응답 내용", example = "DDD는 도메인 주도 설계를 의미하며, 복잡한 문제를 도메인 모델로 해결하려는 방식입니다.")
     private String answer;
-
-    @Schema(description = "응답의 참고 시간 정보 (초 단위 형식)", example = "125")
-    private Integer referenceTime;
 }

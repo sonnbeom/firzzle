@@ -19,6 +19,8 @@ import com.firzzle.stt.dto.UserContentDTO;
 import com.firzzle.stt.kafka.producer.SttConvertedProducer;
 import com.firzzle.stt.mapper.UserContentMapper;
 import com.firzzle.stt.util.SubtitleUtil;
+import com.firzzle.stt.util.TimeUtil;
+
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -30,7 +32,7 @@ import java.util.*;
 public class SttService {
 
     private static final Logger logger = LoggerFactory.getLogger(SttService.class);
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     @Value("${app.file-storage.upload-dir}")
     private String uploadDir;
@@ -48,8 +50,6 @@ public class SttService {
 
     public LlmRequest transcribeFromYoutube(Long userSeq, String url) throws Exception {
         String videoId = contentService.extractYoutubeId(url);
-
-        if (contentService.isContentExistsByVideoId(videoId)) return null;
 
         return DEV_MODE
                 ? extractSubtitleViaLocalProxy(userSeq, url, videoId)
@@ -121,6 +121,8 @@ public class SttService {
         UserContentDTO userContentDTO = new UserContentDTO();
         userContentDTO.setUserSeq(userSeq);
         userContentDTO.setContentSeq(contentSeq);
+        userContentDTO.setLastAccessedAt(TimeUtil.getCurrentTimestamp14());
+        userContentDTO.setIndate(TimeUtil.getCurrentTimestamp14());
         userContentMapper.insertUserContent(userContentDTO); // ✅ Mapper 방식
     }
 

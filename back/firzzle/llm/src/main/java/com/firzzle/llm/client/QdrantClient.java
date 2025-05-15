@@ -108,8 +108,8 @@ public class QdrantClient {
         	        "with_payload", true  // 💡 이거 추가
         	    ))
         	    .retrieve()
-        	    .bodyToMono(QdrantSearchResponse.class)
-        	    .map(QdrantSearchResponse::getResult)
+        	    .bodyToMono(QdrantSearchResponseDTO.class)
+        	    .map(QdrantSearchResponseDTO::getResult)
         	    .doOnSuccess(result -> log.info("Search completed for collection={} with {} results", collection, result.size()))
         	    .doOnError(e -> log.error("Search failed: {}", e.getMessage(), e));
 
@@ -157,8 +157,8 @@ public class QdrantClient {
             .uri("/collections/{collection}/points/search", collection)
             .bodyValue(requestBody)
             .retrieve()
-            .bodyToMono(QdrantSearchResponse.class)
-            .map(QdrantSearchResponse::getResult)
+            .bodyToMono(QdrantSearchResponseDTO.class)
+            .map(QdrantSearchResponseDTO::getResult)
             .doOnSuccess(result -> log.info("🔍 필터 포함 검색 성공: {}개", result.size()))
             .doOnError(e -> log.error("❌ 검색 실패", e));
     }
