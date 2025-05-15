@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
-import com.firzzle.llm.dto.ChatMessageDTO;
+import com.firzzle.llm.dto.ChatHistoryResponseDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
 import com.firzzle.llm.service.LearningChatService;
@@ -63,31 +63,37 @@ public class LearningChatConteller {
     }
     
     @GetMapping("/{ContentSeq}/chat")
-    @Operation(summary = "대화 기록 조회", description = "사용자 콘텐츠 기준으로 이전 대화 목록을 조회합니다. 무한 스크롤을 위한 lastMessageId, limit 지원")
+    @Operation(summary = "대화 기록 조회", description = "사용자 콘텐츠 기준으로 이전 대화 목록을 조회합니다. 무한 스크롤을 위한 lastIndate, limit 지원")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공"),
             @ApiResponse(responseCode = "404", description = "기록 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<Response<List<ChatMessageDTO>>> getChatHistory(
+    public ResponseEntity<Response<List<ChatHistoryResponseDTO>>> getChatHistory(
             @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
-            @RequestHeader(value = "X-User-UUID", required = false) String userID,
-            
+            @RequestHeader(value = "X-User-UUID", required = true) String userUUID,
+
             @Parameter(description = "사용자 콘텐츠 일련번호", required = true)
-            @PathVariable("userContentSeq") Long userContentSeq,
+            @PathVariable("ContentSeq") Long userContentSeq,
 
-            @Parameter(description = "가장 마지막 메시지 ID (무한 스크롤용)", example = "2005")
-            @RequestParam(value = "lastMessageId", required = false) Long lastMessageId,
+            @Parameter(description = "가장 마지막 메시지 indate (무한 스크롤용)", example = "20250515132000")
+            @RequestParam(value = "lastIndate", required = false) String lastIndate,
 
-            @Parameter(description = "가져올 메시지 개수", example = "20")
-            @RequestParam(value = "limit", defaultValue = "20") int limit
+            @Parameter(description = "가져올 메시지 개수", example = "10")
+            @RequestParam(value = "limit", defaultValue = "10") int limit
     ) {
-        List<ChatMessageDTO> messages = learningChatService.getChatMessages(userContentSeq, lastMessageId, limit);
+        List<ChatHistoryResponseDTO> messages = learningChatService.getChatsByContentAndUser(
+                userUUID,
+                userContentSeq,
+                lastIndate,
+                limit
+        );
 
-        return ResponseEntity.ok(Response.<List<ChatMessageDTO>>builder()
+        return ResponseEntity.ok(Response.<List<ChatHistoryResponseDTO>>builder()
                 .status(Status.OK)
                 .message("대화 기록 조회 성공")
                 .data(messages)
                 .build());
     }
+
 }
