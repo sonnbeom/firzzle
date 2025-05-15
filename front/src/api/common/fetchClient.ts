@@ -79,6 +79,9 @@ export class FetchClient {
     }
 
     try {
+      const cookieHeader = allHeaders.get('cookie');
+      console.log('cookieHeader: ', cookieHeader);
+
       // fetch 요청 응답
       const response = await fetch(apiUrl, {
         ...restOptions,
