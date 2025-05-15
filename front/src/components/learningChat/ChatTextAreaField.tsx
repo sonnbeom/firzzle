@@ -10,9 +10,14 @@ import Icons from '../common/Icons';
 interface ChatTextAreaFieldProps {
   mode: Mode;
   contentId: string;
+  refetch: () => void;
 }
 
-const ChatTextAreaField = ({ mode, contentId }: ChatTextAreaFieldProps) => {
+const ChatTextAreaField = ({
+  mode,
+  contentId,
+  refetch,
+}: ChatTextAreaFieldProps) => {
   const [value, setValue] = useState('');
 
   const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
@@ -39,11 +44,11 @@ const ChatTextAreaField = ({ mode, contentId }: ChatTextAreaFieldProps) => {
 
     try {
       if (mode === '학습모드') {
-        const response = await postLearningChat(contentId, value);
-        console.log(response);
+        await postLearningChat(contentId, value);
       } else {
         await postExamChat(contentId);
       }
+      refetch();
     } catch (error) {
       BasicToaster.error(error.message);
     } finally {

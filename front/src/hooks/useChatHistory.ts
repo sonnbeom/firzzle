@@ -20,6 +20,7 @@ export function useChatHistory<T extends LearningChat>({
     isFetchingNextPage,
     isLoading,
     error,
+    refetch,
   } = useInfiniteQuery({
     queryKey,
     queryFn: async ({ pageParam }) => {
@@ -61,5 +62,6 @@ export function useChatHistory<T extends LearningChat>({
     hasNextPage,
     fetchNextPage,
     observerTarget,
+    refetch,
   };
 }

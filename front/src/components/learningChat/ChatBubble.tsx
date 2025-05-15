@@ -5,7 +5,8 @@ interface ChatBubbleProps {
 }
 
 const ChatBubble = ({ chat }: ChatBubbleProps) => {
-  return chat.type === '0' ? (
+  console.log('chat', chat.type);
+  return chat.type == '1' ? (
     <div className='w-full font-medium whitespace-pre-wrap text-gray-950'>
       {chat.chatText}
     </div>

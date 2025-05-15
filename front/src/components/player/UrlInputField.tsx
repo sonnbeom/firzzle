@@ -3,7 +3,7 @@
 import { debounce } from 'lodash';
 import { useEffect, useState } from 'react';
 import { postContent } from '@/api/content';
-import { getYouTubeVideoInfo } from '@/services/youtubeServices';
+import { fetchYouTubeVideoInfo } from '@/services/youtubeService';
 import { PlayerInfo } from '@/types/player';
 import BasicButton from '../common/BasicButton';
 import BasicToaster from '../common/BasicToaster';
@@ -26,15 +26,12 @@ const UrlInputField = ({
   const handleUrlSubmit = debounce(async (url: string) => {
     if (url.trim().length > 0) {
       try {
-        const videoInfo = await getYouTubeVideoInfo(url);
-        if (videoInfo) {
-          setPlayerInfo(videoInfo);
-        }
+        const playerInfo = await fetchYouTubeVideoInfo(url);
+        setPlayerInfo(playerInfo);
       } catch (error) {
-        setPlayerInfo(null);
         return BasicToaster.error(error.message, {
           id: 'fetch youtube',
-          duration: 3000,
+          duration: 2000,
         });
       }
     }

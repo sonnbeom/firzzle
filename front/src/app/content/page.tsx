@@ -1,6 +1,5 @@
-import BasicToaster from '@/components/common/BasicToaster';
 import PlayerContent from '@/components/player/PlayerContent';
-import { getYouTubeVideoInfo } from '@/services/youtubeServices';
+import { fetchYouTubeVideoInfo } from '@/services/youtubeService';
 import { PlayerInfo } from '@/types/player';
 
 const ContentPage = async ({
@@ -12,14 +11,8 @@ const ContentPage = async ({
   let initialPlayerInfo: PlayerInfo | null = null;
 
   if (url) {
-    try {
-      initialPlayerInfo = await getYouTubeVideoInfo(url);
-    } catch (error) {
-      return BasicToaster.error(error.message, {
-        id: 'fetch youtube',
-        duration: 2000,
-      });
-    }
+    const playerInfo = await fetchYouTubeVideoInfo(url);
+    initialPlayerInfo = playerInfo;
   }
 
   return (

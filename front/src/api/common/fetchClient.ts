@@ -87,12 +87,6 @@ export class FetchClient {
         credentials: 'include',
       });
 
-      const setCookie = response.headers.get('set-cookie');
-
-      if (setCookie) {
-        console.log(setCookie);
-      }
-
       // 401 에러 처리
       if (response.status === 401) {
         throw new Error(response.statusText);
