@@ -221,7 +221,7 @@ public class ImageController {
 
             Response<Object> response = Response.builder()
                     .status(Status.OK)
-                    .data(dataBox.toMap())
+                    .data(dataBox)
                     .build();
 
             return ResponseEntity.ok(response);
@@ -258,7 +258,7 @@ public class ImageController {
                 .imageUrl(dataBox.getString("imageUrl"))
                 .category(dataBox.getString("category"))
                 .description(dataBox.getString("description"))
-                .isPublic(dataBox.getBoolean("isPublic", true))
+                .isPublic(dataBox.getBoolean("isPublic"))
                 .indate(indate)
                 .build();
     }

@@ -1,5 +1,6 @@
 package com.firzzle.common.library;
 
+import com.firzzle.common.config.S3Config;
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.common.library.ConfigSet;
@@ -81,7 +82,7 @@ public class S3ImageManager {
      * @param s3Config S3 설정 객체
      * @throws BusinessException 초기화 오류 시 발생
      */
-    public S3ImageManager(com.firzzle.common.s3.S3Config s3Config) throws BusinessException {
+    public S3ImageManager(S3Config s3Config) throws BusinessException {
         if (s3Config == null) {
             throw new BusinessException(ErrorCode.S3_CONFIG_MISSING, "S3 설정이 null입니다.");
         }

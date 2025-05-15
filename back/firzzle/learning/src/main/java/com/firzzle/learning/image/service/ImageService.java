@@ -1,5 +1,6 @@
 package com.firzzle.learning.image.service;
 
+import com.firzzle.common.config.S3Config;
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.common.library.*;
@@ -27,7 +28,7 @@ public class ImageService {
     private static final Logger logger = LoggerFactory.getLogger(ImageService.class);
 
     private final MyBatisSupport myBatisSupport;
-    private final S3ImageManager s3ImageManager;
+    private final LearningS3Manager s3ImageManager;
 
     /**
      * 이미지 업로드
@@ -73,7 +74,7 @@ public class ImageService {
                     box.getString("category") : "images";
 
             // S3 업로드 (공개 여부 설정)
-            boolean isPublic = box.getBoolean("isPublic", true);
+            boolean isPublic = box.getBoolean("isPublic");
             String savedFilename = s3ImageManager.uploadImage(tempFile, directory, file.getOriginalFilename(), isPublic);
 
             // 임시 파일 삭제
