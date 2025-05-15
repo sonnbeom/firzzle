@@ -1,9 +1,7 @@
 import { InfiniteScrollRequest } from '@/types/common';
 import {
-  SnapReview,
   SnapReviewListResponse,
   UpdateFrameCommentsRequest,
-  UpdateFrameCommentsResponse,
 } from '@/types/snapReview';
 import { api } from './common/apiInstance';
 
@@ -19,17 +17,37 @@ export const getSnapReviews = async (request: InfiniteScrollRequest) => {
 };
 
 // 콘텐츠별 스냅리뷰 조회
-export const getContentSnapReview = async (contentSeq: number) => {
-  return api.get<SnapReview>(`/learning/contents/${contentSeq}/snap-review`);
+export const getContentSnapReview = async (contentSeq: string) => {
+  const response = await fetch(
+    `/api/learning/contents/${contentSeq}/snap-review`,
+  );
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
+  return data;
 };
 
 // 프레임 설명 수정
 export const updateFrameComments = async (
-  contentSeq: number,
+  contentSeq: string,
   request: UpdateFrameCommentsRequest,
 ) => {
-  return api.patch<UpdateFrameCommentsResponse[], UpdateFrameCommentsRequest>(
-    `/learning/contents/${contentSeq}/snap-review`,
-    { body: request },
+  const response = await fetch(
+    `/api/learning/contents/${contentSeq}/snap-review`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(request),
+    },
   );
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
+  return data;
 };

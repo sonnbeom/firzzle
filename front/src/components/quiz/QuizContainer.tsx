@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { getQuiz } from '@/api/quiz';
 import BasicDialog from '@/components/common/BasicDialog';
 import { Button } from '@/components/ui/button';
 import { usePreventNavigation } from '@/hooks/usePreventNavigation';
@@ -9,11 +11,20 @@ import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
 
 interface QuizContainerProps {
-  quizData: QuizData;
   contentSeq: string;
 }
 
-const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
+const QuizContainer = ({ contentSeq }: QuizContainerProps) => {
+  const [quizData, setQuizData] = useState<QuizData>();
+
+  useEffect(() => {
+    const fetchQuizData = async () => {
+      const data = await getQuiz(contentSeq);
+      setQuizData(data.data);
+    };
+    fetchQuizData();
+  }, [contentSeq]);
+
   // useQuiz 훅으로 퀴즈 관련 로직 분리
   const {
     selected,
@@ -44,25 +55,28 @@ const QuizContainer = ({ quizData, contentSeq }: QuizContainerProps) => {
       >
         <Button onClick={confirmNavigation}>확인</Button>
       </BasicDialog>
-
       {/* Quiz */}
       <div className='space-y-6 pb-28'>
-        {quizData.questions.map((question, index) => {
-          if (showAnswer) {
+        {!quizData ? (
+          <div>로딩 중...</div>
+        ) : (
+          quizData.content.questions.map((question, index) => {
+            if (showAnswer) {
+              return (
+                <QuizAnswer
+                  key={question.questionSeq}
+                  {...getAnswerProps(question, index)}
+                />
+              );
+            }
             return (
-              <QuizAnswer
+              <QuizCard
                 key={question.questionSeq}
-                {...getAnswerProps(question, index)}
+                {...getCardProps(question, index, selected, handleSelect)}
               />
             );
-          }
-          return (
-            <QuizCard
-              key={question.questionSeq}
-              {...getCardProps(question, index, selected, handleSelect)}
-            />
-          );
-        })}
+          })
+        )}
       </div>
 
       {/* 도전하기 버튼 */}

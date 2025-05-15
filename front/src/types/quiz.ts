@@ -4,29 +4,37 @@ export interface QuizOption {
   text: string; // 보기내용
 }
 
+export interface Question {
+  questionSeq: number; // 질문번호
+  text: string; // 질문내용
+  type: string; // 질문유형
+  timestamp: number; // 영상시간
+  formattedTimestamp: string; // 영상시간 변환
+  options: QuizOption[];
+  userAnswer: {
+    selectedOptionSeq: number; // 선택 답변
+    isCorrect: boolean; // 정답 유무
+    explanation: string; // 답변 설명
+  } | null;
+}
+
+export interface Content {
+  contentSeq: number; // 영상번호
+  questions: Question[];
+}
+
+export interface Submission {
+  submissionSeq: number;
+  correctAnswers: number; // 맞은 문제
+  totalQuestions: number; // 전체 문제
+  scorePercentage: number; // 점수
+  indate: string; // 제출 시간
+}
+
 // 퀴즈 데이터 타입
 export interface QuizData {
-  contentSeq: number; // 영상번호
-  questions: {
-    questionSeq: number; // 질문번호
-    text: string; // 질문내용
-    type: string; // 질문유형
-    timestamp: number; // 영상시간
-    formattedTimestamp: string; // 영상시간 변환
-    options: QuizOption[];
-    userAnswer: {
-      selectedOptionSeq: number; // 선택 답변
-      isCorrect: boolean; // 정답 유무
-      explanation: string; // 답변 설명
-    } | null;
-  }[];
-  submission: {
-    submissionSeq: number;
-    correctAnswers: number; // 맞은 문제
-    totalQuestions: number; // 전체 문제
-    scorePercentage: number; // 점수
-    indate: string; // 제출 시간
-  } | null;
+  content: Content;
+  submission: Submission;
 }
 
 // 퀴즈 제출 요청 타입
