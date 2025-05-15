@@ -452,13 +452,14 @@ public class AuthController {
 
         // SameSite 속성 설정 (크로스 사이트 요청 제한)
         // HttpServletResponse가 직접 SameSite 속성을 지원하지 않아 헤더로 추가
-        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=None",
-                refreshTokenCookie.getName(),
-                refreshTokenCookie.getValue(),
-                refreshTokenCookie.getMaxAge(),
-                refreshTokenCookie.getPath());
-
-        response.addHeader("Set-Cookie", cookieHeader);
+//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=None",
+//                refreshTokenCookie.getName(),
+//                refreshTokenCookie.getValue(),
+//                refreshTokenCookie.getMaxAge(),
+//                refreshTokenCookie.getPath());
+//
+//        response.addHeader("Set-Cookie", cookieHeader);
+        response.addCookie(refreshTokenCookie);
 
 //        // HTTP-Only 쿠키 생성
 //        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
