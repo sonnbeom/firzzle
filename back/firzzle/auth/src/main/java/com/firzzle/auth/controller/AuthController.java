@@ -627,11 +627,27 @@ public class AuthController {
                     .refreshToken(dataBox.getString("refreshToken"))
                     .expiresIn(dataBox.getLong2("expiresIn"))
                     .tokenType(dataBox.getString("tokenType"))
-                    .issuedAt(parseDateTime(FormatDate.getDate("yyyyMMddHHmmss")))
+                    .issuedAt(formatDateTime(FormatDate.getDate("yyyyMMddHHmmss")))
                     .build();
         } catch (Exception e) {
             logger.error("TokenResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
             return new TokenResponseDTO();
+        }
+    }
+
+    /**
+     * YYYYMMDDHHMMSS 형식의 날짜 문자열을 포맷된 문자열로 변환
+     */
+    private String formatDateTime(String dateTimeStr) {
+        if (dateTimeStr == null || dateTimeStr.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return FormatDate.getFormatDate(dateTimeStr, "yyyy-MM-dd HH:mm:ss");
+        } catch (Exception e) {
+            logger.error("날짜 변환 중 오류 발생: {}", e.getMessage());
+            return dateTimeStr;
         }
     }
 
