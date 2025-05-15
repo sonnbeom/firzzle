@@ -11,5 +11,7 @@ export const logout = async () => {
     throw new Error(data.message);
   }
 
+  window.location.href = '/';
+
   return data.message;
 };
