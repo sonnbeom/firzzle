@@ -157,6 +157,7 @@ spring:
               - "http://localhost:5173"
               - "http://localhost:5174"
               - "http://localhost:8080"
+              - "https://localhost:3000"
             allowedMethods:
               - GET
               - POST
@@ -203,6 +204,7 @@ spring:
               - "http://localhost:5173" # 개발 끝나면 삭제
               - "http://localhost:5174" # 개발 끝나면 삭제
               - "http://localhost:8080" # 개발 끝나면 삭제
+              - "https://localhost:3000" # 개발 끝나면 삭제
             allowedMethods:
               - GET
               - POST
@@ -253,6 +255,7 @@ spring:
               - "http://localhost:5173" # 개발 끝나면 삭제
               - "http://localhost:5174" # 개발 끝나면 삭제
               - "http://localhost:8080" # 개발 끝나면 삭제
+              - "https://localhost:3000" # 개발 끝나면 삭제
             allowedMethods:
               - GET
               - POST
