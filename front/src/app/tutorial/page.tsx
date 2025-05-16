@@ -1,9 +1,8 @@
 // page.tsx
 import React from 'react';
 import InfoBanner from '@/components/tutorial/InfoBanner';
-import StepFour from '@/components/tutorial/StepFour';
 import StepFive from '@/components/tutorial/StepFive';
-
+import StepFour from '@/components/tutorial/StepFour';
 import StepOne from '@/components/tutorial/StepOne';
 import StepSix from '@/components/tutorial/StepSix';
 import StepThree from '@/components/tutorial/StepThree';

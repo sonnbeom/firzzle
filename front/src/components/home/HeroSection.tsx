@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import OAuthButton from './OAuthButton';
 
@@ -31,9 +32,11 @@ const HeroSection = () => {
               oauth='kakao'
               title='카카오톡으로 시작하기'
             />
-            <Button size='lg' variant='outline' className='bg-transparent'>
-              기능 둘러보기
-            </Button>
+            <Link href='/tutorial'>
+              <Button size='lg' variant='outline' className='bg-transparent'>
+                기능 둘러보기
+              </Button>
+            </Link>
           </div>
         </div>
 
