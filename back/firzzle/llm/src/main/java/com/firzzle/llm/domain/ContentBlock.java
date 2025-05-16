@@ -9,6 +9,6 @@ public class ContentBlock {
     private String summary_Easy;
     private String summary_High;
     private OxQuizBlock oxQuiz;
-    private DescriptiveQuizBlock descriptiveQuiz;
+    private ExamBlock Exam;
 }
 

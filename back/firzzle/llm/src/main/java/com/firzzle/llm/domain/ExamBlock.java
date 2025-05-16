@@ -3,7 +3,7 @@ package com.firzzle.llm.domain;
 import lombok.Data;
 
 @Data
-public class DescriptiveQuizBlock {
+public class ExamBlock {
     private String question;
     private String answer;
 }
