@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.firzzle.llm.domain.ModelType;
-import com.firzzle.llm.dto.ChatCompletionRequest;
+import com.firzzle.llm.dto.ChatCompletionRequestDTO;
 
 import io.netty.resolver.DefaultAddressResolverGroup;
 import reactor.netty.http.client.HttpClient;
@@ -53,7 +53,7 @@ public class OpenAiClient {
     private String learningChatModel;
 
     @Async("llmExecutor")
-    public CompletableFuture<String> getChatCompletionAsync(ChatCompletionRequest chatCompletionRequest) {
+    public CompletableFuture<String> getChatCompletionAsync(ChatCompletionRequestDTO chatCompletionRequest) {
         // ✅ 모델 선택
         String model = switch (chatCompletionRequest.getModelType()) {
             case TIMELINE -> timelineModel;

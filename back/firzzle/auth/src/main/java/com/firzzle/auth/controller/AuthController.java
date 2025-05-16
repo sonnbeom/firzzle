@@ -350,7 +350,7 @@ public class AuthController {
         // 루트 경로의 쿠키 삭제
         ResponseCookie cookie = ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .path("/")               // 루트 경로
                 .maxAge(0)               // 즉시 만료
                 .sameSite("None")
@@ -443,13 +443,32 @@ public class AuthController {
         // 쿠키 만료 시간 (30일)
         int cookieMaxAge = 30 * 24 * 60 * 60;
 
-        // HTTP-Only 쿠키 생성
+        // 리프레시 토큰 쿠키 설정
+//        Cookie refreshTokenCookie = new Cookie("refresh_token", refreshToken);
+//        refreshTokenCookie.setHttpOnly(true);          // JavaScript에서 접근 불가
+//        refreshTokenCookie.setSecure(true);            // HTTPS에서만 전송
+//        refreshTokenCookie.setPath("/service/api/v1/auth");    // 모든 경로에서 접근 가능
+//        refreshTokenCookie.setMaxAge(cookieMaxAge);    // 쿠키 유효 기간
+//        response.addCookie(refreshTokenCookie);
+
+        // SameSite 속성 설정 (크로스 사이트 요청 제한)
+        // HttpServletResponse가 직접 SameSite 속성을 지원하지 않아 헤더로 추가
+//        String cookieHeader = String.format("%s=%s; Max-Age=%d; Path=%s; HttpOnly; Secure; SameSite=None",
+//                refreshTokenCookie.getName(),
+//                refreshTokenCookie.getValue(),
+//                refreshTokenCookie.getMaxAge(),
+//                refreshTokenCookie.getPath());
+//
+//        response.addHeader("Set-Cookie", cookieHeader);
+//        response.addCookie(refreshTokenCookie);
+
+//        // HTTP-Only 쿠키 생성
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
-                .httpOnly(true)          // JavaScript에서 접근 불가능
-                .secure(false)            // HTTPS 전송만 허용
-                .path("/")               // 모든 경로에서 사용 가능
-                .maxAge(cookieMaxAge)    // 쿠키 유효 기간
-                .sameSite("None")        // 크로스 사이트 요청 설정
+                .httpOnly(true)                 // JavaScript에서 접근 불가능
+                .secure(true)                   // HTTPS 전송만 허용
+                .path("/")   // auth 경로에서 사용 가능
+                .maxAge(cookieMaxAge)           // 쿠키 유효 기간
+                .sameSite("None")               // 크로스 사이트 요청 설정
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -608,11 +627,27 @@ public class AuthController {
                     .refreshToken(dataBox.getString("refreshToken"))
                     .expiresIn(dataBox.getLong2("expiresIn"))
                     .tokenType(dataBox.getString("tokenType"))
-                    .issuedAt(parseDateTime(FormatDate.getDate("yyyyMMddHHmmss")))
+                    .issuedAt(formatDateTime(FormatDate.getDate("yyyyMMddHHmmss")))
                     .build();
         } catch (Exception e) {
             logger.error("TokenResponseDTO 변환 중 오류 발생: {}", e.getMessage(), e);
             return new TokenResponseDTO();
+        }
+    }
+
+    /**
+     * YYYYMMDDHHMMSS 형식의 날짜 문자열을 포맷된 문자열로 변환
+     */
+    private String formatDateTime(String dateTimeStr) {
+        if (dateTimeStr == null || dateTimeStr.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return FormatDate.getFormatDate(dateTimeStr, "yyyy-MM-dd HH:mm:ss");
+        } catch (Exception e) {
+            logger.error("날짜 변환 중 오류 발생: {}", e.getMessage());
+            return dateTimeStr;
         }
     }
 
