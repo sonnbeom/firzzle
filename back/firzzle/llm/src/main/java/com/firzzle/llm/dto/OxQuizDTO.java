@@ -1,5 +1,7 @@
 package com.firzzle.llm.dto;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -36,4 +38,6 @@ public class OxQuizDTO {
 
     @Schema(description = "삭제 여부 (기본값 N)", example = "N")
     private String deleteYn = "N";
+    
+    private List<OxQuizOptionDTO> options; // 보기들
 }

@@ -14,7 +14,7 @@ public interface ChatMapper {
     // 대화 등록
     int insertChat(ChatDTO chat);
 
-    List<ChatHistoryResponseDTO> selectChatsByCursor(
+    List<ChatDTO> selectChatsByCursor(
     	    @Param("contentSeq") Long contentSeq,
     	    @Param("userSeq") Long userSeq,
     	    @Param("lastIndate") String lastIndate,  // null이면 처음 로딩

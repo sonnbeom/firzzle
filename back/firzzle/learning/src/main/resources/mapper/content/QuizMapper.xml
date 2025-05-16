@@ -32,6 +32,7 @@
             UC.user_content_seq,
             UC.progress,
             UC.last_accessed_at
+            , UC.user_content_seq
         FROM
             fb_ai_user_contents UC
                 JOIN fb_ai_contents C ON UC.content_seq = C.content_seq

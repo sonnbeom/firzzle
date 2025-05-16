@@ -294,7 +294,7 @@ public class ContentController {
                 completedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
         try {
             return ContentResponseDTO.builder()
-                    .contentSeq(dataBox.getLong2("d_content_seq"))
+                    .contentSeq(dataBox.getLong2("d_user_content_seq"))
                     .title(dataBox.getString("d_title"))
                     .description(dataBox.getString("d_description"))
                     .contentType(dataBox.getString("d_category"))

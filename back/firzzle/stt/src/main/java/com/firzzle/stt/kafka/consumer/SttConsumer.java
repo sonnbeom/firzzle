@@ -24,12 +24,14 @@ public class SttConsumer {
 
         try {
             String[] parts = message.split("\\|", 2); // 구분자 | 기준으로 나눔
-            Long userSeq = Long.parseLong(parts[0]);
+//            Long userSeq = Long.parseLong(parts[0]);
+            String uuid = parts[0];
             String url = parts[1];
 
-            log.info("🔍 Parsed userSeq: {}, url: {}", userSeq, url);
+            log.info("🔍 Parsed userSeq: {}, url: {}", uuid, url);
 
-            LlmRequest result = sttService.transcribeFromYoutube(userSeq,url);
+//            LlmRequest result = sttService.transcribeFromYoutube(userSeq,url);
+            LlmRequest result = sttService.transcribeFromYoutube(uuid,url);
             sttProducer.sendSttResult(result.getContentSeq(), result.getScript());
         } catch (Exception e) {
             log.error("❌ STT 처리 중 오류 또는 메시지 포맷 문제", e);

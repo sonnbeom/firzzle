@@ -21,7 +21,7 @@ public class PromptFactory {
                 .modelType(ModelType.LEARNINGCHAT)
                 .temperature(0.7)
                 .topP(1.0)
-                .maxTokens(1024)
+                .maxTokens(8192)
                 .build();
      }
 
@@ -32,7 +32,7 @@ public class PromptFactory {
                 .modelType(ModelType.SUMMARY)
                 .temperature(0.3)
                 .topP(1.0)
-                .maxTokens(null)
+                .maxTokens(8192)
                 .build();
 	 }
      
@@ -43,7 +43,7 @@ public class PromptFactory {
                 .modelType(ModelType.TIMELINE)
                 .temperature(0.3)
                 .topP(1.0)
-                .maxTokens(2048)
+                .maxTokens(8192)
                 .build();
 	 }
 }

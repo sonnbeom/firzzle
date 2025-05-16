@@ -36,7 +36,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     // 개발 모드 플래그 - true로 설정하면 JWT 검증 없이 개발용 사용자 정보 사용
-    private static final boolean DEV_MODE = false;
+    private static final boolean DEV_MODE = true;
 
     // 개발 환경에서 사용할 고정 사용자 정보
     private static final String DEV_UUID = "07f670f0-2853-11f0-aeb6-c68431894852";
