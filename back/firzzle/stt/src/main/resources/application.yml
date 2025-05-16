@@ -93,7 +93,7 @@ spring:
   kafka:
     listener:
       auto-startup: false
-    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: stt-group
       auto-offset-reset: earliest
