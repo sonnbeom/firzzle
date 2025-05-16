@@ -84,11 +84,6 @@ public class SnapReviewController {
                     .data(responseDTO)
                     .build();
 
-            // 스냅리뷰 조회 로깅 => ELK
-            String referer = box.getString("referer");
-            String uuid = box.getString("uuid");
-            log(userPreferenceLog(uuid, referer.toUpperCase(), "SNAP_REVIEW_READ"));
-
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
             logger.error("스냅리뷰 조회 중 비즈니스 예외 발생: {}", e.getMessage());

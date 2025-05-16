@@ -76,8 +76,11 @@
     <select id="selectContentDataBox" resultType="DataBox" parameterType="RequestBox">
         SELECT
         <include refid="contentColumns" />
+        , UC.user_content_seq
         FROM
         fb_ai_contents C
+        JOIN
+        fb_ai_user_contents UC ON C.content_seq = UC.content_seq
         WHERE
         C.content_seq = #{contentSeq}
         AND C.delete_yn = 'N'
@@ -89,6 +92,7 @@
         <include refid="contentColumns" />,
         UC.progress as progress,
         UC.last_accessed_at as last_accessed_at
+        , UC.user_content_seq
         FROM
         fb_ai_user_contents UC
         JOIN
@@ -104,7 +108,7 @@
         SELECT
         <include refid="contentColumns" />
         FROM
-        fb_ai_contents
+        fb_ai_contents C
         WHERE
         video_id = #{videoId}
         AND delete_yn = 'N'
@@ -146,6 +150,7 @@
         </choose>
         <include refid="PageMapper.eorder"/>
         <include refid="contentColumns" />
+        , UC.user_content_seq
         FROM
         fb_ai_contents C
         JOIN

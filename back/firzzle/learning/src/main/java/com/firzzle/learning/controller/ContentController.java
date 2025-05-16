@@ -74,8 +74,6 @@ public class ContentController {
             HttpServletRequest request
 //            , @RequestBody Map<String, Object> requestBody // ContentRequestDTO를 없앤다면
     ) {
-
-
         logger.info("콘텐츠 등록 요청 - URL: {}", contentRequestDTO.getYoutubeUrl());
 
         try {
@@ -91,13 +89,26 @@ public class ContentController {
             box.put("tags", contentRequestDTO.getTags() != null ? contentRequestDTO.getTags() : "");
 
             DataBox dataBox = contentService.insertContent(box);
-            ContentResponseDTO registeredContent = convertToContentResponseDTO(dataBox);
 
-            Response<ContentResponseDTO> response = Response.<ContentResponseDTO>builder()
-                    .status(Status.OK)
-                    .message("콘텐츠가 성공적으로 등록되었습니다.")
-                    .data(registeredContent)
-                    .build();
+            Response<ContentResponseDTO> response;
+
+            if (dataBox == null) {
+                // 콘텐츠가 생성 중인 경우
+                response = Response.<ContentResponseDTO>builder()
+                        .status(Status.OK)
+                        .message("콘텐츠가 생성 중입니다. 잠시 후 확인해주세요.")
+                        .data(null)
+                        .build();
+            } else {
+                // 콘텐츠가 이미 생성된 경우
+                ContentResponseDTO registeredContent = convertToContentResponseDTO(dataBox);
+
+                response = Response.<ContentResponseDTO>builder()
+                        .status(Status.OK)
+                        .message("콘텐츠가 성공적으로 등록되었습니다.")
+                        .data(registeredContent)
+                        .build();
+            }
 
             // 컨텐츠 생성 로깅 => ELK
             String userId = box.getString("uuid");
@@ -283,7 +294,7 @@ public class ContentController {
                 completedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) : "";
         try {
             return ContentResponseDTO.builder()
-                    .contentSeq(dataBox.getLong2("d_content_seq"))
+                    .contentSeq(dataBox.getLong2("d_user_content_seq"))
                     .title(dataBox.getString("d_title"))
                     .description(dataBox.getString("d_description"))
                     .contentType(dataBox.getString("d_category"))

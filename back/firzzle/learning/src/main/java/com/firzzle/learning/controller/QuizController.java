@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.firzzle.common.logging.dto.UserActionLog.userPreferenceLog;
-import static com.firzzle.common.logging.service.LoggingService.log;
 
 /**
  * @Class Name : QuizController.java
@@ -90,11 +88,6 @@ public class QuizController {
                     .status(Status.OK)
                     .data(quizResponseDTO)
                     .build();
-
-            //퀴즈 조회 로깅 => ELK
-            String referer = box.getString("referer");
-            String userId = box.getString("uuid");
-            log(userPreferenceLog(userId, referer.toUpperCase(), "QUIZ_READ"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
@@ -179,7 +172,7 @@ public class QuizController {
         }
 
         // 콘텐츠 정보 변환
-        Long contentSeq = dataBox.getLong2("d_content_seq");
+        Long contentSeq = dataBox.getLong2("d_user_content_seq");
 
         // 문제 정보 변환
         List<QuizResponseDTO.QuestionDTO> questions = new ArrayList<>();
@@ -370,7 +363,7 @@ public class QuizController {
         // 제출 정보 DTO 생성
         QuizSubmissionResponseDTO.SubmissionDTO submissionDTO = QuizSubmissionResponseDTO.SubmissionDTO.builder()
                 .seq(dataBox.getLong2("d_submission_seq"))
-                .contentSeq(dataBox.getLong2("d_content_seq"))
+                .contentSeq(dataBox.getLong2("d_user_content_seq"))
                 .correctAnswers(dataBox.getInt2("d_correct"))
                 .totalQuestions(dataBox.getInt2("d_total"))
                 .scorePercentage(percentage)

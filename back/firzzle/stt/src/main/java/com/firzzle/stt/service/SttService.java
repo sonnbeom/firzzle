@@ -10,6 +10,11 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.scheduling.annotation.Async;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
@@ -18,21 +23,22 @@ import com.firzzle.stt.dto.LlmRequest;
 import com.firzzle.stt.dto.UserContentDTO;
 import com.firzzle.stt.kafka.producer.SttConvertedProducer;
 import com.firzzle.stt.mapper.UserContentMapper;
+import com.firzzle.stt.mapper.UserMapper;
 import com.firzzle.stt.util.SubtitleUtil;
 import com.firzzle.stt.util.TimeUtil;
-
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class SttService {
 
     private static final Logger logger = LoggerFactory.getLogger(SttService.class);
-    private static final boolean DEV_MODE = false;
+    private static final boolean DEV_MODE = true;
 
     @Value("${app.file-storage.upload-dir}")
     private String uploadDir;
@@ -46,64 +52,79 @@ public class SttService {
     private final WebClient.Builder webClientBuilder;
     private final ContentService contentService;
     private final SttConvertedProducer sttConvertedProducer;
-    private final UserContentMapper userContentMapper; // ✅ Mapper 주입
+    private final UserContentMapper userContentMapper;
+    private final UserMapper userMapper;
 
-    public LlmRequest transcribeFromYoutube(Long userSeq, String url) throws Exception {
-        String videoId = contentService.extractYoutubeId(url);
-
-        return DEV_MODE
-                ? extractSubtitleViaLocalProxy(userSeq, url, videoId)
-                : extractSubtitleDirect(userSeq, url, videoId);
+    @Async
+    public CompletableFuture<LlmRequest> transcribeFromYoutube(String uuid, String url) {
+        return CompletableFuture.supplyAsync(() -> contentService.extractYoutubeId(url))
+                .thenCompose(videoId -> DEV_MODE
+                        ? extractSubtitleViaLocalProxy(uuid, url, videoId)
+                        : extractSubtitleDirect(uuid, url, videoId));
     }
 
-    public LlmRequest extractSubtitleViaLocalProxy(Long userSeq, String url, String videoId) throws Exception {
-        WebClient webClient = webClientBuilder
-                .baseUrl(externalUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader("X-API-KEY", secretKey)
-                .build();
+    @Async
+    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId) {
+        return CompletableFuture.supplyAsync(() -> userMapper.selectUserSeqByUuid(uuid))
+                .thenCompose(userSeq -> {
+                    HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
 
-        Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+                    WebClient webClient = WebClient.builder()
+                            .clientConnector(new ReactorClientHttpConnector(httpClient))
+                            .baseUrl(externalUrl)
+                            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .defaultHeader("X-API-KEY", secretKey)
+                            .build();
 
-        Map<String, Object> response = webClient.post()
-                .uri("/api/v1/extract")
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                .block();
+                    Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
 
-        if (response == null || !response.containsKey("script")) {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-        }
+                    return webClient.post()
+                            .uri("/api/v1/extract")
+                            .bodyValue(requestBody)
+                            .retrieve()
+                            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                            .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
+                            .toFuture()
+                            .thenApply(response -> {
+                                if (!response.containsKey("script"))
+                                    throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
 
-        ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-        return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
+                                ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+                                return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
+                            });
+                });
     }
 
-    public LlmRequest extractSubtitleDirect(Long userSeq, String url, String videoId) throws Exception {
-        runAndPrint(new ProcessBuilder(
-                "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
-                "--write-auto-sub", "--sub-lang", "ko", "--sub-format", "vtt", "--convert-subs", "srt",
-                "--skip-download", "--output", videoId + ".%(ext)s", url
-        ).directory(new File(uploadDir)).redirectErrorStream(true));
+    @Async
+    public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Long userSeq = userMapper.selectUserSeqByUuid(uuid);
+                runAndPrint(new ProcessBuilder("yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
+                        "--write-auto-sub", "--sub-lang", "ko", "--sub-format", "vtt", "--convert-subs", "srt",
+                        "--skip-download", "--output", videoId + ".%(ext)s", url)
+                        .directory(new File(uploadDir)).redirectErrorStream(true));
 
-        String scripts = printDownloadedFiles(videoId);
-        if (scripts == null) {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-        }
+                String scripts = printDownloadedFiles(videoId);
+                if (scripts == null) {
+                    throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+                }
 
-        ProcessBuilder metadataExtractor = new ProcessBuilder(
-                "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
-                "--skip-download", "--print",
-                "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s",
-                "--encoding", "utf-8", url
-        ).redirectErrorStream(true);
+                ProcessBuilder metadataExtractor = new ProcessBuilder("yt-dlp", "--no-check-certificate", "--referer",
+                        "https://www.youtube.com", "--skip-download", "--print",
+                        "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s", "--encoding",
+                        "utf-8", url).redirectErrorStream(true);
 
-        List<String> lines = readProcessOutput(metadataExtractor.start());
-        ContentDTO contentDTO = parseMetadata(videoId, url, lines);
-        return processFinalResult(userSeq, contentDTO, scripts);
+                List<String> lines = readProcessOutput(metadataExtractor.start());
+                ContentDTO contentDTO = parseMetadata(videoId, url, lines);
+                return processFinalResult(userSeq, contentDTO, scripts);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
+    @Async
     @Transactional
     public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script) {
         contentService.insertContent(contentDTO);
@@ -117,13 +138,14 @@ public class SttService {
         return new LlmRequest(contentDTO.getContentSeq(), script);
     }
 
+    
     private void saveUserContent(Long userSeq, Long contentSeq) {
         UserContentDTO userContentDTO = new UserContentDTO();
         userContentDTO.setUserSeq(userSeq);
         userContentDTO.setContentSeq(contentSeq);
         userContentDTO.setLastAccessedAt(TimeUtil.getCurrentTimestamp14());
         userContentDTO.setIndate(TimeUtil.getCurrentTimestamp14());
-        userContentMapper.insertUserContent(userContentDTO); // ✅ Mapper 방식
+        userContentMapper.insertUserContent(userContentDTO);
     }
 
     public String printDownloadedFiles(String videoId) throws IOException {
@@ -146,15 +168,14 @@ public class SttService {
     private void runAndPrint(ProcessBuilder pb) throws Exception {
         Process process = pb.start();
         List<String> outputLines = readProcessOutput(process);
-
-        String allOutput = String.join("\n", outputLines);
-        logger.error("📌 yt-dlp 전체 로그:\n{}", allOutput);
+        logger.error("📌 yt-dlp 전체 로그:\n{}", String.join("\n", outputLines));
 
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            if (allOutput.contains("Unsupported URL") || allOutput.contains("HTTP Error 404")) {
+            String output = String.join("\n", outputLines);
+            if (output.contains("Unsupported URL") || output.contains("HTTP Error 404")) {
                 throw new BusinessException(ErrorCode.INVALID_YOUTUBE_URL);
-            } else if (allOutput.contains("No subtitles") || allOutput.contains("There are no subtitles")) {
+            } else if (output.contains("No subtitles") || output.contains("There are no subtitles")) {
                 throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
             } else {
                 throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
