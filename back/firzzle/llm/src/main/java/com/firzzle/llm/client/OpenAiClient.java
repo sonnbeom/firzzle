@@ -74,7 +74,7 @@ public class OpenAiClient {
         // ✅ 파라미터 추출 (기본값 포함)
         double temperature = Optional.ofNullable(chatCompletionRequest.getTemperature()).orElse(0.7);
         double topP = Optional.ofNullable(chatCompletionRequest.getTopP()).orElse(1.0);
-        int maxTokens = Optional.ofNullable(chatCompletionRequest.getMaxTokens()).orElse(1024);
+        int maxTokens = Optional.ofNullable(chatCompletionRequest.getMaxTokens()).orElse(4096);
 
         // ✅ 요청 본문 구성
         Map<String, Object> body = new HashMap<>();
