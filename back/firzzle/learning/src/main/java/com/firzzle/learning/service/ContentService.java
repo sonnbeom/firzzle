@@ -8,6 +8,7 @@ import com.firzzle.common.library.MyBatisSupport;
 import com.firzzle.common.library.MyBatisTransactionManager;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.learning.dao.ContentDAO;
+import com.firzzle.learning.kafka.producer.LearningProducer;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class ContentService {
     private static final Logger logger = LoggerFactory.getLogger(ContentService.class);
 
     private final ContentDAO contentDAO;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final LearningProducer learningProducer;
     private final MyBatisSupport myBatisSupport;
 
     @Value("${app.kafka.topic.content-analysis}")
@@ -516,8 +517,9 @@ public class ContentService {
             // 메시지 형식: "uuid|url"
             String message = uuid + "|" + url;
 
-            // Kafka 메시지 발송 (to-stt 토픽으로 변경)
-            kafkaTemplate.send("to-stt", message);
+            // LearningProducer 사용
+            learningProducer.sendToStt(message);
+
             logger.debug("콘텐츠 분석 큐에 등록 완료 - 사용자: {}, URL: {}", uuid, url);
         } catch (Exception e) {
             logger.error("콘텐츠 분석 큐 등록 중 오류 발생: {}", e.getMessage(), e);

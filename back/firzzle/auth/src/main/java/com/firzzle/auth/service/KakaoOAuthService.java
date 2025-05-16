@@ -159,13 +159,12 @@ public class KakaoOAuthService {
             String profileImageUrl = properties.get("profile_image") != null ?
                     (String) properties.get("profile_image") : null;
 
-            if (email == null) {
-//                throw new BusinessException(ErrorCode.MISSING_OAUTH_INFO, "카카오 계정에 이메일 정보가 없습니다.");
-                email = "test@test.com";
+            // 이메일이 없는 경우 카카오 ID를 사용하여 유니크한 이메일 생성
+            if (email == null || email.isEmpty()) {
+                email = "kakao_" + id + "@example.com";  // 카카오 ID를 사용한 유니크한 이메일
             }
 
             if (profileImageUrl == null) {
-//                throw new BusinessException(ErrorCode.MISSING_OAUTH_INFO, "카카오 계정에 프로필 정보가 없습니다.");
                 profileImageUrl = "https://picsum.photos/250/250";
             }
 
