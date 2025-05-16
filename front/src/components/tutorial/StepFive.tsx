@@ -9,16 +9,18 @@ const StepFive: React.FC = () => {
           <div className='mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-400 font-semibold text-white'>
             5
           </div>
+
           <div className='w-full'>
             <h3 className='mb-2 text-xl font-bold'>
               스냅리뷰로 핵심 장면 정리
             </h3>
             <p className='mb-4 text-gray-600'>
-              AI가 영상에서 추출한 핵심 장면을 '인생네컷' 스타일의 프레임으로
-              정리하고, 각 장면에 대한 설명을 직접 작성할 수 있습니다. 각
-              프레임을 클릭하면 해당 영상 구간이 재생되며, 작성한 스냅리뷰는
-              링크로 공유하여 다른 사람들과 학습 내용을 나눌 수 있습니다. 학습
-              내용을 자신만의 언어로 정리하면 기억에 오래 남습니다.
+              AI가 영상에서 추출한 핵심 장면을 &apos;인생네컷&apos; 스타일의
+              프레임으로 정리하고, 각 장면에 대한 설명을 직접 작성할 수
+              있습니다. 각 프레임을 클릭하면 해당 영상 구간이 재생되며, 작성한
+              스냅리뷰는 링크로 공유하여 다른 사람들과 학습 내용을 나눌 수
+              있습니다. 학습 내용을 자신만의 언어로 정리하면 기억에 오래
+              남습니다.
             </p>
 
             <div className='rounded-lg bg-gray-50 p-6'>
