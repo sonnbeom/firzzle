@@ -2,37 +2,34 @@ package com.firzzle.stt.kafka.consumer;
 
 import com.firzzle.stt.kafka.producer.SttConvertedProducer;
 import com.firzzle.stt.service.SttService;
-import com.firzzle.stt.dto.LlmRequest;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SttConsumer {
-
-    private final SttConvertedProducer sttProducer;
     private final SttService sttService;
 
-    // 메시지 형식: "12345|https://youtube.com/watch?v=abcde"
     @KafkaListener(topics = "to-stt", groupId = "stt-group")
     public void consumeFromLearning(String message) {
         log.info("📥 Received raw message: {}", message);
+        handleMessageAsync(message);
+    }
 
+    @Async("taskExecutor") // application에 taskExecutor 빈 등록 필요
+    public void handleMessageAsync(String message) {
         try {
-            String[] parts = message.split("\\|", 2); // 구분자 | 기준으로 나눔
-//            Long userSeq = Long.parseLong(parts[0]);
+            String[] parts = message.split("\\|", 2);
             String uuid = parts[0];
             String url = parts[1];
 
-            log.info("🔍 Parsed userSeq: {}, url: {}", uuid, url);
+            log.info("🔍 Parsed uuid: {}, url: {}", uuid, url);
 
-//            LlmRequest result = sttService.transcribeFromYoutube(userSeq,url);
-            LlmRequest result = sttService.transcribeFromYoutube(uuid,url);
-            sttProducer.sendSttResult(result.getContentSeq(), result.getScript());
+            sttService.transcribeFromYoutube(uuid, url); // 비동기 처리 (sendSttResult 포함)
         } catch (Exception e) {
             log.error("❌ STT 처리 중 오류 또는 메시지 포맷 문제", e);
         }
