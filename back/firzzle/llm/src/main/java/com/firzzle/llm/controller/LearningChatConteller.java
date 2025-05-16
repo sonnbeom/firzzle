@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.llm.dto.ChatHistoryResponseDTO;
+import com.firzzle.llm.dto.ExamsDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
+import com.firzzle.llm.dto.NextExamResponseDTO;
 import com.firzzle.llm.service.LearningChatService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -94,19 +96,29 @@ public class LearningChatConteller {
                 .build());
     }
     
-//    @GetMapping("/exam/{contentSeq}/next")
-//    public ResponseEntity<Response<ExamDTO>> getNextExam(
-//            @RequestHeader("X-User-UUID") String userUUID,
-//            @PathVariable Long contentSeq
-//    ) {
-//        Long userSeq = userMapper.selectUserSeqByUuid(userUUID);
-//        ExamDTO nextExam = learningChatService.getRandomUnsolvedExam(userSeq, contentSeq);
-//
-//        return ResponseEntity.ok(Response.<ExamDTO>builder()
-//                .status(Status.OK)
-//                .message("랜덤 문제 조회 성공")
-//                .data(nextExam)
-//                .build());
-//    }
+    @GetMapping("/exam/{ContentSeq}/next")
+    public CompletableFuture<ResponseEntity<Response<NextExamResponseDTO>>> getNextExam(
+	       @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
+	       @RequestHeader(value = "X-User-UUID", required = true) String userUUID,
+    		
+           @Parameter(description = "사용자 콘텐츠 일련번호", required = true)
+           @PathVariable("ContentSeq") Long userContentSeq
+    ) {
+    	
+        return learningChatService.getNextExam(userUUID, userContentSeq)
+                .thenApply(result -> ResponseEntity.ok(
+                        Response.<NextExamResponseDTO>builder()
+                                .status(Status.OK)
+                                .message("질문 응답 성공")
+                                .data(result)
+                                .build()
+                ))
+                .exceptionally(e -> ResponseEntity.status(500).body(
+                        Response.<NextExamResponseDTO>builder()
+                                .status(Status.FAIL)
+                                .message("러닝챗 오류: " + e.getMessage())
+                                .build()
+                ));
+    }
 
 }
