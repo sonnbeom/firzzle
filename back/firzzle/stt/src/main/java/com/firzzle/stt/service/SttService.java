@@ -18,6 +18,7 @@ import com.firzzle.stt.dto.LlmRequest;
 import com.firzzle.stt.dto.UserContentDTO;
 import com.firzzle.stt.kafka.producer.SttConvertedProducer;
 import com.firzzle.stt.mapper.UserContentMapper;
+import com.firzzle.stt.mapper.UserMapper;
 import com.firzzle.stt.util.SubtitleUtil;
 import com.firzzle.stt.util.TimeUtil;
 
@@ -32,7 +33,7 @@ import java.util.*;
 public class SttService {
 
     private static final Logger logger = LoggerFactory.getLogger(SttService.class);
-    private static final boolean DEV_MODE = false;
+    private static final boolean DEV_MODE = true;
 
     @Value("${app.file-storage.upload-dir}")
     private String uploadDir;
@@ -47,16 +48,50 @@ public class SttService {
     private final ContentService contentService;
     private final SttConvertedProducer sttConvertedProducer;
     private final UserContentMapper userContentMapper; // ✅ Mapper 주입
+    private final UserMapper userMapper;
 
-    public LlmRequest transcribeFromYoutube(Long userSeq, String url) throws Exception {
+//    public LlmRequest transcribeFromYoutube(Long userSeq, String url) throws Exception {
+//        String videoId = contentService.extractYoutubeId(url);
+//
+//        return DEV_MODE
+//                ? extractSubtitleViaLocalProxy(userSeq, url, videoId)
+//                : extractSubtitleDirect(userSeq, url, videoId);
+//    }
+//
+//    public LlmRequest extractSubtitleViaLocalProxy(Long userSeq, String url, String videoId) throws Exception {
+//        WebClient webClient = webClientBuilder
+//                .baseUrl(externalUrl)
+//                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+//                .defaultHeader("X-API-KEY", secretKey)
+//                .build();
+//
+//        Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+//
+//        Map<String, Object> response = webClient.post()
+//                .uri("/api/v1/extract")
+//                .bodyValue(requestBody)
+//                .retrieve()
+//                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+//                .block();
+//
+//        if (response == null || !response.containsKey("script")) {
+//            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+//        }
+//
+//        ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+//        return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
+//    }
+    
+    public LlmRequest transcribeFromYoutube(String uuid, String url) throws Exception {
         String videoId = contentService.extractYoutubeId(url);
 
         return DEV_MODE
-                ? extractSubtitleViaLocalProxy(userSeq, url, videoId)
-                : extractSubtitleDirect(userSeq, url, videoId);
+                ? extractSubtitleViaLocalProxy(uuid, url, videoId)
+                : extractSubtitleDirect(uuid, url, videoId);
     }
 
-    public LlmRequest extractSubtitleViaLocalProxy(Long userSeq, String url, String videoId) throws Exception {
+    public LlmRequest extractSubtitleViaLocalProxy(String uuid, String url, String videoId) throws Exception {
+    	Long userSeq = userMapper.selectUserSeqByUuid(uuid);
         WebClient webClient = webClientBuilder
                 .baseUrl(externalUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -80,7 +115,8 @@ public class SttService {
         return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
     }
 
-    public LlmRequest extractSubtitleDirect(Long userSeq, String url, String videoId) throws Exception {
+    public LlmRequest extractSubtitleDirect(String uuid, String url, String videoId) throws Exception {
+    	Long userSeq = userMapper.selectUserSeqByUuid(uuid);
         runAndPrint(new ProcessBuilder(
                 "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
                 "--write-auto-sub", "--sub-lang", "ko", "--sub-format", "vtt", "--convert-subs", "srt",
