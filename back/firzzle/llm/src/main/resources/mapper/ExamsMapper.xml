@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
 <mapper namespace="com.firzzle.llm.mapper.ExamsMapper">
+
+    <!-- ✅ 시험 문제 리스트 일괄 삽입 -->
     <insert id="insertExamList" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="examSeq">
         INSERT INTO fb_ai_exams (
             content_seq,
+            question_index,
             question_content,
             model_answer,
             start_time,
@@ -13,6 +19,7 @@
         <foreach collection="list" item="exam" separator=",">
             (
                 #{exam.contentSeq},
+                #{exam.questionIndex},
                 #{exam.questionContent},
                 #{exam.modelAnswer},
                 #{exam.startTime},
@@ -20,5 +27,31 @@
             )
         </foreach>
     </insert>
+
+    <!-- ✅ 전체 시험 문제 개수 조회 -->
+    <select id="selectTotalExamCount" parameterType="long" resultType="int">
+        SELECT COUNT(*)
+        FROM fb_ai_exams
+        WHERE content_seq = #{contentSeq}
+    </select>
+
+    <!-- ✅ 사용자가 이미 답변한 시험 문제 수 조회 -->
+    <select id="selectAnsweredExamCount" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM fb_ai_exams_answer a
+        JOIN fb_ai_exams e ON a.exam_seq = e.exam_seq
+        WHERE e.content_seq = #{contentSeq}
+          AND a.user_seq = #{userSeq}
+    </select>
+
+    <!-- ✅ 다음 시험 문제 조회 (사용자가 아직 풀지 않은 문제 중 question_index가 가장 작은 문제) -->
+	<!-- 사용자 답변 수 기반으로 다음 문제 직접 조회 -->
+	<select id="selectNextExamQuestion" parameterType="map" resultType="com.firzzle.llm.dto.ExamsDTO">
+	    SELECT exam_seq, question_index, question_content
+	    FROM fb_ai_exams
+	    WHERE content_seq = #{contentSeq}
+	      AND question_index = #{nextIndex}
+	    LIMIT 1
+	</select>
 
 </mapper>
