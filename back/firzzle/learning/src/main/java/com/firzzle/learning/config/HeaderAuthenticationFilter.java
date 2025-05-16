@@ -18,7 +18,7 @@ import java.util.List;
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
     // 개발 모드 플래그 - 필요에 따라 변경 가능
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     // 개발 환경에서 사용할 고정 사용자 정보
     private static final String DEV_UUID = "07f670f0-2853-11f0-aeb6-c68431894852";
@@ -132,5 +132,15 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         public String getEmail() {
             return email;
         }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        boolean shouldNotFilter = path.startsWith("/swagger-ui/") ||
+                path.startsWith("/v3/api-docs/") ||
+                path.startsWith("/api-docs/") ||  // 이 부분 추가
+                path.startsWith("/swagger-resources/");
+        return shouldNotFilter;
     }
 }
