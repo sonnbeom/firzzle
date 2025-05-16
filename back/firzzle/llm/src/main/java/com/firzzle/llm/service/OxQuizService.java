@@ -1,6 +1,7 @@
 package com.firzzle.llm.service;
 
 import com.firzzle.llm.dto.OxQuizDTO;
+import com.firzzle.llm.dto.OxQuizOptionDTO;
 import com.firzzle.llm.mapper.OxQuizMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +27,31 @@ public class OxQuizService {
     public void saveOxQuizzes(Long contentSeq, List<OxQuizDTO> oxQuizList) {
         if (oxQuizList == null || oxQuizList.isEmpty()) return;
 
-        List<OxQuizDTO> questions = oxQuizList.stream()
-            .map(ox -> {
-                ox.setContentSeq(contentSeq);
-                ox.setType("OX");
-                ox.setDeleteYn("N");
-                return ox;
-            })
-            .collect(Collectors.toList());
+        for (OxQuizDTO ox : oxQuizList) {
+            ox.setContentSeq(contentSeq);
+            ox.setType("OX");
+            ox.setDeleteYn("N");
 
-        oxQuizMapper.insertQuestions(questions);
-        log.info("✅ OX 퀴즈 {}개 저장 완료", questions.size());
+            // 1. 문제 등록 → examSeq 채워짐
+            oxQuizMapper.insertQuestion(ox);
+
+            // 2. 보기 생성 (O, X)
+            List<OxQuizOptionDTO> options = List.of(
+                OxQuizOptionDTO.builder()
+                    .questionSeq(ox.getQuestionSeq())
+                    .optionValue("O")
+                    .build(),
+               OxQuizOptionDTO.builder()
+                    .questionSeq(ox.getQuestionSeq())
+                    .optionValue("X")
+                    .build()
+            );
+
+            // 3. 보기 저장
+            oxQuizMapper.insertQuestionOptions(options);
+        }
+
+        log.info("✅ OX 퀴즈 {}개 저장 완료", oxQuizList.size());
     }
+
 }
