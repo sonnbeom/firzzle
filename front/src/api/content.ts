@@ -4,9 +4,10 @@ import { ContentListResponse } from '@/types/content';
 import { api } from './common/apiInstance';
 
 // 학습 컨텐츠 분석
-export const postContent = async () => {
+export const postContent = async (youtubeUrl: string) => {
   const response = await fetch('/api/learning/contents', {
     method: 'POST',
+    body: JSON.stringify({ youtubeUrl }),
   });
 
   const data = await response.json();

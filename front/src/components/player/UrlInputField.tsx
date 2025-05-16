@@ -51,7 +51,7 @@ const UrlInputField = ({
   const handleUrlConfirm = async () => {
     setIsSubmitted(true);
     try {
-      await postContent();
+      await postContent(value);
     } catch (error) {
       return BasicToaster.error(error.message, {
         id: 'analyze youtube',

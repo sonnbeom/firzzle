@@ -4,7 +4,10 @@ import { api } from '@/api/common/apiInstance';
 // 학습 컨텐츠 분석
 export async function POST(request: NextRequest) {
   try {
-    const response = await api.post('/learning/contents');
+    const { youtubeUrl } = await request.json();
+    const response = await api.post('/learning/contents', {
+      body: { youtubeUrl },
+    });
 
     if (response.status === 'OK') {
       return NextResponse.json({ message: response.message }, { status: 200 });
