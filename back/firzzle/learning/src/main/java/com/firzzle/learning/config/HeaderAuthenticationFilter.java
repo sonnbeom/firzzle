@@ -139,7 +139,8 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         boolean shouldNotFilter = path.startsWith("/swagger-ui/") ||
                 path.startsWith("/v3/api-docs/") ||
-                path.startsWith("/api-docs/") ||  // 이 부분 추가
+                path.startsWith("/api-docs/") ||
+                path.startsWith("/actuator/health") ||
                 path.startsWith("/swagger-resources/");
         return shouldNotFilter;
     }
