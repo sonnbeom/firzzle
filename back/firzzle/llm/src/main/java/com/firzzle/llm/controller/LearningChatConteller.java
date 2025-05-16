@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.llm.dto.ChatHistoryResponseDTO;
+import com.firzzle.llm.dto.ExamsDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
+import com.firzzle.llm.dto.NextExamResponseDTO;
 import com.firzzle.llm.service.LearningChatService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,11 +46,10 @@ public class LearningChatConteller {
     })
     public CompletableFuture<ResponseEntity<Response<LearningChatResponseDTO>>> trylearningChat(
     		@Parameter(description = "사용자 콘텐츠 일련번호", required = true) @PathVariable("ContentSeq") Long userContentSeq,
-    		@Valid @RequestBody LearningChatRequestDTO request,
-            @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
-            @RequestHeader(value = "X-User-UUID", required = false) String userID) {
+    		@Valid @RequestBody LearningChatRequestDTO request)
+    {
 
-        return learningChatService.learningChat(userContentSeq, request, userID)
+        return learningChatService.learningChat(userContentSeq, request)
                 .thenApply(result -> ResponseEntity.ok(
                         Response.<LearningChatResponseDTO>builder()
                                 .status(Status.OK)
@@ -70,8 +71,8 @@ public class LearningChatConteller {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     public ResponseEntity<Response<List<ChatHistoryResponseDTO>>> getChatHistory(
-            @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
-            @RequestHeader(value = "X-User-UUID", required = true) String userUUID,
+//            @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
+//            @RequestHeader(value = "X-User-UUID", required = true) String userUUID,
 
             @Parameter(description = "사용자 콘텐츠 일련번호", required = true)
             @PathVariable("ContentSeq") Long userContentSeq,
@@ -83,7 +84,6 @@ public class LearningChatConteller {
             @RequestParam(value = "limit", defaultValue = "10") int limit
     ) {
         List<ChatHistoryResponseDTO> messages = learningChatService.getChatsByContentAndUser(
-                userUUID,
                 userContentSeq,
                 lastIndate,
                 limit
@@ -94,6 +94,31 @@ public class LearningChatConteller {
                 .message("대화 기록 조회 성공")
                 .data(messages)
                 .build());
+    }
+    
+    @GetMapping("/exam/{ContentSeq}/next")
+    public CompletableFuture<ResponseEntity<Response<NextExamResponseDTO>>> getNextExam(
+	       @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
+	       @RequestHeader(value = "X-User-UUID", required = true) String userUUID,
+    		
+           @Parameter(description = "사용자 콘텐츠 일련번호", required = true)
+           @PathVariable("ContentSeq") Long userContentSeq
+    ) {
+    	
+        return learningChatService.getNextExam(userUUID, userContentSeq)
+                .thenApply(result -> ResponseEntity.ok(
+                        Response.<NextExamResponseDTO>builder()
+                                .status(Status.OK)
+                                .message("질문 응답 성공")
+                                .data(result)
+                                .build()
+                ))
+                .exceptionally(e -> ResponseEntity.status(500).body(
+                        Response.<NextExamResponseDTO>builder()
+                                .status(Status.FAIL)
+                                .message("러닝챗 오류: " + e.getMessage())
+                                .build()
+                ));
     }
 
 }

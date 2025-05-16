@@ -1,5 +1,6 @@
 package com.firzzle.llm.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -14,10 +15,13 @@ import com.firzzle.llm.client.OpenAiClient;
 import com.firzzle.llm.dto.ChatCompletionRequestDTO;
 import com.firzzle.llm.dto.ChatDTO;
 import com.firzzle.llm.dto.ChatHistoryResponseDTO;
+import com.firzzle.llm.dto.ExamsDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
+import com.firzzle.llm.dto.NextExamResponseDTO;
 import com.firzzle.llm.dto.UserContentDTO;
 import com.firzzle.llm.mapper.ChatMapper;
+import com.firzzle.llm.mapper.ExamsMapper;
 import com.firzzle.llm.mapper.UserContentMapper;
 import com.firzzle.llm.mapper.UserMapper;
 import com.firzzle.llm.prompt.PromptFactory;
@@ -35,6 +39,7 @@ public class LearningChatService {
     private final PromptFactory promptFactory;
     private final ChatMapper chatMapper;
     private final UserMapper userMapper;
+    private final ExamsMapper examsMapper;
     private final UserContentMapper userContentMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(LearningChatService.class);
@@ -42,24 +47,19 @@ public class LearningChatService {
     // RAG 기반 실시간 대화 응답 생성 및 DB 저장
     @Async
     @Transactional
-    public CompletableFuture<LearningChatResponseDTO> learningChat(Long userContentSeq, LearningChatRequestDTO request, String userId) {
+    public CompletableFuture<LearningChatResponseDTO> learningChat(Long userContentSeq, LearningChatRequestDTO request) {
         String question = request.getQuestion();
-        logger.info("📥 [learningChat 시작] userContentSeq={}, userId={}, question={}", userContentSeq, userId, question);
+        logger.info("📥 [learningChat 시작] userContentSeq={}, userId={}, question={}", userContentSeq, question);
 
-        Long userSeqFromUUID = userMapper.selectUserSeqByUuid(userId);
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
-
-        if (!userSeqFromUUID.equals(userContent.getUserSeq())) {
-            throw new IllegalArgumentException("사용자 인증 정보가 일치하지 않습니다.");
-        }
 
         Long contentSeq = userContent.getContentSeq();
         List<Float> vector = embeddingService.embed(question);
 
         // ✅ 이전 응답 2개 불러오기
-        List<ChatHistoryResponseDTO> previousChats = chatMapper.selectChatsByCursor(
+        List<ChatDTO> previousChats = chatMapper.selectChatsByCursor(
             contentSeq,
-            userSeqFromUUID,
+            userContent.getUserSeq(),
             null, // 최신순으로부터
             2
         );
@@ -79,7 +79,7 @@ public class LearningChatService {
                     if (context.isEmpty()) {
                         logger.info("⚠️ [context 없음] 기본 응답 반환");
                         String defaultAnswer = "해당 내용은 영상에서 언급되지 않았어요. 다른 질문이 있으신가요? 궁금한 점을 말씀해 주시면 최대한 도와드릴게요!";
-                        insertChat(contentSeq, userSeqFromUUID, question, defaultAnswer);
+                        insertChat(contentSeq, userContent.getUserSeq(), question, defaultAnswer);
                         return CompletableFuture.completedFuture(new LearningChatResponseDTO(defaultAnswer));
                     }
 
@@ -89,7 +89,7 @@ public class LearningChatService {
 
                     return openAiClient.getChatCompletionAsync(chatRequest)
                             .thenApply(answer -> {
-                                insertChat(contentSeq, userSeqFromUUID, question, answer);
+                                insertChat(contentSeq, userContent.getUserSeq(), question, answer);
                                 return new LearningChatResponseDTO(answer);
                             });
                 })
@@ -111,26 +111,69 @@ public class LearningChatService {
      * @return 채팅 목록
      */
     @Transactional
-    public List<ChatHistoryResponseDTO> getChatsByContentAndUser(String userId, Long userContentSeq, String lastIndate, int limit) {
-        // UUID로 userSeq 조회
-        Long userSeqFromUUID = userMapper.selectUserSeqByUuid(userId);
-
+    public List<ChatHistoryResponseDTO> getChatsByContentAndUser( Long userContentSeq, String lastIndate, int limit) {
+       
         // userContentSeq로 contentSeq와 userSeq 가져옴
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
 
-        // 사용자 인증 확인
-        if (!userSeqFromUUID.equals(userContent.getUserSeq())) {
-            throw new IllegalArgumentException("사용자 인증 정보가 일치하지 않습니다.");
-        }
-
-        // lastIndate가 null이면 최신부터 조회 (XML에서 처리됨)
-        return chatMapper.selectChatsByCursor(
+        // 채팅 목록 조회
+        List<ChatDTO> chatList = chatMapper.selectChatsByCursor(
                 userContent.getContentSeq(),
                 userContent.getUserSeq(),
-                lastIndate, // null이면 XML에서 조건 생략됨
+                lastIndate,
                 limit
         );
+
+        // ChatDTO를 ChatHistoryResponseDTO로 분리 (question, answer 각각 하나의 응답)
+        return chatList.stream()
+                .flatMap(chat -> {
+                    List<ChatHistoryResponseDTO> items = new ArrayList<>();
+                    if (chat.getQuestion() != null) {
+                        items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getQuestion(), chat.getIndate(), 0));
+                    }
+                    if (chat.getAnswer() != null) {
+                        items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getAnswer(), chat.getIndate(), 1));
+                    }
+                    return items.stream();
+                })
+                .collect(Collectors.toList());
     }
+    
+    /**
+     * 다음 시험 문제 받아오기 
+     *
+     * @param contentSeq 콘텐츠 번호
+     * @param uuid 사용자 번호
+     * @return 질문 가져오기 
+     */
+    @Async
+    @Transactional
+    public CompletableFuture<NextExamResponseDTO> getNextExam(String uuid, Long userContentSeq) {
+        // 1. user_seq, content_seq 조회
+        UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        Long userSeq = userContent.getUserSeq();
+        Long contentSeq = userContent.getContentSeq();
+
+        // 2. 전체 문제 수
+        int total = examsMapper.selectTotalExamCount(contentSeq);
+
+        // 3. 사용자 답변 수
+        int answered = examsMapper.selectAnsweredExamCount(contentSeq, userSeq);
+
+        // 4. 다음 문제 정보
+        ExamsDTO nextQuestion = examsMapper.selectNextExamQuestion(contentSeq, answered+1);
+
+        // 5. 반환 DTO 조립
+        NextExamResponseDTO response = NextExamResponseDTO.builder()
+                .question(nextQuestion != null ? nextQuestion.getQuestionContent() : "모든 문제를 다 푸셨습니다.")
+                .totalCount(total)
+                .currentIndex(answered + 1) // 1부터 시작
+                .build();
+
+        return CompletableFuture.completedFuture(response);
+    }
+    
+    
 
     private void insertChat(Long contentSeq, Long userSeq, String question, String answer) {
         ChatDTO chat = new ChatDTO();
@@ -141,4 +184,5 @@ public class LearningChatService {
         chat.setIndate(TimeUtil.getCurrentTimestamp14());
         chatMapper.insertChat(chat);
     }
+
 }

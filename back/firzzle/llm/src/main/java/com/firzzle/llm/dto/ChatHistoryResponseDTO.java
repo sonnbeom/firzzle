@@ -21,12 +21,12 @@ public class ChatHistoryResponseDTO {
     @Schema(description = "대화 일련 번호", example = "101")
     private Long chatSeq;
 
-    @Schema(description = "사용자 질문", example = "DDD는 무슨 뜻인가요?")
-    private String question;
-
-    @Schema(description = "AI 챗봇 응답", example = "DDD는 도메인 주도 설계(DDD, Domain-Driven Design)를 의미합니다.")
-    private String answer;
+    @Schema(description = "대화 용", example = "DDD는 무슨 뜻인가요?")
+    private String chatText;
 
     @Schema(description = "생성 일시 (YYYYMMDDHHMMSS)", example = "20250515103045")
     private String indate;
+    
+    @Schema(description = "텍스트 타입(1: gpt, 0: 사용자)", example = "0 or 1")
+    private int type;
 }

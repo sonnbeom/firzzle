@@ -69,7 +69,7 @@ spring:
     password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
     maximum-pool-size: 10
   kafka:
-    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: firzzle
       auto-offset-reset: earliest
