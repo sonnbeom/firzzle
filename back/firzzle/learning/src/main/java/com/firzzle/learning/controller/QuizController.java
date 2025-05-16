@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.firzzle.common.logging.dto.UserActionLog.userPreferenceLog;
-import static com.firzzle.common.logging.service.LoggingService.log;
 
 /**
  * @Class Name : QuizController.java
@@ -90,11 +88,6 @@ public class QuizController {
                     .status(Status.OK)
                     .data(quizResponseDTO)
                     .build();
-
-            //퀴즈 조회 로깅 => ELK
-            String referer = box.getString("referer");
-            String userId = box.getString("uuid");
-            log(userPreferenceLog(userId, referer.toUpperCase(), "QUIZ_READ"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
