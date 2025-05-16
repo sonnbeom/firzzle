@@ -110,11 +110,6 @@ public class ContentSummaryController {
                     .data(responseDTO)
                     .build();
 
-            //요약 로깅 => ELK
-            String referer = box.getString("referer");
-            String userId = box.getString("uuid");
-            log(userPreferenceLog(userId, referer.toUpperCase(), "SUMMARY"));
-
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
             logger.error("콘텐츠 요약 조회 중 비즈니스 예외 발생: {}", e.getMessage());

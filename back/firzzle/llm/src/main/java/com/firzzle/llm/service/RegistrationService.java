@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firzzle.llm.client.*;
 import com.firzzle.llm.domain.ContentBlock;
-import com.firzzle.llm.domain.ModelType;
 import com.firzzle.llm.domain.TimeLine;
 import com.firzzle.llm.dto.*;
 import com.firzzle.llm.prompt.*;
@@ -13,7 +12,6 @@ import com.firzzle.llm.util.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 import org.springframework.scheduling.annotation.Async;
@@ -35,7 +33,7 @@ public class RegistrationService {
     private final OxQuizService oxQuizService;
     private final RagService ragService;
     private final SummaryService summaryService;
-    private final DescriptiveQuiz descriptiveQuiz;
+    private final ExamsService examsService;
     private final PromptFactory promptFactory;
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
@@ -119,6 +117,7 @@ public class RegistrationService {
         try {
             Map<String, List<SectionDTO>> levelToSections = new HashMap<>();
             List<OxQuizDTO> oxQuizList = new ArrayList<>();
+            List<ExamsDTO> examList = new ArrayList<>();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
             for (ContentBlock block : blocks) {
@@ -173,8 +172,18 @@ public class RegistrationService {
                     ox.setDeleteYn("N");
                     oxQuizList.add(ox);
                 }
-
-                // 🔹 (선택) 서술형 퀴즈도 필요 시 추가 가능
+                
+                // 🔹 서술형 퀴즈 수집
+                if (block.getDescriptiveQuiz() != null) {
+                    ExamsDTO exam = ExamsDTO.builder()
+                        .contentSeq(contentSeq)
+                        .questionContent(block.getDescriptiveQuiz().getQuestion())
+                        .modelAnswer(block.getDescriptiveQuiz().getAnswer())
+                        .startTime(startTime) // 예: "00:05:12" 형식
+                        .referenceText(block.getSummary_Easy()) // 또는 다른 기준 설명
+                        .build();
+                    examList.add(exam);
+                }
             }
 
             // 🔹 요약 저장
@@ -190,6 +199,11 @@ public class RegistrationService {
             // 🔹 OX 퀴즈 저장
             if (!oxQuizList.isEmpty()) {
                 oxQuizService.saveOxQuizzes(contentSeq, oxQuizList);
+            }
+            
+            // 🔹 서술형 퀴즈 저장
+            if (!examList.isEmpty()) {
+                examsService.saveExams(contentSeq, examList);
             }
 
             return CompletableFuture.completedFuture(null);

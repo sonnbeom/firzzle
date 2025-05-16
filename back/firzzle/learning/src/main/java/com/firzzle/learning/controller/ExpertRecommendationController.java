@@ -154,11 +154,6 @@ public class ExpertRecommendationController {
                     .data(responseDTO)
                     .build();
 
-            // 전문가 추천 로깅 => ELK
-            String referer = box.getString("referer");
-            String userId = box.getString("uuid");
-            log(userPreferenceLog(userId, referer.toUpperCase(), "RECOMMEND"));
-
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {
             logger.error("추천 전문가 조회 중 비즈니스 예외 발생: {}", e.getMessage());

@@ -36,8 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.firzzle.common.logging.dto.UserActionLog.userPreferenceLog;
-import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : ContentRecommendationController.java
@@ -118,7 +116,6 @@ public class ContentRecommendationController {
             //컨텐츠 추천 로깅 => ELK
             String referer = box.getString("referer");
             String userId = box.getString("uuid");
-            log(userPreferenceLog(userId, referer.toUpperCase(), "RECOMMEND"));
 
             return ResponseEntity.ok(response);
         } catch (BusinessException e) {

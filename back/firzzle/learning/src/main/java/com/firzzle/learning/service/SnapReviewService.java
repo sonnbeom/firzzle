@@ -64,6 +64,7 @@ public class SnapReviewService {
 
             // "d_" 접두어로 접근
             Long contentSeq = content.getLong2("d_content_seq");
+            Long userContentSeq = content.getLong2("d_user_content_seq");
             logger.debug("추출된 contentSeq 값: {}", contentSeq);
 
             if (contentSeq == null || contentSeq <= 0) {
@@ -115,6 +116,7 @@ public class SnapReviewService {
             // 결과 DataBox 생성
             DataBox result = new DataBox("contentWithFramesBox");
             result.put("d_content_seq", contentSeq);
+            result.put("d_user_content_seq", userContentSeq);
             result.put("d_title", content.getString("d_title"));
             result.put("d_thumbnail_url", content.getString("d_thumbnail_url"));
             result.put("d_indate", currentDate);

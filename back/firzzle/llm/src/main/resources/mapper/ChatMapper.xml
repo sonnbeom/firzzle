@@ -30,7 +30,7 @@
 	    LIMIT #{limit}
 	</select>
 	
-	<select id="selectRandomUnsolvedExam" resultType="com.firzzle.llm.dto.ExamDTO">
+	<select id="selectRandomUnsolvedExam" resultType="com.firzzle.llm.dto.ExamsDTO">
 	    SELECT *
 	    FROM fb_ai_exams e
 	    WHERE e.content_seq = #{contentSeq}

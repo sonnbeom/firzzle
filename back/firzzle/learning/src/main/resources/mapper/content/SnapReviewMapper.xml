@@ -54,6 +54,7 @@
             C.delete_yn,
             UC.progress,
             UC.last_accessed_at
+            , UC.user_content_seq
         FROM
             fb_ai_user_contents UC
                 JOIN
