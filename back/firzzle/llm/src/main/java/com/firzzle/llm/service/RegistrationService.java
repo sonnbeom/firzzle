@@ -174,11 +174,11 @@ public class RegistrationService {
                 }
                 
                 // 🔹 서술형 퀴즈 수집
-                if (block.getDescriptiveQuiz() != null) {
+                if (block.getExam() != null) {
                     ExamsDTO exam = ExamsDTO.builder()
                         .contentSeq(contentSeq)
-                        .questionContent(block.getDescriptiveQuiz().getQuestion())
-                        .modelAnswer(block.getDescriptiveQuiz().getAnswer())
+                        .questionContent(block.getExam().getQuestion())
+                        .modelAnswer(block.getExam().getAnswer())
                         .startTime(startTime) // 예: "00:05:12" 형식
                         .referenceText(block.getSummary_Easy()) // 또는 다른 기준 설명
                         .build();
