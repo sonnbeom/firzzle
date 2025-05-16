@@ -179,7 +179,7 @@ public class QuizController {
         }
 
         // 콘텐츠 정보 변환
-        Long contentSeq = dataBox.getLong2("d_content_seq");
+        Long contentSeq = dataBox.getLong2("d_user_content_seq");
 
         // 문제 정보 변환
         List<QuizResponseDTO.QuestionDTO> questions = new ArrayList<>();
@@ -370,7 +370,7 @@ public class QuizController {
         // 제출 정보 DTO 생성
         QuizSubmissionResponseDTO.SubmissionDTO submissionDTO = QuizSubmissionResponseDTO.SubmissionDTO.builder()
                 .seq(dataBox.getLong2("d_submission_seq"))
-                .contentSeq(dataBox.getLong2("d_content_seq"))
+                .contentSeq(dataBox.getLong2("d_user_content_seq"))
                 .correctAnswers(dataBox.getInt2("d_correct"))
                 .totalQuestions(dataBox.getInt2("d_total"))
                 .scorePercentage(percentage)
