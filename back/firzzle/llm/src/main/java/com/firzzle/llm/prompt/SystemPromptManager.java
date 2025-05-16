@@ -51,7 +51,7 @@ public class SystemPromptManager {
     			2. oxQuiz
     			   - 각 소주제 별로 학습에 있어서 관건이 되는 내용 또는 학습자가 헷갈릴 만한 내용에 대한 OX 문제 1개를 만드세요.
     			     - problem: 문제 내용
-    			     - answer: "O" 또는 "X"
+    			     - answer: "O" 또는 "X" 두 정답의 비율이 거의 비슷하게 해줘
     			     - timestamp: 관련된 자막 시작 시각 (초 단위 문자열)
     			     - explanation: 해당 정답의 근거를 논리적으로 설명(영상 내용을 인용해서)
     			
