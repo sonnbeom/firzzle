@@ -54,7 +54,7 @@ spring:
           filters:
             - name: JwtAuthFilter
               args:
-                enabled: false # true # 개발용으로 false 처리
+                enabled: true # true # 개발용으로 false 처리
             - RewritePath=/api/v1/learning/(?<segment>.*), /api/v1/${segment}
 
         - id: learning-service-v2
@@ -96,7 +96,7 @@ spring:
           filters:
             - name: JwtAuthFilter
               args:
-                enabled: false
+                enabled: true
             - RewritePath=/api/v1/llm/(?<segment>.*), /api/v1/${segment}
 
         - id: llm-service-v2
