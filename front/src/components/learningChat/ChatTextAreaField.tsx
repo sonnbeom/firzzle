@@ -4,20 +4,26 @@ import { ChangeEvent, KeyboardEvent, useState } from 'react';
 import { postExamChat, postLearningChat } from '@/api/learningChat';
 import { Mode } from '@/types/learningChat';
 import { MAX_LEARNING_CHAT_LENGTH } from 'utils/const';
+import BasicToaster from '../common/BasicToaster';
 import Icons from '../common/Icons';
 
 interface ChatTextAreaFieldProps {
   mode: Mode;
   contentId: string;
+  refetch: () => void;
 }
 
-const ChatTextAreaField = ({ mode, contentId }: ChatTextAreaFieldProps) => {
+const ChatTextAreaField = ({
+  mode,
+  contentId,
+  refetch,
+}: ChatTextAreaFieldProps) => {
   const [value, setValue] = useState('');
 
   const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     // 글자수 제한
     if (e.target.value.trim().length > MAX_LEARNING_CHAT_LENGTH) {
-      alert('허용 가능한 글자수를 초과하였습니다.');
+      BasicToaster.default('허용 가능한 글자수를 초과하였습니다.');
       return;
     }
 
@@ -31,14 +37,20 @@ const ChatTextAreaField = ({ mode, contentId }: ChatTextAreaFieldProps) => {
 
   // 채팅 입력
   const handleSubmit = async () => {
+    if (value.trim() === '') {
+      BasicToaster.default('메시지를 입력해주세요.');
+      return;
+    }
+
     try {
       if (mode === '학습모드') {
-        await postLearningChat();
+        await postLearningChat(contentId, value);
       } else {
         await postExamChat(contentId);
       }
+      refetch();
     } catch (error) {
-      console.error('채팅 전송 실패:', error);
+      BasicToaster.error(error.message);
     } finally {
       setValue('');
     }

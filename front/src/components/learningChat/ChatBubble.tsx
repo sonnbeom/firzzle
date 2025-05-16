@@ -1,19 +1,21 @@
-import { LEARNING_CHATBOT_ID } from 'utils/const';
+import { LearningChat } from '@/types/learningChat';
 
 interface ChatBubbleProps {
-  userId: string;
-  text: string;
+  chat: LearningChat;
 }
 
-const ChatBubble = ({ userId, text }: ChatBubbleProps) => {
-  return userId === LEARNING_CHATBOT_ID ? (
+const ChatBubble = ({ chat }: ChatBubbleProps) => {
+  console.log('chat', chat.type);
+  return chat.type == '1' ? (
     <div className='w-full font-medium whitespace-pre-wrap text-gray-950'>
-      {text}
+      {chat.chatText}
     </div>
   ) : (
     <div className='flex w-full justify-end'>
       <div className='max-w-[80%] rounded-tl-lg rounded-b-lg bg-blue-300 px-4 py-1'>
-        <p className='break-words whitespace-pre-wrap text-white'>{text}</p>
+        <p className='break-words whitespace-pre-wrap text-white'>
+          {chat.chatText}
+        </p>
       </div>
     </div>
   );
