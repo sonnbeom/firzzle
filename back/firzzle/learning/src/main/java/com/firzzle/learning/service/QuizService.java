@@ -52,6 +52,7 @@ public class QuizService {
             }
 
             Long contentSeq = contentInfo.getLong2("d_content_seq");
+            Long userContentSeq = contentInfo.getLong2("d_user_content_seq");
             box.put("contentSeq", contentSeq); // 실제 contentSeq를 RequestBox에 추가
 
             logger.debug("콘텐츠 정보 조회 완료 - 콘텐츠 일련번호: {}, UUID: {}", contentSeq, uuid);
@@ -106,6 +107,7 @@ public class QuizService {
             // 결과 DataBox 생성
             DataBox result = new DataBox("quizResultBox");
             result.put("d_content_seq", contentSeq);
+            result.put("d_user_content_seq", userContentSeq);
             result.put("d_questions", questionsList);
             result.put("d_last_submission", lastSubmission);
             result.put("d_user_answers", userAnswers);

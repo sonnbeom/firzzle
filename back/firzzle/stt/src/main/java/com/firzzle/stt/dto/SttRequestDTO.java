@@ -14,5 +14,5 @@ public class SttRequestDTO {
     private String url;
 
     @Schema(description = "내부 사용자 고유 식별자", example = "1001")
-    private Long userSeq;
+    private String uuid;
 }
