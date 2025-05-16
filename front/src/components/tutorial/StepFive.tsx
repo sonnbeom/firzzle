@@ -25,20 +25,30 @@ const StepFive: React.FC = () => {
 
             <div className='rounded-lg bg-gray-50 p-6'>
               <div className='flex'>
-                {/* 사각형 4개 */}
+                {/* 스냅 이미지 4개 */}
                 <div className='mr-4 grid w-1/2 grid-cols-2 grid-rows-2 gap-4'>
-                  <div className='aspect-video rounded-lg border border-gray-200 bg-white'></div>
-                  <div className='aspect-video rounded-lg border border-gray-200 bg-white'></div>
-                  <div className='aspect-video rounded-lg border border-gray-200 bg-white'></div>
-                  <div className='aspect-video rounded-lg border border-gray-200 bg-white'></div>
+                  {[1, 2, 3, 4].map((num) => (
+                    <div
+                      key={num}
+                      className='aspect-video overflow-hidden rounded-lg border border-gray-200 bg-white'
+                    >
+                      <img
+                        src={`/assets/images/snap${num}.png`}
+                        alt={`스냅${num}`}
+                        className='h-full w-full object-cover'
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 {/* 입력 창 */}
                 <div className='flex w-1/2 flex-col'>
                   <textarea
                     placeholder='핵심 장면에 대한 설명을 입력하세요.'
-                    className='h-full w-full resize-none rounded-lg border border-gray-200 p-4'
+                    className='h-full w-full cursor-default resize-none rounded-lg border border-gray-200 bg-gray-100 p-4 text-gray-500'
+                    readOnly
                   ></textarea>
+
                   <div className='mt-2 self-end'>
                     <button className='text-gray-500'>
                       <svg
