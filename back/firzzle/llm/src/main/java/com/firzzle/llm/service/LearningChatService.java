@@ -15,10 +15,13 @@ import com.firzzle.llm.client.OpenAiClient;
 import com.firzzle.llm.dto.ChatCompletionRequestDTO;
 import com.firzzle.llm.dto.ChatDTO;
 import com.firzzle.llm.dto.ChatHistoryResponseDTO;
+import com.firzzle.llm.dto.ExamsDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
+import com.firzzle.llm.dto.NextExamResponseDTO;
 import com.firzzle.llm.dto.UserContentDTO;
 import com.firzzle.llm.mapper.ChatMapper;
+import com.firzzle.llm.mapper.ExamsMapper;
 import com.firzzle.llm.mapper.UserContentMapper;
 import com.firzzle.llm.mapper.UserMapper;
 import com.firzzle.llm.prompt.PromptFactory;
@@ -36,6 +39,7 @@ public class LearningChatService {
     private final PromptFactory promptFactory;
     private final ChatMapper chatMapper;
     private final UserMapper userMapper;
+    private final ExamsMapper examsMapper;
     private final UserContentMapper userContentMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(LearningChatService.class);
@@ -134,6 +138,42 @@ public class LearningChatService {
                 })
                 .collect(Collectors.toList());
     }
+    
+    /**
+     * 다음 시험 문제 받아오기 
+     *
+     * @param contentSeq 콘텐츠 번호
+     * @param uuid 사용자 번호
+     * @return 질문 가져오기 
+     */
+    @Async
+    @Transactional
+    public CompletableFuture<NextExamResponseDTO> getNextExam(String uuid, Long userContentSeq) {
+        // 1. user_seq, content_seq 조회
+        UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        Long userSeq = userContent.getUserSeq();
+        Long contentSeq = userContent.getContentSeq();
+
+        // 2. 전체 문제 수
+        int total = examsMapper.selectTotalExamCount(contentSeq);
+
+        // 3. 사용자 답변 수
+        int answered = examsMapper.selectAnsweredExamCount(contentSeq, userSeq);
+
+        // 4. 다음 문제 정보
+        ExamsDTO nextQuestion = examsMapper.selectNextExamQuestion(contentSeq, answered+1);
+
+        // 5. 반환 DTO 조립
+        NextExamResponseDTO response = NextExamResponseDTO.builder()
+                .question(nextQuestion != null ? nextQuestion.getQuestionContent() : "모든 문제를 다 푸셨습니다.")
+                .totalCount(total)
+                .currentIndex(answered + 1) // 1부터 시작
+                .build();
+
+        return CompletableFuture.completedFuture(response);
+    }
+    
+    
 
     private void insertChat(Long contentSeq, Long userSeq, String question, String answer) {
         ChatDTO chat = new ChatDTO();
