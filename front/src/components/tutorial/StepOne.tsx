@@ -21,8 +21,10 @@ const StepOne: React.FC = () => {
               <input
                 type='text'
                 placeholder='https://example.com/lecture/video'
-                className='mr-2 flex-grow rounded-md border border-gray-300 p-3 text-gray-700'
+                readOnly
+                className='pointer-events-none mr-2 flex-grow cursor-default rounded-md border border-gray-300 bg-gray-100 p-3 text-gray-700'
               />
+
               <button className='rounded-md bg-blue-400 px-4 py-3 font-medium text-white'>
                 확인
               </button>
