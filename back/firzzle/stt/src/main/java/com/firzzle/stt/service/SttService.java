@@ -10,6 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import reactor.netty.http.client.HttpClient;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
@@ -92,11 +95,14 @@ public class SttService {
 
     public LlmRequest extractSubtitleViaLocalProxy(String uuid, String url, String videoId) throws Exception {
     	Long userSeq = userMapper.selectUserSeqByUuid(uuid);
-        WebClient webClient = webClientBuilder
-                .baseUrl(externalUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader("X-API-KEY", secretKey)
-                .build();
+    	WebClient webClient = WebClient.builder()
+    		    .baseUrl(externalUrl)
+    		    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+    		    .defaultHeader("X-API-KEY", secretKey)
+    		    .clientConnector(new ReactorClientHttpConnector(
+    		        HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE)
+    		    ))
+    		    .build();
 
         Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
 

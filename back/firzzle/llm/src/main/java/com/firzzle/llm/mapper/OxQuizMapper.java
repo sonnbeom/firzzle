@@ -12,7 +12,7 @@ public interface OxQuizMapper {
 
     /**
      * 문제 1개 저장 (INSERT)
-     * - question_seq는 AUTO_INCREMENT이므로, useGeneratedKeys로 반환 받음
+     * question_seq는 AUTO_INCREMENT이므로, useGeneratedKeys로 반환 받음
      */
     int insertQuestion(OxQuizDTO question);
 
