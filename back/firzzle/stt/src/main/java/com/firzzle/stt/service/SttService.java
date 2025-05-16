@@ -95,30 +95,32 @@ public class SttService {
 
     public LlmRequest extractSubtitleViaLocalProxy(String uuid, String url, String videoId) throws Exception {
     	Long userSeq = userMapper.selectUserSeqByUuid(uuid);
+
+    	HttpClient httpClient = HttpClient.create()
+    	        .resolver(DefaultAddressResolverGroup.INSTANCE); // DNS 강제 재해석
+
     	WebClient webClient = WebClient.builder()
-    		    .baseUrl(externalUrl)
-    		    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-    		    .defaultHeader("X-API-KEY", secretKey)
-    		    .clientConnector(new ReactorClientHttpConnector(
-    		        HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE)
-    		    ))
-    		    .build();
+    	        .clientConnector(new ReactorClientHttpConnector(httpClient))
+    	        .baseUrl(externalUrl)
+    	        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+    	        .defaultHeader("X-API-KEY", secretKey)
+    	        .build();
 
-        Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+    	Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
 
-        Map<String, Object> response = webClient.post()
-                .uri("/api/v1/extract")
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                .block();
+    	Map<String, Object> response = webClient.post()
+    	        .uri("/api/v1/extract")
+    	        .bodyValue(requestBody)
+    	        .retrieve()
+    	        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+    	        .block();
 
-        if (response == null || !response.containsKey("script")) {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-        }
+    	if (response == null || !response.containsKey("script")) {
+    	    throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+    	}
 
-        ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-        return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
+    	ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+    	return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
     }
 
     public LlmRequest extractSubtitleDirect(String uuid, String url, String videoId) throws Exception {
