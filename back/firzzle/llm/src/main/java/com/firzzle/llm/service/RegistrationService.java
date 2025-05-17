@@ -211,6 +211,7 @@ public class RegistrationService {
             Map<String, List<SectionDTO>> levelToSections = new HashMap<>();
             List<OxQuizDTO> oxQuizList = new ArrayList<>();
             List<ExamsDTO> examList = new ArrayList<>();
+            int examCount = 1; 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
             for (ContentBlock block : blocks) {
@@ -270,6 +271,7 @@ public class RegistrationService {
                 if (block.getExam() != null) {
                     ExamsDTO exam = ExamsDTO.builder()
                             .contentSeq(contentSeq)
+                            .questionIndex(examCount++)
                             .questionContent(block.getExam().getQuestion())
                             .modelAnswer(block.getExam().getAnswer())
                             .startTime(startTime) // 예: "00:05:12" 형식
