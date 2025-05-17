@@ -8,13 +8,6 @@ const HeaderButton = () => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = async () => {
-    const isLoggedOut = await logout();
-    if (isLoggedOut) {
-      router.replace('/');
-    }
-  };
-
   return (
     <>
       {pathname == '/' ? (
@@ -34,7 +27,7 @@ const HeaderButton = () => {
           </Link>
           <button
             className='bg-white font-medium text-gray-900 hover:bg-gray-50 md:text-lg lg:text-xl'
-            onClick={handleLogout}
+            onClick={logout}
           >
             로그아웃
           </button>

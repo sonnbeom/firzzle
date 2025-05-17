@@ -26,7 +26,7 @@ const OAuthButton = ({ url, oauth, title, className }: OAuthButtonProps) => {
     <Link
       href={`${url}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`}
     >
-      <Button size='lg' className={`${className} cursor-pointer`}>
+      <Button size='lg' className={`${className}`}>
         {title}
       </Button>
     </Link>

@@ -8,7 +8,6 @@ const HeroSection = () => {
     <section className='bg-gradient-to-r from-[#E8EDFF] to-[#F8F9FF] py-16 lg:py-24'>
       {/* Decorative elements */}
       <div className='-top-- absolute right-20 h-64 w-64 rounded-full bg-blue-300/30 blur-3xl'></div>
-      <div className='-top-- absolute -left-4 h-80 w-80 rounded-full bg-blue-200/20 blur-3xl'></div>
 
       <div className='container mx-auto flex flex-col items-center gap-8 px-4 lg:flex-row lg:gap-12'>
         <div className='flex-1 space-y-6 lg:space-y-8'>
