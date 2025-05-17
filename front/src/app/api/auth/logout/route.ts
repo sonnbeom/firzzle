@@ -13,13 +13,16 @@ export async function POST(request: NextRequest) {
 
     if (response.status === 'OK') {
       removeCookie('accessToken');
-      request.cookies.delete('accessToken');
-      request.cookies.delete('refresh_token');
 
-      return NextResponse.json(
+      const response = NextResponse.json(
         { message: '로그아웃 되었습니다.' },
         { status: 200 },
       );
+
+      response.cookies.delete('accessToken');
+      response.cookies.delete('refresh_token');
+
+      return response;
     }
 
     return NextResponse.json(
