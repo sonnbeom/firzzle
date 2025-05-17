@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
 
     if (response.status === 'OK') {
       removeCookie('accessToken');
+      removeCookie('refreshToken');
       request.cookies.delete('accessToken');
+      request.cookies.delete('refreshToken');
 
       return NextResponse.json(
         { message: '로그아웃 되었습니다.' },

@@ -1,11 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { logout } from '@/api/auth';
 import OAuthButton from '../home/OAuthButton';
 const HeaderButton = () => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const isLoggedOut = await logout();
+    if (isLoggedOut) {
+      router.replace('/');
+    }
+  };
 
   return (
     <>
@@ -26,7 +34,7 @@ const HeaderButton = () => {
           </Link>
           <button
             className='bg-white font-medium text-gray-900 hover:bg-gray-50 md:text-lg lg:text-xl'
-            onClick={logout}
+            onClick={handleLogout}
           >
             로그아웃
           </button>
