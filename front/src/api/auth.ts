@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import BasicToaster from '@/components/common/BasicToaster';
 
 // 로그아웃
@@ -12,8 +11,9 @@ export const logout = async () => {
 
   if (response.status === 200) {
     BasicToaster.default(data.message, { id: 'logout', duration: 2000 });
-    redirect('/');
+    return true;
   } else {
     BasicToaster.error(data.message, { id: 'logout', duration: 2000 });
+    return false;
   }
 };
