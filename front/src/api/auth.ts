@@ -10,10 +10,11 @@ export const logout = async () => {
   const data = await response.json();
 
   if (response.status === 200) {
-    BasicToaster.default(data.message, { id: 'logout', duration: 2000 });
-    return true;
+    BasicToaster.default(data.message, { id: 'logout', duration: 1000 });
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 1000);
   } else {
-    BasicToaster.error(data.message, { id: 'logout', duration: 2000 });
-    return false;
+    BasicToaster.error(data.message, { id: 'logout' });
   }
 };
