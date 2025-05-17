@@ -45,7 +45,6 @@ public class RegistrationService {
         String taskId = request.getTaskId();
         if (taskId == null || taskId.isEmpty()) {
             taskId = UUID.randomUUID().toString();
-            request.setTaskId(taskId);
         }
         logger.info("📋 요약 작업 ID 생성: {}", taskId);
         return taskId;
@@ -79,16 +78,23 @@ public class RegistrationService {
         ));
 
         final String finalTaskId = taskId;
-        return extractTimeLine(content)
+        return extractTimeLines(content)
                 .thenCompose(timelines -> {
                     // 진행 상황 이벤트 전송
-                    sendSseEvent(finalTaskId, "progress", Map.of(
-                            "message", "대주제 " + timelines.size() + "개 추출 완료. 세부 요약 생성 중...",
-                            "timestamp", System.currentTimeMillis(),
-                            "topics", timelines.stream().map(TimeLine::getTopic).collect(Collectors.toList())
-                    ));
+                    Map<String, Object> progressData = new HashMap<>();
+                    progressData.put("message", "대주제 " + timelines.size() + "개 추출 완료. 세부 요약 생성 중...");
+                    progressData.put("timestamp", System.currentTimeMillis());
 
-                    return summarizeByChunks(finalTaskId, timelines, scriptLines);
+                    // TimeLine 객체에서 time 정보만 수집
+                    List<String> timePoints = new ArrayList<>();
+                    for (TimeLine timeline : timelines) {
+                        timePoints.add(timeline.getTime());
+                    }
+                    progressData.put("timePoints", timePoints);
+
+                    sendSseEvent(finalTaskId, "progress", progressData);
+
+                    return summarizeByChunksWithTaskId(finalTaskId, timelines, scriptLines);
                 })
                 .thenApply(blocks -> {
                     // 진행 상황 이벤트 전송
@@ -142,9 +148,9 @@ public class RegistrationService {
         }
     }
 
-    // 전체 자막 텍스트에서 주요 대주제를 추출하는 함수
+    // 전체 자막 텍스트에서 주요 대주제를 추출하는 함수 - @Async 메서드는 public 또는 protected 가시성 필요
     @Async
-    private CompletableFuture<List<TimeLine>> extractTimeLine(String content) {
+    protected CompletableFuture<List<TimeLine>> extractTimeLines(String content) {
         ChatCompletionRequestDTO timelinePrompt = promptFactory.createTimelineyRequest(content);
 
         return openAiClient.getChatCompletionAsync(timelinePrompt)
@@ -160,9 +166,9 @@ public class RegistrationService {
                 });
     }
 
-    // 주요 토픽별로 자막을 나누어 요약 요청을 보내는 함수
+    // 주요 토픽별로 자막을 나누어 요약 요청을 보내는 함수 - @Async 메서드는 public 또는 protected 가시성 필요
     @Async
-    private CompletableFuture<List<ContentBlock>> summarizeByChunks(String taskId, List<TimeLine> topics, List<String> scriptLines) {
+    protected CompletableFuture<List<ContentBlock>> summarizeByChunksWithTaskId(String taskId, List<TimeLine> topics, List<String> scriptLines) {
         List<CompletableFuture<List<ContentBlock>>> futures = new ArrayList<>();
         int totalTopics = topics.size();
 
@@ -179,9 +185,9 @@ public class RegistrationService {
 
             // 세부 진행 상황 이벤트 전송
             sendSseEvent(taskId, "progress", Map.of(
-                    "message", "주제 " + (topicIndex+1) + "/" + totalTopics + " 요약 중: " + topics.get(topicIndex).getTopic(),
+                    "message", "주제 " + (topicIndex+1) + "/" + totalTopics + " 요약 중: 시간 " + start,
                     "timestamp", System.currentTimeMillis(),
-                    "currentTopic", topics.get(topicIndex).getTopic(),
+                    "currentTime", start,
                     "currentIndex", topicIndex + 1,
                     "totalTopics", totalTopics
             ));
@@ -211,7 +217,6 @@ public class RegistrationService {
             Map<String, List<SectionDTO>> levelToSections = new HashMap<>();
             List<OxQuizDTO> oxQuizList = new ArrayList<>();
             List<ExamsDTO> examList = new ArrayList<>();
-            int examCount = 1; 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
             for (ContentBlock block : blocks) {
@@ -271,7 +276,6 @@ public class RegistrationService {
                 if (block.getExam() != null) {
                     ExamsDTO exam = ExamsDTO.builder()
                             .contentSeq(contentSeq)
-                            .questionIndex(examCount++)
                             .questionContent(block.getExam().getQuestion())
                             .modelAnswer(block.getExam().getAnswer())
                             .startTime(startTime) // 예: "00:05:12" 형식

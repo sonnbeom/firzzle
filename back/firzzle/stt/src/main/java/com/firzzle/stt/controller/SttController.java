@@ -38,7 +38,7 @@ public class SttController {
     @Operation(summary = "유튜브 영상 스크립트 추출", description = "userSeq와 유튜브 URL을 받아 스크립트를 추출합니다.")
     public ResponseEntity<?> transcribeByYoutubeUrl(@RequestBody SttRequestDTO request) {
         try {
-            return ResponseEntity.ok(sttService.transcribeFromYoutube(request.getUuid(), request.getUrl()));
+            return ResponseEntity.ok(sttService.transcribeFromYoutube(request.getUuid(), request.getUrl(), ""));
         } catch (BusinessException e) {
             logger.error("유튜브 스크립트 추출 중 비즈니스 예외 발생: {}", e.getMessage());
             throw e;

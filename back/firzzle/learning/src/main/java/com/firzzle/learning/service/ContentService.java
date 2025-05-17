@@ -90,37 +90,33 @@ public class ContentService {
                     logger.debug("이미 해당 사용자가 등록한 콘텐츠입니다. ContentSeq: {}, UUID: {}",
                             contentSeq, box.getString("uuid"));
 
-                    // 이미 등록된 콘텐츠 정보 조회하여 반환
-                    // 기존 콘텐츠는 이미 분석이 완료되었으므로 새 분석 작업 시작하지 않음
+                    // 이미 등록된 콘텐츠 정보 조회 및 반환
                     RequestBox selectBox = new RequestBox("selectBox");
                     selectBox.put("contentSeq", contentSeq);
                     selectBox.put("uuid", box.getString("uuid"));
                     result = contentDAO.selectContentDataBox(selectBox);
 
-                    // taskId는 null로 설정 (기존 콘텐츠는 이미 분석 완료됨)
-                    // result.put("taskId", null);
-
+                    // 이미 분석 완료된 콘텐츠는 taskId를 포함하지 않음
                     return result;
                 }
             }
 
-            // 신규 콘텐츠인 경우 분석 작업 큐에 등록
+            // 분석 작업 큐에 등록
             String uuid = box.getString("uuid");
             String youtubeUrl = box.getString("youtubeUrl");
 
-            // 신규 taskId 생성
-            String taskId = generateTaskId();
+            // taskId 생성 및 분석 큐에 등록
+            String taskId = sendToAnalysisQueue(uuid, youtubeUrl);
 
-            // 분석 큐에 등록
-            sendToAnalysisQueueWithTaskId(uuid, youtubeUrl,
-                    contentSeq != null ? contentSeq : 0L,
-                    taskId);
-
-            // 현재는 DB 저장 로직이 주석 처리되어 있으므로, 간단히 결과만 담아 반환
-            result = new DataBox();
+            // 결과 DataBox 생성 (신규 등록이므로 콘텐츠 정보는 아직 없음)
+            if (result == null) {
+                result = new DataBox();
+            }
+            // taskId 추가
             result.put("taskId", taskId);
 
-            logger.info("콘텐츠 분석 요청됨 - 사용자: {}, URL: {}, TaskId: {}", uuid, youtubeUrl, taskId);
+            logger.info("신규 콘텐츠 등록 요청 완료 - 사용자: {}, URL: {}, TaskId: {}",
+                    uuid, youtubeUrl, taskId);
 
             return result;
 
@@ -129,34 +125,6 @@ public class ContentService {
         } catch (Exception e) {
             logger.error("콘텐츠 등록 중 오류 발생: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록 중 오류가 발생했습니다.");
-        }
-    }
-
-    /**
-     * 고유한 작업 ID 생성
-     *
-     * @return 고유한 작업 ID
-     */
-    private String generateTaskId() {
-        return UUID.randomUUID().toString();
-    }
-
-    /**
-     * 콘텐츠 분석 큐에 등록 (SSE 지원)
-     *
-     * @param uuid - 사용자 일련번호
-     * @param url - YouTube URL
-     * @param contentSeq - 콘텐츠 일련번호
-     * @param taskId - 작업 추적 ID
-     */
-    private void sendToAnalysisQueueWithTaskId(String uuid, String url, Long contentSeq, String taskId) {
-        try {
-            // 미리 생성된 taskId로 LearningProducer 메서드 호출
-            learningProducer.sendContentAnalysisWithTaskId(uuid, url, contentSeq, taskId);
-            logger.debug("콘텐츠 분석 큐에 등록 완료 - 사용자: {}, URL: {}, TaskId: {}", uuid, url, taskId);
-        } catch (Exception e) {
-            logger.error("콘텐츠 분석 큐 등록 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "분석 요청 처리 중 오류가 발생했습니다.");
         }
     }
 
@@ -462,5 +430,33 @@ public class ContentService {
     private boolean isValidStatus(String status) {
         return status != null && (status.equals("Q") || status.equals("P") ||
                 status.equals("C") || status.equals("F"));
+    }
+
+    /**
+     * 콘텐츠 분석 큐에 등록하고 taskId 반환
+     *
+     * @param uuid - 사용자 일련번호
+     * @param url - YouTube URL
+     * @return String - 작업 추적 ID (taskId)
+     */
+    private String sendToAnalysisQueue(String uuid, String url) {
+        try {
+            // taskId 생성
+            String taskId = UUID.randomUUID().toString();
+
+            // 기존 메시지 형식: "uuid|url" -> "uuid|url|taskId"
+            String message = uuid + "|" + url + "|" + taskId;
+
+            // LearningProducer 사용
+            learningProducer.sendToStt(message);
+
+            logger.debug("콘텐츠 분석 큐에 등록 완료 - 사용자: {}, URL: {}, TaskId: {}", uuid, url, taskId);
+
+            // 생성된 taskId 반환
+            return taskId;
+        } catch (Exception e) {
+            logger.error("콘텐츠 분석 큐 등록 중 오류 발생: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "분석 요청 처리 중 오류가 발생했습니다.");
+        }
     }
 }

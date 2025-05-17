@@ -128,7 +128,6 @@ public class ContentController {
                         .indate(baseContent.getIndate())
                         .completedAt(baseContent.getCompletedAt())
                         .deleteYn(baseContent.getDeleteYn())
-                        // taskId는 null (이미 분석 완료된 콘텐츠)
                         .build();
 
                 response = Response.<ContentResponseWithTaskDTO>builder()
