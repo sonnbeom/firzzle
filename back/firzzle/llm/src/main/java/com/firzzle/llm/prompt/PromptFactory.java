@@ -46,4 +46,15 @@ public class PromptFactory {
                 .maxTokens(8192)
                 .build();
 	 }
+
+     public ChatCompletionRequestDTO createExamAnswerRequest(String userAnswer, String modelAnswer, String referenceText) {
+         return ChatCompletionRequestDTO.builder()
+                 .systemMessage(systemPromptManager.getExamSystemPrompt())
+                 .userPrompt(userPromptManager.getExamUserPrompt(userAnswer, modelAnswer, referenceText))
+                 .modelType(ModelType.LEARNINGCHAT)
+                 .temperature(0.3)
+                 .topP(1.0)
+                 .maxTokens(1024)
+                 .build();
+     }
 }
