@@ -1,14 +1,20 @@
 import { Skeleton } from '../ui/skeleton';
+
 interface BasicSkeletonProps {
   width: number;
   height: number;
   rounded?: number;
 }
 
-const BasicSkeleton = ({ width, height, rounded }: BasicSkeletonProps) => {
+const BasicSkeleton = ({ width, height, rounded = 8 }: BasicSkeletonProps) => {
   return (
     <Skeleton
-      className={`w-[${width}px] h-[${height}px] rounded-[${rounded}px]`}
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        borderRadius: `${rounded}px`,
+      }}
+      className='bg-gray-100'
     />
   );
 };

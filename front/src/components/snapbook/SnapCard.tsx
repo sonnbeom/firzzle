@@ -8,7 +8,7 @@ interface SnapCardProps {
 
 const SnapCard = ({ data, priority = false }: SnapCardProps) => {
   return (
-    <div className='group mx-auto h-[220px] lg:h-[260px] max-w-[240px] overflow-hidden rounded-lg bg-white shadow-md transition-all'>
+    <div className='group mx-auto h-[220px] max-w-[240px] overflow-hidden rounded-lg bg-white shadow-md transition-all lg:h-[260px]'>
       <div className='relative aspect-video w-full'>
         <Image
           src={data.thumbnailUrl}
@@ -27,10 +27,12 @@ const SnapCard = ({ data, priority = false }: SnapCardProps) => {
       </div>
 
       <div className='flex h-[120px] flex-col p-4'>
-        <span className='mb-2 text-md font-semibold text-gray-950 md:text-xl'>
+        <span className='text-md mb-2 font-semibold text-gray-950 md:text-xl'>
           스냅 {data.frameCount || 0}컷
         </span>
-        <h3 className='line-clamp-2 text-lg text-gray-950'>{data.contentTitle}</h3>
+        <h3 className='line-clamp-2 text-lg text-gray-950'>
+          {data.contentTitle}
+        </h3>
       </div>
     </div>
   );
