@@ -1,22 +1,12 @@
+import { cn } from '@/utils/lib/utils';
 import { Skeleton } from '../ui/skeleton';
 
 interface BasicSkeletonProps {
-  width: number;
-  height: number;
-  rounded?: number;
+  className: string;
 }
 
-const BasicSkeleton = ({ width, height, rounded = 8 }: BasicSkeletonProps) => {
-  return (
-    <Skeleton
-      style={{
-        width: `${width}px`,
-        height: `${height}px`,
-        borderRadius: `${rounded}px`,
-      }}
-      className='bg-gray-100'
-    />
-  );
+const BasicSkeleton = ({ className }: BasicSkeletonProps) => {
+  return <Skeleton className={cn('bg-gray-100', 'rounded-lg', className)} />;
 };
 
 export default BasicSkeleton;
