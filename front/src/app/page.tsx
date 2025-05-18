@@ -6,7 +6,7 @@ import HeroSection from '@/components/home/HeroSection';
 
 const Home = () => {
   return (
-    <main className='flex min-h-screen flex-col'>
+    <main className='flex h-full flex-col'>
       <HeroSection />
       <FeaturesSection />
       <CtaSection />
