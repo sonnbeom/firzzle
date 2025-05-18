@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { getSummary } from '@/api/summary';
 import LevelTab from '@/components/summary/LevelTab';
 import SummaryContent from '@/components/summary/SummaryContent';
@@ -19,13 +18,11 @@ const Summary = async ({ params, searchParams }: PageProps) => {
   return (
     <div className='flex w-full flex-col gap-4 lg:gap-7'>
       <LevelTab initialTab={tab} />
-      <Suspense fallback={<div>Loading...</div>}>
-        <SummaryContent
-          level={tab}
-          easyData={summaryData.easySections}
-          highData={summaryData.hardSections}
-        />
-      </Suspense>
+      <SummaryContent
+        level={tab}
+        easyData={summaryData.easySections}
+        highData={summaryData.hardSections}
+      />
     </div>
   );
 };
