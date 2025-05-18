@@ -1,10 +1,12 @@
 package com.firzzle.llm.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import com.firzzle.llm.dto.ExamAnswerDTO;
 import com.firzzle.llm.dto.ExamsDTO;
 
 @Mapper
@@ -16,6 +18,12 @@ public interface ExamsMapper {
      * @return 저장된 개수
      */
     int insertExamList(List<ExamsDTO> exams);
+
+    /**
+     * 사용자의 시험 답변 및 AI 해설 저장 (DTO 기반)
+     * @param answerDto 답변 정보 DTO
+     */
+    void insertExamAnswer(ExamAnswerDTO answerDto);
 
     /**
      * 콘텐츠 기준 전체 시험 문제 개수 조회
@@ -49,4 +57,12 @@ public interface ExamsMapper {
     		@Param("contentSeq") Long contentSeq,
     		@Param("nextIndex") int nextIndex
     );	
+    
+    
+    List<Map<String, Object>> selectRawAnsweredExamList(
+    	    @Param("contentSeq") Long contentSeq,
+    	    @Param("userSeq") Long userSeq,
+    	    @Param("lastIndate") String lastIndate,
+    	    @Param("limit") int limit
+    	);
 }

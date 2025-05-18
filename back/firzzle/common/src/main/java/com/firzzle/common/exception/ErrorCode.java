@@ -76,7 +76,16 @@ public enum ErrorCode {
     SHARE_CODE_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "MSG_0000070608", "이미 취소된 공유 코드입니다"),
 
     // =========== LLM Module ===========
-    // 여기부터 MSG_0000070701 시작
+    LLM_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "MSG_0000070701", "LLM 서비스가 일시적으로 이용 불가합니다"),
+    LLM_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070702", "LLM 요청 처리에 실패했습니다"),
+    LLM_RESPONSE_INVALID(HttpStatus.BAD_GATEWAY, "MSG_0000070703", "LLM 응답이 유효하지 않습니다"),
+    LLM_QUOTA_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "MSG_0000070704", "LLM 서비스 호출 한도를 초과했습니다"),
+    LLM_CONTEXT_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "MSG_0000070705", "입력 컨텍스트가 너무 큽니다"),
+    LLM_MODEL_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070706", "요청한 LLM 모델을 찾을 수 없습니다"),
+    LLM_PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070707", "요청한 프롬프트를 찾을 수 없습니다"),
+    LLM_REQUEST_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "MSG_0000070708", "너무 많은 LLM 요청이 발생했습니다"),
+    LLM_RESPONSE_PARSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070709", "LLM 응답 파싱에 실패했습니다"),
+    
 
     // =========== STT Module ===========
     INVALID_YOUTUBE_URL(HttpStatus.BAD_REQUEST, "MSG_0000070801", "유효하지 않은 YouTube URL입니다"),
