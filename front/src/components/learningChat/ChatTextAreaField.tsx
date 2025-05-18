@@ -104,7 +104,7 @@ const ChatTextAreaField = ({
         disabled={isLoading}
       />
       <button onClick={handleSubmit} disabled={isLoading}>
-        <Icons id={value ? 'upload' : 'write'} />
+        <Icons id='write' color={value ? 'text-gray-950' : 'text-gray-500'} />
       </button>
     </div>
   );

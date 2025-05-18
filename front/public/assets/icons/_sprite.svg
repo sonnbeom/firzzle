@@ -36,5 +36,8 @@
         <symbol id='arrow-right' width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" fill-rule="evenodd" d="M8.5 20.414 7.086 19l7-7-7-7L8.5 3.586 16.914 12 8.5 20.414Z" clip-rule="evenodd"/>
         </symbol>
+        <symbol id='learningChat' width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-rule="evenodd" d="M14.94 13.131h1.598v-1.5H14.94v1.5Zm-3.736 0h1.6v-1.5h-1.6v1.5Zm-3.734 0h1.6v-1.5h-1.6v1.5ZM18.906 5.12a9.657 9.657 0 0 0-6.876-2.845A9.662 9.662 0 0 0 5.152 5.12a9.66 9.66 0 0 0-2.85 6.885c.003 3.351-.048 9.194-.048 9.194l-.004.51.508-.005c.058 0 5.81-.052 9.06.02l.222.001a9.633 9.633 0 0 0 6.866-2.849c3.792-3.793 3.792-9.964 0-13.757Z" clip-rule="evenodd"/>
+        </symbol>
     </defs>
 </svg>
