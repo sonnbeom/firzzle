@@ -9,6 +9,7 @@ interface ChatHistoryProps {
   contentId: string;
   chats: LearningChat[];
   refetch: () => void;
+  isLoading?: boolean;
 }
 
 const ChatHistory = ({
@@ -16,6 +17,7 @@ const ChatHistory = ({
   contentId,
   chats,
   refetch,
+  isLoading,
 }: ChatHistoryProps) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -25,7 +27,7 @@ const ChatHistory = ({
       chatContainerRef.current.scrollTop =
         chatContainerRef.current.scrollHeight;
     }
-  }, [chats]);
+  }, [chats, isLoading]);
 
   return (
     <div
@@ -42,6 +44,11 @@ const ChatHistory = ({
         .map((chat, index) => (
           <ChatBubble key={index} chat={chat} />
         ))}
+      {isLoading && (
+        <div className='w-full font-medium whitespace-pre-wrap text-gray-950'>
+          응답 생성 중...
+        </div>
+      )}
     </div>
   );
 };
