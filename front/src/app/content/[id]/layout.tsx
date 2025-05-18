@@ -14,14 +14,14 @@ const DetailLayout = async ({ params, children }: PageProps) => {
   const data = await getContent(id);
 
   return (
-    <div className='flex h-full w-full gap-5 overflow-hidden'>
-      <div className='hidden flex-2 flex-col gap-6 overflow-hidden lg:flex xl:flex-3'>
+    <div className='flex h-[87dvh] w-full gap-5'>
+      <div className='hidden flex-2 flex-col gap-6 lg:flex xl:flex-3'>
         {/* 영상 */}
         <PlayerFrame playerId={data.videoId} />
         {/* 러닝챗 */}
         <LearningChatContent contentId={id} />
       </div>
-      <div className='flex flex-3 flex-col items-center gap-2 overflow-hidden lg:gap-4 xl:flex-7'>
+      <div className='flex flex-3 flex-col items-center gap-2 lg:gap-4 xl:flex-7'>
         <DetailHeader />
         <div className='h-full w-full overflow-y-auto'>{children}</div>
       </div>

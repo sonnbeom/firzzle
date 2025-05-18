@@ -1,5 +1,5 @@
 import PlayerContent from '@/components/player/PlayerContent';
-import { fetchYouTubeVideoInfo } from '@/services/youtubeService';
+import { getPlayer } from '@/services/youtubeService';
 import { PlayerInfo } from '@/types/player';
 
 const ContentPage = async ({
@@ -11,7 +11,7 @@ const ContentPage = async ({
   let initialPlayerInfo: PlayerInfo | null = null;
 
   if (url) {
-    const playerInfo = await fetchYouTubeVideoInfo(url);
+    const playerInfo = await getPlayer(url);
     initialPlayerInfo = playerInfo;
   }
 

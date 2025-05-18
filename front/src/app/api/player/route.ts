@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { PlayerInfo } from '@/types/player';
 import { getYouTubeVideoId } from '@/utils/youtube';
-
 // 플레이어 정보 조회
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
     if (!playerId) {
       return NextResponse.json(
-        { error: '유효하지 않은 URL 형식입니다.' },
+        { message: '유효하지 않은 URL 형식입니다.' },
         { status: 400 },
       );
     }
@@ -28,7 +28,10 @@ export async function GET(request: Request) {
 
     const oembedData = await response.json();
 
-    return NextResponse.json({ data: oembedData }, { status: 200 });
+    return NextResponse.json(
+      { data: { playerId, title: oembedData.title } as PlayerInfo },
+      { status: 200 },
+    );
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

@@ -15,16 +15,22 @@ interface LearningChatContentProps {
 
 const LearningChatContent = ({ contentId }: LearningChatContentProps) => {
   const [currentMode, setCurrentMode] = useState<Mode>('학습모드');
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     data: chatHistory,
     hasNextPage,
     observerTarget,
     refetch,
+    addOptimisticChat,
   } = useChatHistory<LearningChat>({
     queryKey: ['learningChatHistory', contentId],
     queryFn: (lastIndate) => getLearningChatHistory(contentId, lastIndate),
   });
+
+  const handleLoadingChange = (loading: boolean) => {
+    setIsLoading(loading);
+  };
 
   return (
     <div className='flex h-full flex-col gap-2 overflow-hidden rounded-lg bg-gray-50 px-4 py-3'>
@@ -43,6 +49,7 @@ const LearningChatContent = ({ contentId }: LearningChatContentProps) => {
           contentId={contentId}
           chats={chatHistory || []}
           refetch={refetch}
+          isLoading={isLoading}
         />
       </div>
       {/* 채팅 입력 필드 */}
@@ -50,6 +57,8 @@ const LearningChatContent = ({ contentId }: LearningChatContentProps) => {
         mode={currentMode}
         contentId={contentId}
         refetch={refetch}
+        addOptimisticChat={addOptimisticChat}
+        onLoadingChange={handleLoadingChange}
       />
     </div>
   );

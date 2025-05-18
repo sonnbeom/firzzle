@@ -1,4 +1,8 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  InfiniteData,
+} from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { LearningChat } from '@/types/learningChat';
 
@@ -12,6 +16,7 @@ export function useChatHistory<T extends LearningChat>({
   queryFn,
 }: UseChatHistoryProps<T>) {
   const observerTarget = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const {
     data,
@@ -34,6 +39,26 @@ export function useChatHistory<T extends LearningChat>({
     initialPageParam: undefined,
   });
 
+  // 낙관적 업데이트를 위한 메서드
+  const addOptimisticChat = (newChat: T) => {
+    queryClient.setQueryData<InfiniteData<T[]>>(queryKey, (oldData) => {
+      if (!oldData) return { pages: [[newChat]], pageParams: [undefined] };
+
+      const newPages = [...oldData.pages];
+      if (newPages.length > 0) {
+        newPages[0] = [newChat, ...newPages[0]];
+      } else {
+        newPages.push([newChat]);
+      }
+
+      return {
+        ...oldData,
+        pages: newPages,
+      };
+    });
+  };
+
+  // 무한 스크롤 처리
   useEffect(() => {
     if (!hasNextPage || isFetchingNextPage) return;
 
@@ -63,5 +88,6 @@ export function useChatHistory<T extends LearningChat>({
     fetchNextPage,
     observerTarget,
     refetch,
+    addOptimisticChat,
   };
 }
