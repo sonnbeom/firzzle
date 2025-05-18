@@ -6,14 +6,13 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
 
-  console.log(url);
   try {
     // YouTube id 추출
     const playerId = getYouTubeVideoId(url);
 
     if (!playerId) {
       return NextResponse.json(
-        { error: '유효하지 않은 URL 형식입니다.' },
+        { message: '유효하지 않은 URL 형식입니다.' },
         { status: 400 },
       );
     }

@@ -7,12 +7,6 @@ export const getPlayer = async (url: string) => {
 
   const response = await fetch(
     `${baseUrl}/api/player?url=${encodeURIComponent(url)}`,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    },
   );
 
   const data = await response.json();
