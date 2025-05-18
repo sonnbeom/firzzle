@@ -3,7 +3,7 @@
 import { debounce } from 'lodash';
 import { useEffect, useState } from 'react';
 import { postContent } from '@/api/content';
-import { fetchYouTubeVideoInfo } from '@/services/youtubeService';
+import { getPlayer } from '@/services/youtubeService';
 import { PlayerInfo } from '@/types/player';
 import BasicButton from '../common/BasicButton';
 import BasicToaster from '../common/BasicToaster';
@@ -25,15 +25,8 @@ const UrlInputField = ({
   // 입력된 url 영상 정보 조회
   const handleUrlSubmit = debounce(async (url: string) => {
     if (url.trim().length > 0) {
-      try {
-        const playerInfo = await fetchYouTubeVideoInfo(url);
-        setPlayerInfo(playerInfo);
-      } catch (error) {
-        return BasicToaster.error(error.message, {
-          id: 'fetch youtube',
-          duration: 2000,
-        });
-      }
+      const playerInfo = await getPlayer(url);
+      setPlayerInfo(playerInfo);
     }
   }, 500);
 

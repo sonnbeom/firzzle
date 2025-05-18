@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
+import { PlayerInfo } from '@/types/player';
 import { getYouTubeVideoId } from '@/utils/youtube';
-
 // 플레이어 정보 조회
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
 
+  console.log(url);
   try {
     // YouTube id 추출
     const playerId = getYouTubeVideoId(url);
@@ -28,7 +29,10 @@ export async function GET(request: Request) {
 
     const oembedData = await response.json();
 
-    return NextResponse.json({ data: oembedData }, { status: 200 });
+    return NextResponse.json(
+      { data: { playerId, title: oembedData.title } as PlayerInfo },
+      { status: 200 },
+    );
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
