@@ -76,11 +76,11 @@ public class ContentService {
             Long contentSeq = null;
 
             if (existingContent != null) {
-                // 2-1. 이미 등록된 콘텐츠인 경우
+                // 콘텐츠 일련번호 가져오기
                 contentSeq = existingContent.getLong2("content_seq");
                 logger.debug("이미 등록된 YouTube 동영상입니다. 사용자-콘텐츠 매핑만 생성합니다. ContentSeq: {}", contentSeq);
 
-                // 2-2. 이미 해당 사용자가 등록한 콘텐츠인지 확인
+                // 이미 해당 사용자가 등록한 콘텐츠인지 확인
                 RequestBox userContentCheckBox = new RequestBox("userContentCheckBox");
                 userContentCheckBox.put("contentSeq", contentSeq);
                 userContentCheckBox.put("uuid", box.getString("uuid"));
@@ -97,6 +97,22 @@ public class ContentService {
                     result = contentDAO.selectContentDataBox(selectBox);
 
                     // 이미 분석 완료된 콘텐츠는 taskId를 포함하지 않음
+                    return result;
+                } else {
+                    // 해당 사용자가 등록하지 않은 기존 콘텐츠인 경우, 사용자-콘텐츠 매핑 추가
+                    RequestBox userContentBox = new RequestBox("userContentBox");
+                    userContentBox.put("contentSeq", contentSeq);
+                    userContentBox.put("uuid", box.getString("uuid"));
+                    userContentBox.put("indate", FormatDate.getDate("yyyyMMddHHmmss"));
+                    contentDAO.insertUserContent(userContentBox);
+
+                    // 콘텐츠 정보 조회 및 반환
+                    RequestBox selectBox = new RequestBox("selectBox");
+                    selectBox.put("contentSeq", contentSeq);
+                    selectBox.put("uuid", box.getString("uuid"));
+                    result = contentDAO.selectContentDataBox(selectBox);
+
+                    // 이미 분석 완료된 콘텐츠는 taskId를 포함하지 않고 반환
                     return result;
                 }
             }
