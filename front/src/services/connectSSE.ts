@@ -116,13 +116,41 @@ class SSEManager {
     // 오류 발생
     this.eventSource.addEventListener('error', (event: MessageEvent) => {
       try {
-        const data = JSON.parse(event.data) as SSEEventData;
-        onError?.(data);
+        // 데이터가 있는 경우에만 JSON 파싱 시도
+        if (event.data) {
+          const data = JSON.parse(event.data) as SSEEventData;
+          onError?.(data);
+        } else {
+          // 데이터가 없는 경우 기본 에러 객체 생성
+          onError?.({
+            message: '연결이 끊어졌습니다. 다시 연결을 시도합니다.',
+            timestamp: new Date().toISOString(),
+          });
+        }
       } catch (error) {
         console.error('Error event parsing error:', error);
-        onError?.(error);
+        // JSON 파싱 에러 시 기본 에러 객체 생성
+        onError?.({
+          message: '연결 중 오류가 발생했습니다.',
+          timestamp: new Date().toISOString(),
+        });
       }
+
+      // 연결 종료 및 재연결 시도
       this.disconnect();
+
+      // 1초 후 재연결 시도
+      setTimeout(() => {
+        this.connect({
+          url,
+          onConnect,
+          onStart,
+          onProgress,
+          onResult,
+          onComplete,
+          onError,
+        });
+      }, 1000);
     });
 
     return this.eventSource;
