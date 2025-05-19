@@ -16,9 +16,9 @@ public class SttConvertedProducer {
 
     private static final String TOPIC_NAME = "stt-converted";
 
-    public void sendSttResult(Long contentSeq, String script, String taskId) {
+    public void sendSttResult(Long userContentSeq,Long contentSeq, String script, String taskId) {
         try {
-            LlmRequest request = new LlmRequest(contentSeq, script, taskId);
+            LlmRequest request = new LlmRequest(userContentSeq, contentSeq, script, taskId);
             String json = objectMapper.writeValueAsString(request);
             System.out.println(json);
             kafkaTemplate.send(TOPIC_NAME, json);

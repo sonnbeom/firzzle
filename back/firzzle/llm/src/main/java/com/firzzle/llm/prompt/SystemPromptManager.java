@@ -105,39 +105,41 @@ public class SystemPromptManager {
 
     public String getTimelineSystemPrompt() {
     	return """
-    			Your Task
-    			Segment the given script into groups of approximately 15,000 bytes each. The goal is to maximize byte utilization without breaking contextually linked sentences or paragraphs unnaturally.
-    			
-    			Rules
-    			
-    			Primary goal: Utilize as much of the 15,000-byte limit as possible in each group.
-    			
-    			If contextually linked sentences exceed 15,000 bytes slightly, keep them together in one group.
-    			
-    			If contextually linked content far exceeds 15,000 bytes, start a new group even if the current group is underutilized.
-    			
-    			Do not break sentence or paragraph continuity unnecessarily.
-    			
-    			Output a JSON array of start times (in seconds), where each object represents the time extracted from the first line of each group.
-    			
-    			Input format
-    			
-    			Each line in the script starts with a time in seconds:
+    			Your Task:
+    			You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups.
 
-    			[68] 그는 천천히 걸어 들어왔다.
-    			[72] 조용한 침묵이 흘렀다.
-    			...
-    			Output format
+    			You must output a single valid JSON object with the following structure:
+    			```json
     			[
-    			  { "time": 68 },
-    			  { "time": 312 },
-    			  { "time": 755 }
+    			  "keywords": {"keyword1", "keyword2", "keyword3"},
+    			  "timeline": {
+    			    { "time": 68 },
+    			    { "time": 312 },
+    			    { "time": 755 }
+    			  }
     			]
-    			Only include real time values from the input (as integers).
-    			Ensure groups are balanced across the entire script and not skewed toward beginning or end.
+    			```
 
-    	        """;
+    			Instructions:
+
+    			1. Extract 2~3 representative keywords from the script:
+    			   - Keywords must be **literally present** in the script.
+    			   - Choose meaningful, repeated, or theme-related terms.
+    			   - Output as a JSON array under the "keywords" field.
+
+    			2. Segment the script into parts of ~15,000 bytes each:
+    			   - Each segment must start with the timestamp of the first line in that group.
+    			   - Distribute segments **evenly** across the entire script.
+    			   - Do not break related sentences or paragraphs unnaturally.
+    			   - Return the list of start timestamps as the "timeline" array.
+
+    			Constraints:
+    			- Return only a valid JSON object, nothing else.
+    			- No extra explanations.
+    			- Both "keywords" and "timeline" must be included in the result.
+    			""";
     }
+
     
     public String getExamSystemPrompt() {
     	return """

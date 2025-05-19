@@ -17,6 +17,14 @@
         C.delete_yn,
         (SELECT GROUP_CONCAT(tag SEPARATOR ',') FROM fb_ai_content_tags WHERE content_seq = C.content_seq) AS tags
     </sql>
+    
+    <insert id="insertContentTags" parameterType="map">
+	    INSERT INTO fb_ai_content_tags (content_seq, tag)
+	    VALUES
+	    <foreach collection="tags" item="tag" separator=",">
+	        (#{contentSeq}, #{tag})
+	    </foreach>
+	</insert>
 
 	<select id="selectContentSummaryByContentSeq" parameterType="long" resultType="com.firzzle.llm.dto.ContentDTO">
 	    SELECT

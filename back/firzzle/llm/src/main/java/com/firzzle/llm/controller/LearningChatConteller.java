@@ -102,7 +102,7 @@ public class LearningChatConteller {
                 .build());
     }
 
-    @GetMapping("/exam/{ContentSeq}/next")
+    @GetMapping("/{ContentSeq}/exam")
     @Operation(summary = "시험 모드 질문 조회회", description = "시험 모드에서 질문을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "질문 응답 성공"),
@@ -138,7 +138,7 @@ public class LearningChatConteller {
             @ApiResponse(responseCode = "404", description = "질문 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    @PostMapping("/exam/{ContentSeq}")
+    @PostMapping("/{ContentSeq}/exam")
     public CompletableFuture<ResponseEntity<Response<ExamAnswerResponseDTO>>> postExamAnswer(
 	    @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
 	    @RequestHeader(value = "X-User-UUID", required = true) String userUUID,
@@ -162,7 +162,7 @@ public class LearningChatConteller {
             ));
     }
     
-    @GetMapping("/exam/{ContentSeq}/history")
+    @GetMapping("/{ContentSeq}/exam/history")
     @Operation(summary = "시험 모드 대화 목록 불러오기", description = "시험 모드에서 한 대화 내용을 불러옵니다. 무한 스크롤을 위해 lastIndate, limit 쿼리 지원")
     @ApiResponses(value = { 
             @ApiResponse(responseCode = "200", description = "대화 목록 불러오기 성공"),
