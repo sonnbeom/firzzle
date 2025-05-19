@@ -16,6 +16,8 @@ class SSEManager {
   private static instance: SSEManager;
   private eventSource: EventSourcePolyfill | null = null;
   private url: string | null = null;
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 2;
 
   private constructor() {}
 
@@ -136,21 +138,32 @@ class SSEManager {
         });
       }
 
-      // 연결 종료 및 재연결 시도
+      // 연결 종료
       this.disconnect();
 
-      // 1초 후 재연결 시도
-      setTimeout(() => {
-        this.connect({
-          url,
-          onConnect,
-          onStart,
-          onProgress,
-          onResult,
-          onComplete,
-          onError,
+      // 재연결 시도 횟수가 최대 시도 횟수를 초과하지 않은 경우에만 재연결
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        this.reconnectAttempts++;
+        // 1초 후 재연결 시도
+        setTimeout(() => {
+          this.connect({
+            url,
+            onConnect,
+            onStart,
+            onProgress,
+            onResult,
+            onComplete,
+            onError,
+          });
+        }, 1000);
+      } else {
+        // 최대 재연결 시도 횟수를 초과한 경우
+        onError?.({
+          message:
+            '연결 시도 횟수를 초과했습니다. 페이지를 새로고침하여 다시 시도해주세요.',
+          timestamp: new Date().toISOString(),
         });
-      }, 1000);
+      }
     });
 
     return this.eventSource;
@@ -161,6 +174,7 @@ class SSEManager {
       this.eventSource.close();
       this.eventSource = null;
       this.url = null;
+      this.reconnectAttempts = 0; // 연결이 끊어질 때 재연결 시도 횟수 초기화
     }
   }
 
