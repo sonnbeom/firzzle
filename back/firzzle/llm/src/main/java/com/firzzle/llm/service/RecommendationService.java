@@ -4,21 +4,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
-import com.firzzle.llm.client.OpenAiClient;
-import com.firzzle.llm.client.QdrantClient;
+import com.firzzle.llm.dto.RecommendContentDTO;
 import com.firzzle.llm.dto.RecommendRequestDTO;
 import com.firzzle.llm.dto.RecommendResponseDTO;
 import com.firzzle.llm.dto.UserContentDTO;
-import com.firzzle.llm.mapper.ChatMapper;
-import com.firzzle.llm.mapper.ExamsMapper;
+import com.firzzle.llm.mapper.ContentMapper;
 import com.firzzle.llm.mapper.UserContentMapper;
 import com.firzzle.llm.mapper.UserMapper;
-import com.firzzle.llm.prompt.PromptFactory;
 import com.firzzle.llm.util.QdrantCollections;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +27,7 @@ public class RecommendationService {
     private final RagService ragService;
     private final UserContentMapper userContentMapper;
     private final UserMapper userMapper;
+    private final ContentMapper contentMapper;
     
 
     /**
@@ -41,16 +40,13 @@ public class RecommendationService {
             Long userContentSeq,
             RecommendRequestDTO request
     ) {
-        // 1. UUID로 사용자 번호 조회
         Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
 
-        // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent =
                 userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
         Long userSeq    = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
 
-        // 3. 권한 체크
         if (!actualUserSeq.equals(userSeq)) {
             throw new BusinessException(
                 ErrorCode.UNAUTHORIZED_ACCESS,
@@ -58,60 +54,74 @@ public class RecommendationService {
             );
         }
 
-        // 4. 벡터+키워드 조회 → 유사 콘텐츠 검색 → 필터링/페이징 → DTO 변환
-        return ragService
-        	    .getVectorWithPayloadByContentSeq(QdrantCollections.CONTENT, contentSeq)
-        	    .flatMap(data -> {
-        	        @SuppressWarnings("unchecked")
-        	        List<Float> vector = (List<Float>) data.get("vector");
-        	        @SuppressWarnings("unchecked")
-        	        List<String> keywords = (List<String>) ((Map<String, Object>) data.get("payload"))
-        	            .getOrDefault("keywords", Collections.emptyList());
+        return ragService.getVectorWithPayloadByContentSeq(QdrantCollections.CONTENT, contentSeq)
+            .flatMap(data -> {
+                @SuppressWarnings("unchecked")
+                List<Float> vector = (List<Float>) data.get("vector");
 
-        	        return ragService.searchSimilarByVectorExcludingSelfWithKeywords(
-        	            QdrantCollections.CONTENT,
-        	            vector,
-        	            18,
-        	            0.2,
-        	            contentSeq,
-        	            keywords
-        	        );
-        	    })
-        	    // <— 여기서 flatMap 대신 map 으로 바꿔주세요
-        	    .map(results -> {
-        	        int page = Math.max(request.getP_pageno(), 1);
-        	        int size = Math.max(request.getP_pagesize(), 6);
-        	        int from = (page - 1) * size;
-        	        int to   = Math.min(from + size, results.size());
+                @SuppressWarnings("unchecked")
+                List<String> originKeywords = (List<String>) ((Map<String, Object>) data.get("payload"))
+                    .getOrDefault("keywords", Collections.emptyList());
 
-        	        List<Map<String, Object>> pageContent =
-        	            from >= results.size()
-        	                ? Collections.emptyList()
-        	                : results.subList(from, to);
+                return ragService.searchSimilarByVectorExcludingSelf(
+                        QdrantCollections.CONTENT,
+                        vector,
+                        18,
+                        0.25,
+                        contentSeq
+                ).map(results -> Map.of(
+                    "results", results,
+                    "originTags", originKeywords
+                ));
+            })
+            .map(data -> {
+                List<Map<String, Object>> results = (List<Map<String, Object>>) data.get("results");
+                List<String> originKeywords = (List<String>) data.get("originTags");
 
-        	        String originTags = pageContent.isEmpty()
-        	            ? ""
-        	            : String.join(",",
-        	                (List<String>) ((Map<String,Object>) pageContent.get(0).get("payload"))
-        	                    .get("keywords")
-        	              );
+                int page = Math.max(request.getP_pageno(), 1);
+                int size = Math.max(request.getP_pagesize(), 6);
+                int from = (page - 1) * size;
+                int to   = Math.min(from + size, results.size());
 
-        	        RecommendResponseDTO dto = RecommendResponseDTO.builder()
-        	            .content(pageContent)
-        	            .originTags(originTags)
-        	            .p_pageno(page)
-        	            .p_pagesize(size)
-        	            .totalElements(results.size())
-        	            .totalPages((results.size() + size - 1) / size)
-        	            .last(page * size >= results.size())
-        	            .hasNext(page * size < results.size())
-        	            .build();
+                List<Map<String, Object>> pageContentRaw =
+                    from >= results.size()
+                        ? Collections.emptyList()
+                        : results.subList(from, to);
 
-        	        // List<RecommendResponseDTO> 하나를 반환
-        	        return List.of(dto);
-        	    })
-        	    .toFuture();
+                // ✅ contentSeq 목록 추출
+                List<Long> contentSeqList = pageContentRaw.stream()
+                    .map(r -> ((Map<String, Object>) r.get("payload")).get("contentSeq"))
+                    .map(v -> ((Number) v).longValue())
+                    .collect(Collectors.toList());
+
+                // ✅ DB에서 RecommendContentDTO 목록 조회
+                List<RecommendContentDTO> contentList =
+                    contentMapper.selectRecommendContentListBySeqList(contentSeqList);
+
+                // ✅ contentSeq 기준으로 매핑
+                Map<Long, RecommendContentDTO> contentMap = contentList.stream()
+                    .collect(Collectors.toMap(RecommendContentDTO::getContentSeq, r -> r));
+
+                // ✅ Qdrant 결과 순서에 따라 재정렬
+                List<RecommendContentDTO> sortedList = contentSeqList.stream()
+                    .map(contentMap::get)
+                    .filter(c -> c != null)
+                    .collect(Collectors.toList());
+
+                RecommendResponseDTO dto = RecommendResponseDTO.builder()
+                    .content(sortedList)
+                    .originTags(String.join(",", originKeywords))
+                    .p_pageno(page)
+                    .p_pagesize(size)
+                    .totalElements(results.size())
+                    .totalPages((results.size() + size - 1) / size)
+                    .last(page * size >= results.size())
+                    .hasNext(page * size < results.size())
+                    .build();
+
+                return List.of(dto);
+            })
+            .toFuture();
     }
-
 
 }

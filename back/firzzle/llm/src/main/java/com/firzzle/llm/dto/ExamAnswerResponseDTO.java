@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(description = "시험 모드 응답")
 public class ExamAnswerResponseDTO {
-
     @Schema(description = "작성 시간", example = "YYYYMMDDHHMMSS", required = true)
     private String Indate;
 

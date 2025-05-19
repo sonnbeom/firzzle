@@ -85,6 +85,9 @@ public enum ErrorCode {
     LLM_PROMPT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070707", "요청한 프롬프트를 찾을 수 없습니다"),
     LLM_REQUEST_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "MSG_0000070708", "너무 많은 LLM 요청이 발생했습니다"),
     LLM_RESPONSE_PARSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070709", "LLM 응답 파싱에 실패했습니다"),
+    OPENAI_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070710", "OpenAI 응답 생성 중 오류가 발생했습니다"),
+    ANSWER_ALREADY_COMPLETED(HttpStatus.CONFLICT, "MSG_0000070711", "모든 시험 문제를 이미 완료했습니다"),
+    VECTOR_EMBEDDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070712", "질문 임베딩 처리 중 오류가 발생했습니다"),
     
 
     // =========== STT Module ===========

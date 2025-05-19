@@ -93,4 +93,82 @@
 	    ORDER BY a.indate DESC
 	    LIMIT #{limit}
 	</select>
+	
+	<!-- 등록 -->
+    <insert id="insertExamProgress" parameterType="com.firzzle.llm.dto.ExamProgressDTO">
+        INSERT INTO fb_ai_exams_progress (
+            user_seq,
+            content_seq,
+            exam_seq,
+            solved_count,
+            is_completed
+        ) VALUES (
+            #{userSeq},
+            #{contentSeq},
+            #{examSeq},
+            #{solvedCount},
+            #{isCompleted}
+        )
+    </insert>
+
+    <!-- 업데이트 -->
+    <update id="updateExamProgress" parameterType="com.firzzle.llm.dto.ExamProgressDTO">
+        UPDATE fb_ai_exams_progress
+        SET exam_seq = #{examSeq},
+            solved_count = #{solvedCount},
+            is_completed = #{isCompleted}
+        WHERE user_seq = #{userSeq}
+          AND content_seq = #{contentSeq}
+    </update>
+
+    <!-- 단건 조회 -->
+    <select id="selectByUserAndContent" resultType="com.firzzle.llm.dto.ExamProgressDTO">
+        SELECT
+            progress_seq,
+            user_seq,
+            content_seq,
+            exam_seq,
+            solved_count,
+            is_completed
+        FROM fb_ai_exams_progress
+        WHERE user_seq = #{userSeq}
+          AND content_seq = #{contentSeq}
+    </select>
+    
+    <!-- ✅ 사용자가 아직 풀지 않은 시험 문제 중 랜덤으로 1개 조회 -->
+	<select id="selectRandomUnansweredExam" parameterType="map" resultType="com.firzzle.llm.dto.ExamsDTO">
+	    SELECT 
+	        e.exam_seq,
+	        e.question_index,
+	        e.question_content,
+	        e.model_answer,
+	        e.reference_text
+	    FROM fb_ai_exams e
+	    LEFT JOIN fb_ai_exams_answer a 
+	        ON e.exam_seq = a.exam_seq AND a.user_seq = #{userSeq}
+	    WHERE e.content_seq = #{contentSeq}
+	      AND a.exam_seq IS NULL
+	    ORDER BY RAND()
+	    LIMIT 1
+	</select>
+	
+	<!-- ✅ 시험 문제 단건 조회 -->
+	<select id="selectExamByExamSeq" parameterType="long" resultType="com.firzzle.llm.dto.ExamsDTO">
+	    SELECT 
+	        exam_seq,
+	        content_seq,
+	        question_index,
+	        question_content,
+	        model_answer,
+	        reference_text
+	    FROM fb_ai_exams
+	    WHERE exam_seq = #{examSeq}
+	</select>
+	
+	<select id="countExamAnswerByUserAndExam" resultType="int">
+	    SELECT COUNT(*)
+	    FROM fb_ai_exams_answer
+	    WHERE exam_seq = #{examSeq}
+	      AND user_seq = #{userSeq}
+	</select>
 </mapper>
