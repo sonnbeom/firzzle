@@ -17,6 +17,7 @@ export const removeCookie = async (name: string) => {
 // 쿠키 설정
 export const setCookie = async (name: string, value: string) => {
   const cookieStore = await cookies();
+  console.log('쿠키 설정', name, value);
   cookieStore.set({
     name: name,
     value: value,
