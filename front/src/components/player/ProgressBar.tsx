@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { sseManager } from '@/services/connectSSE';
 import { SSEEventData } from '@/types/sse';
@@ -15,49 +14,72 @@ const ProgressBar = ({
   taskId: string;
   setIsSubmitted: (isSubmitted: boolean) => void;
 }) => {
-  const [contentSeq, setContentSeq] = useState('');
+  const [contentSeq, setContentSeq] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const router = useRouter();
 
-  // SSE 연결
-  sseManager.connect({
-    url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
-    onConnect: (data) => {
+  // 메시지 업데이트 핸들러
+  const handleMessage = useCallback((data: SSEEventData) => {
+    if (data.message) {
       setMessage(data.message);
-    },
-    onStart: (data) => {
-      setMessage(data.message);
-    },
-    onProgress: (data) => {
-      setMessage(data.message);
-    },
-    onResult: (data) => {
-      setContentSeq(data.contentSeq);
-    },
-    onComplete: (data) => {
-      BasicToaster.success(data.message, {
+    }
+  }, []);
+
+  // 완료 토스트 표시 핸들러
+  const showCompleteToast = useCallback(
+    (message: string, seq: string, title: string) => {
+      BasicToaster.success(message, {
         id: 'sse youtube',
         persistent: true,
         closeButton: true,
         children: (
           <Link
-            href={`/content/${contentSeq}`}
+            href={`/content/${seq}`}
             className='bg-opacity-20 hover:bg-opacity-30 mt-2 rounded-md bg-white px-4 py-2 transition-all'
             onClick={() => toast.dismiss('sse youtube')}
           >
-            요약된 내용 보러가기
+            {title} 요약 보러가기
           </Link>
         ),
       });
     },
-    onError: (error: SSEEventData) => {
-      BasicToaster.error(error.message, {
-        id: 'sse youtube',
-        duration: 2000,
-      });
-      setIsSubmitted(false);
-    },
-  });
+    [],
+  );
+
+  useEffect(() => {
+    if (!taskId) return;
+
+    let currentContentSeq: string | null = null;
+
+    // SSE 연결
+    sseManager.connect({
+      url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
+      onConnect: handleMessage,
+      onStart: handleMessage,
+      onProgress: handleMessage,
+      onResult: (data) => {
+        if (data.contentSeq) {
+          currentContentSeq = data.contentSeq;
+          setContentSeq(data.contentSeq);
+        }
+      },
+      onComplete: (data) => {
+        if (currentContentSeq) {
+          showCompleteToast(data.message, currentContentSeq, data.title);
+        }
+      },
+      onError: (error: SSEEventData) => {
+        BasicToaster.error(error.message, {
+          id: 'sse youtube',
+          duration: 2000,
+        });
+        setIsSubmitted(false);
+      },
+    });
+
+    return () => {
+      sseManager.disconnect();
+    };
+  }, [taskId, handleMessage, showCompleteToast]);
 
   return (
     <div className='flex flex-col items-center text-lg font-medium text-gray-900'>
