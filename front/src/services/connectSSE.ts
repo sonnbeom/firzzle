@@ -1,43 +1,140 @@
 import { Event, EventSourcePolyfill } from 'event-source-polyfill';
+import { getCookie } from '@/actions/auth';
+import { SSEEventData } from '@/types/sse';
 
 interface ConnectSSEProps {
   url: string;
-  onMessage: (event: MessageEvent) => void;
-  onConnect?: () => void;
-  onError?: (error: Event) => void;
+  onConnect?: (data: SSEEventData) => void;
+  onStart?: (data: SSEEventData) => void;
+  onProgress?: (data: SSEEventData) => void;
+  onResult?: (data: SSEEventData) => void;
+  onComplete?: (data: SSEEventData) => void;
+  onError?: (error: SSEEventData | Event) => void;
 }
 
-export const connectSSE = async ({
-  url,
-  onMessage,
-  onConnect,
-  onError,
-}: ConnectSSEProps) => {
-  const accessToken = ''; // 추후 auth api 연결
+class SSEManager {
+  private static instance: SSEManager;
+  private eventSource: EventSourcePolyfill | null = null;
+  private url: string | null = null;
 
-  // SSE 연결 설정
-  const eventSource = new EventSourcePolyfill(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  private constructor() {}
 
-  // 연결 성공
-  eventSource.addEventListener('connect', (event: MessageEvent) => {
-    if (event.data === 'connected') {
-      onConnect?.(); // 연결 성공 콜백 호출
+  public static getInstance(): SSEManager {
+    if (!SSEManager.instance) {
+      SSEManager.instance = new SSEManager();
     }
-  });
+    return SSEManager.instance;
+  }
 
-  // 메시지 수신
-  eventSource.addEventListener('message', (event: MessageEvent) => {
-    onMessage(event);
-  });
+  public async connect({
+    url,
+    onConnect,
+    onStart,
+    onProgress,
+    onResult,
+    onComplete,
+    onError,
+  }: ConnectSSEProps): Promise<EventSourcePolyfill> {
+    // 이미 연결된 SSE가 있고 같은 URL이면 기존 연결 반환
+    if (this.eventSource && this.url === url) {
+      return this.eventSource;
+    }
 
-  // 오류 발생
-  eventSource.onerror = (error) => {
-    console.error('SSE Error:', error);
-    onError?.(error);
-    eventSource.close();
-  };
+    // 이미 연결된 SSE가 있지만 다른 URL이면 기존 연결 종료
+    if (this.eventSource) {
+      this.disconnect();
+    }
 
-  return eventSource;
-};
+    const accessToken = getCookie('accessToken');
+
+    this.eventSource = new EventSourcePolyfill(url, {
+      headers: {
+        Accept: 'text/event-stream',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    this.url = url;
+
+    // 연결 성공
+    this.eventSource.addEventListener('connect', (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data) as SSEEventData;
+        onConnect?.(data);
+      } catch (error) {
+        console.error('Connect event parsing error:', error);
+      }
+    });
+
+    // 시작
+    this.eventSource.addEventListener('start', (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data) as SSEEventData;
+        onStart?.(data);
+      } catch (error) {
+        console.error('Start event parsing error:', error);
+      }
+    });
+
+    // 진행 상황
+    this.eventSource.addEventListener('progress', (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data) as SSEEventData;
+        onProgress?.(data);
+      } catch (error) {
+        console.error('Progress event parsing error:', error);
+      }
+    });
+
+    // 결과
+    this.eventSource.addEventListener('result', (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data) as SSEEventData;
+        onResult?.(data);
+      } catch (error) {
+        console.error('Result event parsing error:', error);
+      }
+    });
+
+    // 완료
+    this.eventSource.addEventListener('complete', (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data) as SSEEventData;
+        onComplete?.(data);
+        this.disconnect();
+      } catch (error) {
+        console.error('Complete event parsing error:', error);
+      }
+    });
+
+    // 오류 발생
+    this.eventSource.addEventListener('error', (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data) as SSEEventData;
+        onError?.(data);
+      } catch {
+        onError?.(event);
+      }
+      this.disconnect();
+    });
+
+    return this.eventSource;
+  }
+
+  public disconnect(): void {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+      this.url = null;
+    }
+  }
+
+  public isConnected(): boolean {
+    return this.eventSource !== null;
+  }
+
+  public getCurrentUrl(): string | null {
+    return this.url;
+  }
+}
+
+export const sseManager = SSEManager.getInstance();

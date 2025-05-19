@@ -1,13 +1,13 @@
 import { InfiniteScrollRequest } from '@/types/common';
-import { ContentResponse } from '@/types/content';
+import { ContentRegisterRequest, ContentResponse } from '@/types/content';
 import { ContentListResponse } from '@/types/content';
 import { api } from './common/apiInstance';
 
 // 학습 컨텐츠 분석
-export const postContent = async (youtubeUrl: string) => {
+export const postContent = async (request: ContentRegisterRequest) => {
   const response = await fetch('/api/learning/contents', {
     method: 'POST',
-    body: JSON.stringify({ youtubeUrl }),
+    body: JSON.stringify(request),
   });
 
   const data = await response.json();
@@ -16,7 +16,7 @@ export const postContent = async (youtubeUrl: string) => {
     throw new Error(data.message);
   }
 
-  return data.message;
+  return data.data;
 };
 
 // 학습 컨텐츠 정보 조회
