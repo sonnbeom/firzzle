@@ -15,7 +15,8 @@ interface IconsProps extends SVGProps<SVGSVGElement> {
     | 'arrow-up'
     | 'arrow-left'
     | 'arrow-right'
-    | 'learningChat';
+    | 'learningChat'
+    | 'edit';
   size?: number;
   color?: string;
 }
