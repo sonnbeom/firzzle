@@ -28,6 +28,24 @@
         </foreach>
     </insert>
 
+    <!-- ✅ AI 시험 문제 답변 저장 -->
+    <insert id="insertExamAnswer" parameterType="map" useGeneratedKeys="true" keyProperty="answerSeq">
+        INSERT INTO fb_ai_exams_answer (
+            exam_seq,
+            user_seq,
+            answer_content,
+            explanation_content,
+            indate
+        )
+        VALUES (
+            #{examSeq},
+            #{userSeq},
+            #{answerContent},
+            #{explanationContent},
+            #{indate}
+        )
+    </insert>
+
     <!-- ✅ 전체 시험 문제 개수 조회 -->
     <select id="selectTotalExamCount" parameterType="long" resultType="int">
         SELECT COUNT(*)
@@ -44,14 +62,35 @@
           AND a.user_seq = #{userSeq}
     </select>
 
-    <!-- ✅ 다음 시험 문제 조회 (사용자가 아직 풀지 않은 문제 중 question_index가 가장 작은 문제) -->
-	<!-- 사용자 답변 수 기반으로 다음 문제 직접 조회 -->
-	<select id="selectNextExamQuestion" parameterType="map" resultType="com.firzzle.llm.dto.ExamsDTO">
-	    SELECT exam_seq, question_index, question_content
-	    FROM fb_ai_exams
-	    WHERE content_seq = #{contentSeq}
-	      AND question_index = #{nextIndex}
-	    LIMIT 1
+    <!-- ✅ 다음 시험 문제 조회 (모범답안과 참고 텍스트 포함) -->
+    <select id="selectNextExamQuestion" parameterType="map" resultType="com.firzzle.llm.dto.ExamsDTO">
+        SELECT 
+            exam_seq,
+            question_index,
+            question_content,
+            model_answer,
+            reference_text
+        FROM fb_ai_exams
+        WHERE content_seq = #{contentSeq}
+        AND question_index = #{nextIndex}
+        LIMIT 1
+    </select>
+    
+    <!-- ✅ 사용자가 제출한 답변 목록 (무한 스크롤) -->
+	<select id="selectRawAnsweredExamList" parameterType="map" resultType="map">
+	    SELECT 
+	        e.question_content AS question,
+	        a.answer_content AS answer,
+	        a.explanation_content AS explanation,
+	        a.indate AS indate
+	    FROM fb_ai_exams_answer a
+	    JOIN fb_ai_exams e ON a.exam_seq = e.exam_seq
+	    WHERE e.content_seq = #{contentSeq}
+	      AND a.user_seq = #{userSeq}
+	      <if test="lastIndate != null">
+	          AND a.indate &lt; #{lastIndate}
+	      </if>
+	    ORDER BY a.indate DESC
+	    LIMIT #{limit}
 	</select>
-
 </mapper>
