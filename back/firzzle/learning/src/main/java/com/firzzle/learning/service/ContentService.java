@@ -77,7 +77,7 @@ public class ContentService {
 
             if (existingContent != null) {
                 // 콘텐츠 일련번호 가져오기
-                contentSeq = existingContent.getLong2("content_seq");
+                contentSeq = existingContent.getLong2("d_content_seq");
                 logger.debug("이미 등록된 YouTube 동영상입니다. 사용자-콘텐츠 매핑만 생성합니다. ContentSeq: {}", contentSeq);
 
                 // 이미 해당 사용자가 등록한 콘텐츠인지 확인
