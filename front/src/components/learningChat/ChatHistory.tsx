@@ -1,16 +1,37 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { LearningChat } from 'types/learningChat';
+import { getNewExamChat } from '@/api/learningChat';
+import { useChatStore } from '@/stores/chatStore';
+import { LearningChat, Mode } from 'types/learningChat';
 import ChatBubble from './ChatBubble';
 
 interface ChatHistoryProps {
   chats: LearningChat[];
   isLoading?: boolean;
+  contentId: string;
+  currentMode: Mode;
 }
 
-const ChatHistory = ({ chats, isLoading }: ChatHistoryProps) => {
+const ChatHistory = ({
+  chats,
+  isLoading,
+  contentId,
+  currentMode,
+}: ChatHistoryProps) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { setCurrentExamSeq } = useChatStore();
+
+  // 시험모드 처음 조회 시 새질문 생성
+  useEffect(() => {
+    const postNewExamChat = async () => {
+      const response = await getNewExamChat(contentId);
+
+      setCurrentExamSeq(response.exam_seq);
+    };
+
+    postNewExamChat();
+  }, []);
 
   // 스크롤을 항상 최하단으로 이동
   useEffect(() => {
@@ -27,11 +48,19 @@ const ChatHistory = ({ chats, isLoading }: ChatHistoryProps) => {
     >
       {[...chats]
         .sort((a, b) => {
-          // chatSeq를 숫자로 변환하여 내림차순 정렬
-          const seqA = parseInt(a.indate);
-          const seqB = parseInt(b.indate);
-          return seqA - seqB;
+          if (currentMode === '학습모드') {
+            return a.indate.localeCompare(b.indate);
+          }
+          return 0;
         })
+        .slice()
+        .reduce((acc, chat) => {
+          // 시험모드일 때는 배열을 뒤집음
+          if (currentMode === '시험모드') {
+            return [chat, ...acc];
+          }
+          return [...acc, chat];
+        }, [] as LearningChat[])
         .map((chat, index) => (
           <ChatBubble key={index} chat={chat} />
         ))}

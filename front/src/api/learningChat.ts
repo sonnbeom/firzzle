@@ -1,4 +1,6 @@
 import BasicToaster from '@/components/common/BasicToaster';
+import { useChatStore } from '@/stores/chatStore';
+import { SendExamChatRequest } from '@/types/learningChat';
 
 // 학습모드 채팅 전송
 export const postLearningChat = async (
@@ -39,14 +41,19 @@ export const getLearningChatHistory = async (
     return;
   }
 
+  useChatStore.setState({ info: { currentExamSeq: null, solvedCount: 0 } });
+
   return data.data;
 };
 
 // 시험모드 채팅 전송
-export const postExamChat = async (contentSeq: string, answer: string) => {
+export const postExamChat = async (
+  contentSeq: string,
+  request: SendExamChatRequest,
+) => {
   const response = await fetch(`/api/llm/${contentSeq}/exam`, {
     method: 'POST',
-    body: JSON.stringify({ answer }),
+    body: JSON.stringify(request),
   });
 
   const data = await response.json();
@@ -68,6 +75,24 @@ export const getExamChatHistory = async (
     : `/api/llm/${contentSeq}/exam/history`;
 
   const response = await fetch(url);
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    BasicToaster.error(data.message);
+    return;
+  }
+
+  useChatStore.setState({ info: data.info });
+
+  return data.data;
+};
+
+// 시험모드 새질문 생성
+export const getNewExamChat = async (contentSeq: string) => {
+  const response = await fetch(`/api/llm/${contentSeq}/exam`, {
+    method: 'GET',
+  });
 
   const data = await response.json();
 
