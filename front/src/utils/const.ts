@@ -6,3 +6,5 @@ export const LEARNING_CHATBOT_ID = '0';
 export const MAX_SNAP_REVIEW_LENGTH = 250;
 // 사진첩 페이지네이션 숫자
 export const ITEMS_PER_PAGE = 2;
+// 스냅 리뷰 최대 개수
+export const SNAP_COUNT = 4;

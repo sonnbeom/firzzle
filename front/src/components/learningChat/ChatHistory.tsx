@@ -1,24 +1,15 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { LearningChat, Mode } from 'types/learningChat';
+import { LearningChat } from 'types/learningChat';
 import ChatBubble from './ChatBubble';
 
 interface ChatHistoryProps {
-  currentMode: Mode;
-  contentId: string;
   chats: LearningChat[];
-  refetch: () => void;
   isLoading?: boolean;
 }
 
-const ChatHistory = ({
-  currentMode,
-  contentId,
-  chats,
-  refetch,
-  isLoading,
-}: ChatHistoryProps) => {
+const ChatHistory = ({ chats, isLoading }: ChatHistoryProps) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // 스크롤을 항상 최하단으로 이동
@@ -37,8 +28,8 @@ const ChatHistory = ({
       {[...chats]
         .sort((a, b) => {
           // chatSeq를 숫자로 변환하여 내림차순 정렬
-          const seqA = parseInt(a.chatSeq);
-          const seqB = parseInt(b.chatSeq);
+          const seqA = parseInt(a.indate);
+          const seqB = parseInt(b.indate);
           return seqA - seqB;
         })
         .map((chat, index) => (

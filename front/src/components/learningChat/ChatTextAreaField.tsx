@@ -51,7 +51,6 @@ const ChatTextAreaField = ({
 
     const currentTime = new Date().toISOString();
     const optimisticChat: LearningChat = {
-      chatSeq: Date.now().toString(),
       chatText: value,
       indate: currentTime,
       type: '0', // 사용자 메시지
@@ -70,7 +69,7 @@ const ChatTextAreaField = ({
       if (mode === '학습모드') {
         await postLearningChat(contentId, value);
       } else {
-        await postExamChat(contentId);
+        await postExamChat(contentId, value);
       }
 
       // 채팅 내역 갱신
