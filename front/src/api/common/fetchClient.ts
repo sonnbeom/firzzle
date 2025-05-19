@@ -132,6 +132,7 @@ export class FetchClient {
           // 토큰 갱신 API
           const response = await fetch('/api/auth/refresh', {
             method: 'POST',
+            credentials: 'include',
             body: JSON.stringify({
               retryCount: retryCount + 1,
             }),
