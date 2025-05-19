@@ -19,10 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(response.data, { status: 200 });
     }
 
-    return NextResponse.json(
-      { message: '관리자 로그인에 실패하였습니다.' },
-      { status: 400 },
-    );
+    return NextResponse.json({ message: response.message }, { status: 400 });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
