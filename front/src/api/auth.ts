@@ -1,5 +1,18 @@
 import BasicToaster from '@/components/common/BasicToaster';
-import { AdminLoginRequest } from '@/types/auth';
+import { AdminLoginRequest, UserInfo } from '@/types/auth';
+
+// 내정보 조회
+export const getMyInfo = async (): Promise<UserInfo> => {
+  const response = await fetch('/api/auth/me');
+  const data = await response.json();
+
+  if (response.status === 200) {
+    return data;
+  } else {
+    BasicToaster.error(data.message, { id: 'my-info' });
+    return data;
+  }
+};
 
 // 로그아웃
 export const logout = async () => {
