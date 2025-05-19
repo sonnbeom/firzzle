@@ -16,8 +16,6 @@ class SSEManager {
   private static instance: SSEManager;
   private eventSource: EventSourcePolyfill | null = null;
   private url: string | null = null;
-  private reconnectAttempts: number = 0;
-  private maxReconnectAttempts: number = 2;
 
   private constructor() {}
 
@@ -37,9 +35,6 @@ class SSEManager {
     onComplete,
     onError,
   }: ConnectSSEProps): Promise<EventSourcePolyfill> {
-    // 재연결 시도 횟수 초기화
-    this.reconnectAttempts = 0;
-
     // 이미 연결된 SSE가 있고 같은 URL이면 기존 연결 반환
     if (this.eventSource && this.url === url) {
       return this.eventSource;
@@ -121,52 +116,13 @@ class SSEManager {
     // 오류 발생
     this.eventSource.addEventListener('error', (event: MessageEvent) => {
       try {
-        // 데이터가 있는 경우에만 JSON 파싱 시도
-        if (event.data) {
-          const data = JSON.parse(event.data) as SSEEventData;
-          onError?.(data);
-        } else {
-          // 데이터가 없는 경우 기본 에러 객체 생성
-          onError?.({
-            message: '연결이 끊어졌습니다. 다시 연결을 시도합니다.',
-            timestamp: new Date().toISOString(),
-          });
-        }
+        const data = JSON.parse(event.data) as SSEEventData;
+        onError?.(data);
       } catch (error) {
         console.error('Error event parsing error:', error);
-        // JSON 파싱 에러 시 기본 에러 객체 생성
-        onError?.({
-          message: '연결 중 오류가 발생했습니다.',
-          timestamp: new Date().toISOString(),
-        });
+        onError?.(error);
       }
-
-      // 연결 종료
       this.disconnect();
-
-      // 재연결 시도 횟수가 최대 시도 횟수를 초과하지 않은 경우에만 재연결
-      if (this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.reconnectAttempts++;
-        // 1초 후 재연결 시도
-        setTimeout(() => {
-          this.connect({
-            url,
-            onConnect,
-            onStart,
-            onProgress,
-            onResult,
-            onComplete,
-            onError,
-          });
-        }, 1000);
-      } else {
-        // 최대 재연결 시도 횟수를 초과한 경우
-        onError?.({
-          message:
-            '연결 시도 횟수를 초과했습니다. 페이지를 새로고침하여 다시 시도해주세요.',
-          timestamp: new Date().toISOString(),
-        });
-      }
     });
 
     return this.eventSource;
@@ -177,7 +133,6 @@ class SSEManager {
       this.eventSource.close();
       this.eventSource = null;
       this.url = null;
-      this.reconnectAttempts = 0; // 연결이 끊어질 때 재연결 시도 횟수 초기화
     }
   }
 
