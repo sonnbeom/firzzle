@@ -134,7 +134,10 @@ export class FetchClient {
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`,
             {
               method: 'POST',
-              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
               body: JSON.stringify({
                 retryCount: retryCount + 1,
               }),
