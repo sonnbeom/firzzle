@@ -23,7 +23,15 @@ public class SttConsumer {
     @Async("taskExecutor") // application에 taskExecutor 빈 등록 필요
     public void handleMessageAsync(String message) {
         try {
-            String[] parts = message.split("\\|", 2);
+            // 1) 구분자를 3개로 자르기
+            String[] parts = message.split("\\|", 3);
+
+            // 2) 최소 3개가 아닐 경우 포맷 오류 처리
+            if (parts.length < 3) {
+                log.error("❌ STT 메시지 포맷 오류: 예상된 필드 3개, 실제 필드 수={}", parts.length);
+                return;
+            }
+            
             String uuid = parts[0];
             String url = parts[1];
             String taskId = parts[2];
