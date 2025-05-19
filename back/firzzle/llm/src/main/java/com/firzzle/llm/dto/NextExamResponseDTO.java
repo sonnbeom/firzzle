@@ -19,7 +19,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Schema(description = "시험 모드 질문 조회")
 public class NextExamResponseDTO {
-    @NotBlank
+	@NotBlank
+    @Schema(description = "문제 번호", example = "12")
+    private Long exam_seq;
+	
+	@NotBlank
     @Schema(description = "질문 내용", example = "DDD(도메인 주도 설계)에 대해 설명해 보세요.")
     private String question;
+    
 }
