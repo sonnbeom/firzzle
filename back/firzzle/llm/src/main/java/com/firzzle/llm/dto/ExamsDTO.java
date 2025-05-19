@@ -21,6 +21,9 @@ public class ExamsDTO {
 
     @Schema(description = "콘텐츠 일련 번호", example = "1001")
     private Long contentSeq;
+    
+    @Schema(description = "시험 문제 순서", example = "1")
+    private Integer questionIndex;
 
     @Schema(description = "문제 내용", example = "다음 중 DDD의 핵심 개념이 아닌 것은?")
     private String questionContent;

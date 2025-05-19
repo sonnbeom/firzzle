@@ -220,6 +220,7 @@ public class RequestManager {
 
                 // 파일사이즈구하기
                 String fileSizeKey = conf.getDir(conf.getProperty("file.size"), uriPath);
+                logger.info("uriPath: {}, fileSizeKey: {}, conf.getProperty(\"file.size\"): {}", uriPath, fileSizeKey, conf.getProperty("file.size"));
                 int fileSize = conf.getInt("file.size." + fileSizeKey);
                 // 파일확장자타입구하기
                 String fileTypekey = conf.getDir(conf.getProperty("file.type"), uriPath);

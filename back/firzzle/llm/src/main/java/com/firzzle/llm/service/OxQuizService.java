@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,31 +28,37 @@ public class OxQuizService {
     public void saveOxQuizzes(Long contentSeq, List<OxQuizDTO> oxQuizList) {
         if (oxQuizList == null || oxQuizList.isEmpty()) return;
 
-        for (OxQuizDTO ox : oxQuizList) {
+        // 🔹 분산된 3개 선택
+        List<OxQuizDTO> selected = selectEvenly(oxQuizList, 3);
+
+        for (OxQuizDTO ox : selected) {
             ox.setContentSeq(contentSeq);
             ox.setType("OX");
             ox.setDeleteYn("N");
 
-            // 1. 문제 등록 → examSeq 채워짐
             oxQuizMapper.insertQuestion(ox);
 
-            // 2. 보기 생성 (O, X)
             List<OxQuizOptionDTO> options = List.of(
-                OxQuizOptionDTO.builder()
-                    .questionSeq(ox.getQuestionSeq())
-                    .optionValue("O")
-                    .build(),
-               OxQuizOptionDTO.builder()
-                    .questionSeq(ox.getQuestionSeq())
-                    .optionValue("X")
-                    .build()
+                OxQuizOptionDTO.builder().questionSeq(ox.getQuestionSeq()).optionValue("O").build(),
+                OxQuizOptionDTO.builder().questionSeq(ox.getQuestionSeq()).optionValue("X").build()
             );
-
-            // 3. 보기 저장
             oxQuizMapper.insertQuestionOptions(options);
         }
 
-        log.info("✅ OX 퀴즈 {}개 저장 완료", oxQuizList.size());
+        log.info("✅ 분산된 OX 퀴즈 3개 저장 완료: {}", selected.size());
+    }
+
+    
+    private List<OxQuizDTO> selectEvenly(List<OxQuizDTO> quizList, int count) {
+        int size = quizList.size();
+        if (size <= count) return quizList; // 3개 이하면 그대로 반환
+
+        List<OxQuizDTO> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            int index = (int) Math.round((double) i * (size - 1) / (count - 1));
+            result.add(quizList.get(index));
+        }
+        return result;
     }
 
 }

@@ -27,8 +27,10 @@ public class ExamsService {
     public void saveExams(Long contentSeq, List<ExamsDTO> examList) {
         if (examList == null || examList.isEmpty()) return;
 
+        int index = 1;
         for (ExamsDTO exam : examList) {
             exam.setContentSeq(contentSeq);
+            exam.setQuestionIndex(index++);
         }
 
         examsMapper.insertExamList(examList); // 실제 insert 수행

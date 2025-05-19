@@ -28,6 +28,7 @@ public class SttConvertedConsumer {
             LlmRequestDTO request = new LlmRequestDTO();
             request.setContentSeq(requestObj.getContentSeq());
             request.setScript(requestObj.getScript()); // 🎯 스크립트만 추출
+            request.setTaskId(requestObj.getTaskId()); // sse taskId
 
             llmService.summarizeContents(request)
                 .thenAccept(result -> {

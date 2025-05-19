@@ -75,5 +75,111 @@ public class RagService {
                 .collect(Collectors.toList())
             );
     }
+    
+    /**
+     * Qdrant에서 임의의 조건 없이 유사도 기준으로 상위 N개의 payload.content 값을 반환합니다.
+     *
+     * @param collection Qdrant 컬렉션 이름
+     * @param vector 기준 벡터
+     * @param limit 최대 개수 (보통 5~10 정도)
+     * @param scoreThreshold 유사도 필터링 기준 (예: 0.8)
+     * @return payload.content 값 리스트 (유사도 기준 정렬)
+     */
+    public Mono<List<String>> searchTopPayloads(String collection, List<Float> vector, int limit, double scoreThreshold) {
+        return qdrantClient.searchWithPayload(collection, vector, limit, scoreThreshold)
+            .doOnSuccess(result -> log.info("✅ Qdrant 일반 유사도 검색 결과 {}개", result.size()))
+            .doOnError(e -> log.error("❌ Qdrant 일반 유사도 검색 실패", e));
+    }
+    
+    /**
+     * contentSeq에 해당하는 벡터와 키워드(payload)를 함께 조회합니다.
+     *
+     * @param collection Qdrant 컬렉션 이름
+     * @param contentSeq 조회할 콘텐츠 ID
+     * @return vector + payload를 포함한 Map (예: {"vector": ..., "payload": ...})
+     */
+    public Mono<Map<String, Object>> getVectorWithPayloadByContentSeq(
+            String collection,
+            Long contentSeq
+    ) {
+        Map<String, Object> body = Map.of(
+            "limit",        1,
+            "with_vector",  true,
+            "with_payload", true,
+            "filter", Map.of(
+                "must", List.of(
+                    Map.of(
+                        "key",   "contentSeq",
+                        "match", Map.of("value", contentSeq)
+                    )
+                )
+            )
+        );
+
+        // searchRaw 대신 scrollRaw 사용
+        return qdrantClient.scrollRaw(collection, body)
+            .map(results -> {
+                if (results.isEmpty()) {
+                    throw new IllegalStateException(
+                      "contentSeq=" + contentSeq + " 를 찾을 수 없습니다."
+                    );
+                }
+                var hit = results.get(0);
+                return Map.of(
+                    "vector",  hit.get("vector"),
+                    "payload", hit.get("payload")
+                );
+            });
+    }
+
+
+
+
+    /**
+     * 기준 벡터를 기반으로 contentSeq가 일치하지 않으며, 특정 키워드가 포함된 유사 콘텐츠를 검색합니다.
+     * 즉, 자기 자신을 제외하고 keyword 조건을 만족하는 추천 결과만 반환합니다.
+     *
+     * @param collection Qdrant 컬렉션 이름
+     * @param baseVector 추천 기준 벡터
+     * @param limit 최대 결과 수
+     * @param minScore 유사도 하한선
+     * @param excludeContentSeq 제외할 콘텐츠 ID
+     * @param keywords 포함되어야 할 키워드 리스트 (payload.keywords에 any 포함)
+     * @return 유사 콘텐츠 payload 리스트 (score 포함)
+     */
+    public Mono<List<Map<String,Object>>> searchSimilarByVectorExcludingSelfWithKeywords(
+            String collection,
+            List<Float> baseVector,
+            int limit,
+            double minScore,
+            Long excludeContentSeq,
+            List<String> keywords
+    ) {
+        Map<String, Object> filter = Map.of(
+            "must", List.of(
+                Map.of("key", "keywords", "match", Map.of("any", keywords))
+            ),
+            "must_not", List.of(
+                Map.of("key", "contentSeq", "match", Map.of("value", excludeContentSeq))
+            )
+        );
+
+        Map<String, Object> body = Map.of(
+            "vector_name", "vector",    // ← 여기를 추가
+            "vector",      baseVector,
+            "limit",       limit,
+            "with_payload", true,
+            "filter",      filter
+        );
+
+        return qdrantClient.searchRaw(collection, body)
+            .map(results ->
+                results.stream()
+                       .filter(r -> ((Number) r.get("score")).doubleValue() >= minScore)
+                       .collect(Collectors.toList())
+            );
+    }
+
+
 
 }

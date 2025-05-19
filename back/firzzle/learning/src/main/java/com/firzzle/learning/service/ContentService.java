@@ -8,6 +8,7 @@ import com.firzzle.common.library.MyBatisSupport;
 import com.firzzle.common.library.MyBatisTransactionManager;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.learning.dao.ContentDAO;
+import com.firzzle.learning.kafka.producer.LearningProducer;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,7 +38,7 @@ public class ContentService {
     private static final Logger logger = LoggerFactory.getLogger(ContentService.class);
 
     private final ContentDAO contentDAO;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final LearningProducer learningProducer;
     private final MyBatisSupport myBatisSupport;
 
     @Value("${app.kafka.topic.content-analysis}")
@@ -58,13 +60,9 @@ public class ContentService {
         logger.debug("콘텐츠 등록 요청 - YouTube URL: {}, UUID: {}",
                 box.getString("youtubeUrl"), box.getString("uuid"));
 
-//        MyBatisTransactionManager transaction = myBatisSupport.getTransactionManager();
         DataBox result = null;
 
         try {
-            // 트랜잭션 시작
-//            transaction.start();
-
             // 1. YouTube ID 추출
             String videoId = extractYoutubeId(box.getString("youtubeUrl"));
             if (videoId == null) {
@@ -75,14 +73,14 @@ public class ContentService {
             RequestBox checkBox = new RequestBox("checkBox");
             checkBox.put("videoId", videoId);
             DataBox existingContent = contentDAO.selectContentByVideoId(checkBox);
-            Long contentSeq;
+            Long contentSeq = null;
 
             if (existingContent != null) {
-                // 2-1. 이미 등록된 콘텐츠인 경우
+                // 콘텐츠 일련번호 가져오기
                 contentSeq = existingContent.getLong2("content_seq");
                 logger.debug("이미 등록된 YouTube 동영상입니다. 사용자-콘텐츠 매핑만 생성합니다. ContentSeq: {}", contentSeq);
 
-                // 2-2. 이미 해당 사용자가 등록한 콘텐츠인지 확인
+                // 이미 해당 사용자가 등록한 콘텐츠인지 확인
                 RequestBox userContentCheckBox = new RequestBox("userContentCheckBox");
                 userContentCheckBox.put("contentSeq", contentSeq);
                 userContentCheckBox.put("uuid", box.getString("uuid"));
@@ -98,106 +96,51 @@ public class ContentService {
                     selectBox.put("uuid", box.getString("uuid"));
                     result = contentDAO.selectContentDataBox(selectBox);
 
-//                    transaction.commit();
+                    // 이미 분석 완료된 콘텐츠는 taskId를 포함하지 않음
+                    return result;
+                } else {
+                    // 해당 사용자가 등록하지 않은 기존 콘텐츠인 경우, 사용자-콘텐츠 매핑 추가
+                    RequestBox userContentBox = new RequestBox("userContentBox");
+                    userContentBox.put("contentSeq", contentSeq);
+                    userContentBox.put("uuid", box.getString("uuid"));
+                    userContentBox.put("indate", FormatDate.getDate("yyyyMMddHHmmss"));
+                    contentDAO.insertUserContent(userContentBox);
+
+                    // 콘텐츠 정보 조회 및 반환
+                    RequestBox selectBox = new RequestBox("selectBox");
+                    selectBox.put("contentSeq", contentSeq);
+                    selectBox.put("uuid", box.getString("uuid"));
+                    result = contentDAO.selectContentDataBox(selectBox);
+
+                    // 이미 분석 완료된 콘텐츠는 taskId를 포함하지 않고 반환
                     return result;
                 }
-            } else {
-//                // 3. 신규 콘텐츠 등록
-//                RequestBox insertBox = new RequestBox("insertBox");
-//                insertBox.put("videoId", videoId);
-//                insertBox.put("url", box.getString("youtubeUrl"));
-//                insertBox.put("title", box.getString("title"));
-//                insertBox.put("description", box.getString("description"));
-//                insertBox.put("category", box.getString("category"));
-//                insertBox.put("thumbnailUrl", generateThumbnailUrl(videoId));
-//                insertBox.put("duration", 0); // 초기값, 분석 후 업데이트 예정
-//                insertBox.put("processStatus", "Q"); // 대기중(Queued)
-//                insertBox.put("tags", box.getString("tags"));
-//
-//                // 현재 시간을 YYYYMMDDHHMMSS 형식으로 추가
-//                try {
-//                    String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
-//                    insertBox.put("indate", currentDateTime);
-//                } catch (Exception e) {
-//                    logger.error("현재 시간 포맷 설정 중 오류 발생: {}", e.getMessage());
-//                    insertBox.put("indate", ""); // 기본값으로 설정
-//                }
-//
-//                // 콘텐츠 등록
-//                int insertResult = contentDAO.insertContent(insertBox);
-//                if (insertResult == 0) {
-//                    throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록에 실패했습니다.");
-//                }
-//
-//                contentSeq = insertBox.getLong("contentSeq");
-//
-//                // 태그 처리
-//                String tags = box.getString("tags");
-//                if (StringUtils.hasText(tags)) {
-//                    List<String> tagList = Arrays.stream(tags.split(","))
-//                            .map(String::trim)
-//                            .filter(StringUtils::hasText)
-//                            .collect(Collectors.toList());
-//
-//                    if (!tagList.isEmpty()) {
-//                        RequestBox tagBox = new RequestBox("tagBox");
-//                        tagBox.put("contentSeq", contentSeq);
-//                        tagBox.put("tags", tagList);
-//                        contentDAO.insertContentTags(tagBox);
-//                    }
-//                }
-
-                // 분석 작업 큐에 등록
-                String uuid = box.getString("uuid");
-                String youtubeUrl = box.getString("youtubeUrl");
-                sendToAnalysisQueue(uuid, youtubeUrl);
-
-                logger.info("신규 콘텐츠 등록 완료 - 사용자: {}, URL: {}, 제목: {}",
-                        box.getString("uuid"), box.getString("youtubeUrl"), box.getString("title"));
             }
 
-/*            // 4. 사용자-콘텐츠 매핑 등록
-            RequestBox userContentBox = new RequestBox("userContentBox");
-            userContentBox.put("uuid", box.getString("uuid"));
-            userContentBox.put("contentSeq", contentSeq);
+            // 분석 작업 큐에 등록
+            String uuid = box.getString("uuid");
+            String youtubeUrl = box.getString("youtubeUrl");
 
-            // 현재 시간을 YYYYMMDDHHMMSS 형식으로 추가
-            try {
-                String currentDateTime = FormatDate.getDate("yyyyMMddHHmmss");
-                userContentBox.put("indate", currentDateTime);
-            } catch (Exception e) {
-                logger.error("현재 시간 포맷 설정 중 오류 발생: {}", e.getMessage());
-                userContentBox.put("indate", ""); // 기본값으로 설정
+            // taskId 생성 및 분석 큐에 등록
+            String taskId = sendToAnalysisQueue(uuid, youtubeUrl);
+
+            // 결과 DataBox 생성 (신규 등록이므로 콘텐츠 정보는 아직 없음)
+            if (result == null) {
+                result = new DataBox();
             }
+            // taskId 추가
+            result.put("taskId", taskId);
 
-            int userContentResult = contentDAO.insertUserContent(userContentBox);
-            if (userContentResult == 0) {
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "사용자 콘텐츠 매핑 등록에 실패했습니다.");
-            }
+            logger.info("신규 콘텐츠 등록 요청 완료 - 사용자: {}, URL: {}, TaskId: {}",
+                    uuid, youtubeUrl, taskId);
 
-            logger.info("사용자-콘텐츠 매핑 등록 완료 - ContentSeq: {}, UUID: {}",
-                    contentSeq, box.getString("uuid"));
-
-            // 5. 등록된 콘텐츠 정보 조회 및 반환
-            RequestBox selectBox = new RequestBox("selectBox");
-            selectBox.put("contentSeq", contentSeq);
-            selectBox.put("uuid", box.getString("uuid"));
-            result = contentDAO.selectContentDataBox(selectBox);*/
-
-            // 성공 시 커밋
-//            transaction.commit();
             return result;
 
         } catch (BusinessException e) {
-//            transaction.rollback();
             throw e;
         } catch (Exception e) {
-//            transaction.rollback();
             logger.error("콘텐츠 등록 중 오류 발생: {}", e.getMessage(), e);
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 등록 중 오류가 발생했습니다.");
-        } finally {
-            // 트랜잭션 종료
-//            transaction.end();
         }
     }
 
@@ -506,22 +449,30 @@ public class ContentService {
     }
 
     /**
-     * 콘텐츠 분석 큐에 등록
+     * 콘텐츠 분석 큐에 등록하고 taskId 반환
      *
      * @param uuid - 사용자 일련번호
      * @param url - YouTube URL
+     * @return String - 작업 추적 ID (taskId)
      */
-    private void sendToAnalysisQueue(String uuid, String url) {
+    private String sendToAnalysisQueue(String uuid, String url) {
         try {
-            // 메시지 형식: "uuid|url"
-            String message = uuid + "|" + url;
+            // taskId 생성
+            String taskId = UUID.randomUUID().toString();
 
-            // Kafka 메시지 발송 (to-stt 토픽으로 변경)
-            kafkaTemplate.send("to-stt", message);
-            logger.debug("콘텐츠 분석 큐에 등록 완료 - 사용자: {}, URL: {}", uuid, url);
+            // 기존 메시지 형식: "uuid|url" -> "uuid|url|taskId"
+            String message = uuid + "|" + url + "|" + taskId;
+
+            // LearningProducer 사용
+            learningProducer.sendToStt(message);
+
+            logger.debug("콘텐츠 분석 큐에 등록 완료 - 사용자: {}, URL: {}, TaskId: {}", uuid, url, taskId);
+
+            // 생성된 taskId 반환
+            return taskId;
         } catch (Exception e) {
             logger.error("콘텐츠 분석 큐 등록 중 오류 발생: {}", e.getMessage(), e);
-            // 큐 등록 실패는 비즈니스 로직에 영향을 주지 않도록 예외를 던지지 않고 로그만 남김
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "분석 요청 처리 중 오류가 발생했습니다.");
         }
     }
 }

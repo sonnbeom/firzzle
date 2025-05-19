@@ -56,15 +56,15 @@ public class SttService {
     private final UserMapper userMapper;
 
     @Async
-    public CompletableFuture<LlmRequest> transcribeFromYoutube(String uuid, String url) {
+    public CompletableFuture<LlmRequest> transcribeFromYoutube(String uuid, String url, String taskId) {
         return CompletableFuture.supplyAsync(() -> contentService.extractYoutubeId(url))
                 .thenCompose(videoId -> DEV_MODE
-                        ? extractSubtitleViaLocalProxy(uuid, url, videoId)
-                        : extractSubtitleDirect(uuid, url, videoId));
+                        ? extractSubtitleViaLocalProxy(uuid, url, videoId, taskId)
+                        : extractSubtitleDirect(uuid, url, videoId, taskId));
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId) {
+    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId) {
         return CompletableFuture.supplyAsync(() -> userMapper.selectUserSeqByUuid(uuid))
                 .thenCompose(userSeq -> {
                     HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
@@ -90,13 +90,13 @@ public class SttService {
                                     throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
 
                                 ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-                                return processFinalResult(userSeq, contentDTO, (String) response.get("script"));
+                                return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId);
                             });
                 });
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId) {
+    public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId, String taskId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Long userSeq = userMapper.selectUserSeqByUuid(uuid);
@@ -117,7 +117,7 @@ public class SttService {
 
                 List<String> lines = readProcessOutput(metadataExtractor.start());
                 ContentDTO contentDTO = parseMetadata(videoId, url, lines);
-                return processFinalResult(userSeq, contentDTO, scripts);
+                return processFinalResult(userSeq, contentDTO, scripts, taskId);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -126,16 +126,16 @@ public class SttService {
 
     @Async
     @Transactional
-    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script) {
+    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId) {
         contentService.insertContent(contentDTO);
         saveUserContent(userSeq, contentDTO.getContentSeq());
 
         if (script != null) {
-            sttConvertedProducer.sendSttResult(contentDTO.getContentSeq(), script);
+            sttConvertedProducer.sendSttResult(userSeq, contentDTO.getContentSeq(), script, taskId);
         } else {
             throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
         }
-        return new LlmRequest(contentDTO.getContentSeq(), script);
+        return new LlmRequest(userSeq,contentDTO.getContentSeq(), script, taskId);
     }
 
     

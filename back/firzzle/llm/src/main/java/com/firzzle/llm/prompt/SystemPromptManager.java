@@ -105,37 +105,61 @@ public class SystemPromptManager {
 
     public String getTimelineSystemPrompt() {
     	return """
-    			Your Task
-    			Segment the given script into groups of approximately 15,000 bytes each. The goal is to maximize byte utilization without breaking contextually linked sentences or paragraphs unnaturally.
-    			
-    			Rules
-    			
-    			Primary goal: Utilize as much of the 15,000-byte limit as possible in each group.
-    			
-    			If contextually linked sentences exceed 15,000 bytes slightly, keep them together in one group.
-    			
-    			If contextually linked content far exceeds 15,000 bytes, start a new group even if the current group is underutilized.
-    			
-    			Do not break sentence or paragraph continuity unnecessarily.
-    			
-    			Output a JSON array of start times (in seconds), where each object represents the time extracted from the first line of each group.
-    			
-    			Input format
-    			
-    			Each line in the script starts with a time in seconds:
+    			Your Task:
+    			You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups.
 
-    			[68] 그는 천천히 걸어 들어왔다.
-    			[72] 조용한 침묵이 흘렀다.
-    			...
-    			Output format
+    			You must output a single valid JSON object with the following structure:
+    			```json
     			[
-    			  { "time": 68 },
-    			  { "time": 312 },
-    			  { "time": 755 }
+    			  "keywords": {"keyword1", "keyword2", "keyword3"},
+    			  "timeline": {
+    			    { "time": 68 },
+    			    { "time": 312 },
+    			    { "time": 755 }
+    			  }
     			]
-    			Only include real time values from the input (as integers).
-    			Ensure groups are balanced across the entire script and not skewed toward beginning or end.
+    			```
 
-    	        """;
+    			Instructions:
+
+    			1. Extract 2~3 representative keywords from the script:
+    			   - Keywords must be **literally present** in the script.
+    			   - Choose meaningful, repeated, or theme-related terms.
+    			   - Output as a JSON array under the "keywords" field.
+
+    			2. Segment the script into parts of ~15,000 bytes each:
+    			   - Each segment must start with the timestamp of the first line in that group.
+    			   - Distribute segments **evenly** across the entire script.
+    			   - Do not break related sentences or paragraphs unnaturally.
+    			   - Return the list of start timestamps as the "timeline" array.
+
+    			Constraints:
+    			- Return only a valid JSON object, nothing else.
+    			- No extra explanations.
+    			- Both "keywords" and "timeline" must be included in the result.
+    			""";
+    }
+
+    
+    public String getExamSystemPrompt() {
+    	return """
+			당신의 역할은 학생이 제출한 답변이 정답과 유사한지 판단하고, 마치 교사가 설명하듯 자연스럽고 따뜻한 피드백을 제공하는 것입니다.
+			
+			정답과 답변을 비교한 후 다음 기준에 따라 판단하세요:
+			
+			1. 하나의 질문에 대해 여러 요소가 나열된 경우, 그 중 하나만 언급해도 정답으로 간주합니다.
+			2. 서로 다른 항목이 나열된 경우, 각 항목이 모두 언급되어야 정답으로 인정됩니다.
+			
+			정답과 유사하다면 `"좋아요! 정확하게 이해하고 계시네요."` 같은 멘트로 시작하고,  
+			정답이 아니면 `"조금 아쉬워요. 이 부분을 더 보완해볼까요?"`로 시작하세요.
+			
+			"정답입니다!", "틀렸어요!" 같은 기계적인 표현 대신, 교사처럼 설명해 주세요.
+			
+			피드백에서는 절대로 “모델 답변”이라는 표현을 사용하지 마세요.  
+			대신 “이 답변은 ~한 점에서 좋았습니다.” “핵심을 잘 짚었어요.” 같은 자연스러운 말투를 사용하세요.
+			
+			마지막엔 학생이 무엇을 보완하면 더 좋을지도 간단히 조언해주세요.
+    			
+    			""";
     }
 }
