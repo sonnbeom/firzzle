@@ -132,40 +132,32 @@ public class RagService {
             });
     }
 
-
-
-
     /**
-     * 기준 벡터를 기반으로 contentSeq가 일치하지 않으며, 특정 키워드가 포함된 유사 콘텐츠를 검색합니다.
-     * 즉, 자기 자신을 제외하고 keyword 조건을 만족하는 추천 결과만 반환합니다.
+     * 기준 벡터를 기반으로 contentSeq가 일치하지 않는 유사 콘텐츠를 검색합니다.
+     * 키워드 필터링은 하지 않으며, 자기 자신만 제외하고 유사도 기반으로 추천합니다.
      *
      * @param collection Qdrant 컬렉션 이름
      * @param baseVector 추천 기준 벡터
      * @param limit 최대 결과 수
      * @param minScore 유사도 하한선
      * @param excludeContentSeq 제외할 콘텐츠 ID
-     * @param keywords 포함되어야 할 키워드 리스트 (payload.keywords에 any 포함)
      * @return 유사 콘텐츠 payload 리스트 (score 포함)
      */
-    public Mono<List<Map<String,Object>>> searchSimilarByVectorExcludingSelfWithKeywords(
+    public Mono<List<Map<String,Object>>> searchSimilarByVectorExcludingSelf(
             String collection,
             List<Float> baseVector,
             int limit,
             double minScore,
-            Long excludeContentSeq,
-            List<String> keywords
+            Long excludeContentSeq
     ) {
         Map<String, Object> filter = Map.of(
-            "must", List.of(
-                Map.of("key", "keywords", "match", Map.of("any", keywords))
-            ),
             "must_not", List.of(
                 Map.of("key", "contentSeq", "match", Map.of("value", excludeContentSeq))
             )
         );
 
         Map<String, Object> body = Map.of(
-            "vector_name", "vector",    // ← 여기를 추가
+            "vector_name", "vector",
             "vector",      baseVector,
             "limit",       limit,
             "with_payload", true,
@@ -179,6 +171,7 @@ public class RagService {
                        .collect(Collectors.toList())
             );
     }
+
 
 
 

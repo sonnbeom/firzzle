@@ -1,6 +1,8 @@
 package com.firzzle.llm.mapper;
 
 import com.firzzle.llm.dto.ContentDTO;
+import com.firzzle.llm.dto.RecommendContentDTO;
+
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,4 +24,9 @@ public interface ContentMapper {
      * @return 삽입된 행 수
      */
     int insertContentTags(@Param("contentSeq") Long contentSeq, @Param("tags") List<String> tags);
+    
+    /**
+     * Qdrant 유사도 검색 결과 기반 콘텐츠 리스트 조회
+     */
+    List<RecommendContentDTO> selectRecommendContentListBySeqList(@Param("list") List<Long> contentSeqList);
 }

@@ -22,7 +22,7 @@ public class RecommendResponseDTO {
 		        description = "추천된 콘텐츠 목록. 각 Map은 추천 콘텐츠의 필드(contentSeq, title 등)를 포함하며, score, matchedTags 등 부가 정보가 포함될 수 있음",
 		        example = "[{\"contentSeq\": 1, \"title\": \"AI 강의\", \"score\": 0.94}]"
 		    )
-    private List<Map<String, Object>> content;
+	 private List<RecommendContentDTO> content;
 
     @Schema(description = "추천 대상 키워드 (originTags)", example = "딥러닝, 신경망")
     private String originTags;

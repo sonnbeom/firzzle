@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 public class SttService {
 
     private static final Logger logger = LoggerFactory.getLogger(SttService.class);
-    private static final boolean DEV_MODE = true;
+    private static final boolean DEV_MODE = false;
 
     @Value("${app.file-storage.upload-dir}")
     private String uploadDir;
@@ -57,16 +57,24 @@ public class SttService {
 
     @Async
     public CompletableFuture<LlmRequest> transcribeFromYoutube(String uuid, String url, String taskId) {
+        logger.debug("[STT] transcribeFromYoutube called: uuid={}, url={}, taskId={}", uuid, url, taskId);
         return CompletableFuture.supplyAsync(() -> contentService.extractYoutubeId(url))
                 .thenCompose(videoId -> DEV_MODE
                         ? extractSubtitleViaLocalProxy(uuid, url, videoId, taskId)
-                        : extractSubtitleDirect(uuid, url, videoId, taskId));
+                        : extractSubtitleDirect(uuid, url, videoId, taskId))
+                .exceptionally(e -> {
+                    logger.error("[STT] transcribeFromYoutube pipeline error", e);
+                    throw new RuntimeException(e);
+                });
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId) {
+    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(
+            String uuid, String url, String videoId, String taskId) {
+        logger.debug("[STT] extractSubtitleViaLocalProxy start: uuid={}, videoId={}, taskId={}", uuid, videoId, taskId);
         return CompletableFuture.supplyAsync(() -> userMapper.selectUserSeqByUuid(uuid))
                 .thenCompose(userSeq -> {
+                    logger.debug("[STT] userSeq fetched: {}", userSeq);
                     HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
 
                     WebClient webClient = WebClient.builder()
@@ -77,30 +85,42 @@ public class SttService {
                             .build();
 
                     Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+                    logger.debug("[STT] external API request body: {}", requestBody);
 
                     return webClient.post()
                             .uri("/api/v1/extract")
                             .bodyValue(requestBody)
                             .retrieve()
                             .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                            .doOnError(e -> logger.error("[STT] external extract API error", e))
                             .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
                             .toFuture()
                             .thenApply(response -> {
+                                logger.debug("[STT] external API response keys: {}", response.keySet());
                                 if (!response.containsKey("script"))
                                     throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
 
                                 ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-                                return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId);
+                                return processFinalResult(userSeq, contentDTO,
+                                        (String) response.get("script"), taskId);
                             });
+                })
+                .exceptionally(e -> {
+                    logger.error("[STT] extractSubtitleViaLocalProxy pipeline error", e);
+                    throw new RuntimeException(e);
                 });
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId, String taskId) {
+    public CompletableFuture<LlmRequest> extractSubtitleDirect(
+            String uuid, String url, String videoId, String taskId) {
+        logger.debug("[STT] extractSubtitleDirect start: uuid={}, videoId={}, taskId={}", uuid, videoId, taskId);
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Long userSeq = userMapper.selectUserSeqByUuid(uuid);
-                runAndPrint(new ProcessBuilder("yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
+                logger.debug("[STT] userSeq fetched: {}", userSeq);
+                runAndPrint(new ProcessBuilder(
+                        "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
                         "--write-auto-sub", "--sub-lang", "ko", "--sub-format", "vtt", "--convert-subs", "srt",
                         "--skip-download", "--output", videoId + ".%(ext)s", url)
                         .directory(new File(uploadDir)).redirectErrorStream(true));
@@ -109,16 +129,21 @@ public class SttService {
                 if (scripts == null) {
                     throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
                 }
+                logger.debug("[STT] scripts length: {} chars", scripts.length());
 
-                ProcessBuilder metadataExtractor = new ProcessBuilder("yt-dlp", "--no-check-certificate", "--referer",
-                        "https://www.youtube.com", "--skip-download", "--print",
-                        "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s", "--encoding",
-                        "utf-8", url).redirectErrorStream(true);
+                ProcessBuilder metadataExtractor = new ProcessBuilder(
+                        "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
+                        "--skip-download", "--print",
+                        "%(title)s\n%(description)s\n%(categories.0)s\n%(thumbnail)s\n%(duration)s",
+                        "--encoding", "utf-8", url)
+                        .redirectErrorStream(true);
 
                 List<String> lines = readProcessOutput(metadataExtractor.start());
+                logger.debug("[STT] metadata lines count: {}", lines.size());
                 ContentDTO contentDTO = parseMetadata(videoId, url, lines);
                 return processFinalResult(userSeq, contentDTO, scripts, taskId);
             } catch (Exception e) {
+                logger.error("[STT] extractSubtitleDirect error", e);
                 throw new RuntimeException(e);
             }
         });
@@ -126,17 +151,23 @@ public class SttService {
 
     @Async
     @Transactional
-    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId) {
+    public LlmRequest processFinalResult(
+            Long userSeq, ContentDTO contentDTO, String script, String taskId) {
+        logger.debug("[STT] processFinalResult start: userSeq={} contentSeq={} taskId={}",
+                userSeq, contentDTO.getContentSeq(), taskId);
         contentService.insertContent(contentDTO);
         saveUserContent(userSeq, contentDTO.getContentSeq());
 
         if (script != null) {
+            logger.debug("[STT] sending STT result: contentSeq={} script length={} chars",
+                    contentDTO.getContentSeq(), script.length());
             sttConvertedProducer.sendSttResult(userSeq, contentDTO.getContentSeq(), script, taskId);
         } else {
             throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
         }
-        return new LlmRequest(userSeq,contentDTO.getContentSeq(), script, taskId);
+        return new LlmRequest(userSeq, contentDTO.getContentSeq(), script, taskId);
     }
+
 
     
     private void saveUserContent(Long userSeq, Long contentSeq) {
