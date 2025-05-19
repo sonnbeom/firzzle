@@ -2,6 +2,7 @@
 
 import { ChangeEvent, KeyboardEvent, useState } from 'react';
 import { postExamChat, postLearningChat } from '@/api/learningChat';
+import { useChatStore } from '@/stores/chatStore';
 import { LearningChat, Mode } from '@/types/learningChat';
 import { MAX_LEARNING_CHAT_LENGTH } from 'utils/const';
 import BasicToaster from '../common/BasicToaster';
@@ -24,6 +25,9 @@ const ChatTextAreaField = ({
 }: ChatTextAreaFieldProps) => {
   const [value, setValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { currentExamSeq, solvedCount, setCurrentExamSeq, setSolvedCount } =
+    useChatStore();
 
   const onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     // 글자수 제한
@@ -59,6 +63,11 @@ const ChatTextAreaField = ({
     // 낙관적 업데이트 적용
     if (addOptimisticChat) {
       addOptimisticChat(optimisticChat);
+
+      if (mode === '시험모드') {
+        setCurrentExamSeq(currentExamSeq);
+        setSolvedCount(solvedCount + 1);
+      }
     }
 
     // 로딩 상태 시작
@@ -69,7 +78,10 @@ const ChatTextAreaField = ({
       if (mode === '학습모드') {
         await postLearningChat(contentId, value);
       } else {
-        await postExamChat(contentId, value);
+        await postExamChat(contentId, {
+          exam_seq: currentExamSeq,
+          answer: value,
+        });
       }
 
       // 채팅 내역 갱신

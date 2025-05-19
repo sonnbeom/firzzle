@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { api } from '@/api/common/apiInstance';
-import { GetLearningChatHistoryResponse } from '@/types/learningChat';
+import { GetExamChatHistoryResponse } from '@/types/learningChat';
 
 // 시험모드 채팅 기록 조회
 export async function GET(
@@ -16,11 +16,15 @@ export async function GET(
       ? `/llm/${contentSeq}/exam/history?lastIndate=${lastIndate}`
       : `/llm/${contentSeq}/exam/history`;
 
-    const response = await api.get<GetLearningChatHistoryResponse>(apiUrl);
+    const response = await api.get<GetExamChatHistoryResponse>(apiUrl);
 
     if (response.status === 'OK') {
       return NextResponse.json(
-        { message: response.message, data: response.data },
+        {
+          message: response.message,
+          info: response.data.info,
+          data: response.data.historyList,
+        },
         { status: 200 },
       );
     } else {

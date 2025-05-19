@@ -37,11 +37,21 @@ const LearningChatContent = ({ contentId }: LearningChatContentProps) => {
           currentMode={currentMode}
           setCurrentMode={setCurrentMode}
         />
-        {currentMode === '시험모드' && <NewChatButton />}
+        {currentMode === '시험모드' && (
+          <NewChatButton
+            contentId={contentId}
+            addOptimisticChat={addOptimisticChat}
+          />
+        )}
       </div>
       {/* 채팅 내역 필드 */}
       <div className='flex-1 overflow-y-auto'>
-        <ChatHistory chats={chatHistory || []} isLoading={isLoading} />
+        <ChatHistory
+          chats={chatHistory || []}
+          isLoading={isLoading}
+          contentId={contentId}
+          currentMode={currentMode}
+        />
       </div>
       {/* 채팅 입력 필드 */}
       <ChatTextAreaField

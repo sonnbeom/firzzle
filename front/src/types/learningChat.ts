@@ -22,6 +22,7 @@ export type GetLearningChatHistoryResponse = LearningChat[];
 
 // 시험모드 채팅 전송 요청
 export type SendExamChatRequest = {
+  exam_seq: string;
   answer: string;
 };
 
@@ -31,7 +32,17 @@ export type SendExamChatResponse = {
   indate: string;
 };
 
+// 시험모드 채팅 목록 조회 응답
+export type GetExamChatHistoryResponse = {
+  info: {
+    currentExamSeq: string;
+    solved_count: number;
+  };
+  historyList: LearningChat[];
+};
+
 // 시험모드 새질문 응답
 export type NewExamChatResponse = {
+  exam_seq: string;
   question: string;
 };
