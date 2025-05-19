@@ -1,6 +1,8 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
+import { getMyInfo } from '@/api/auth';
 import BottomChart from '@/components/admin/BottomChart';
 import DateRangeSelector from '@/components/admin/DateRangeSelector';
 import TopCharts from '@/components/admin/TopCharts';
@@ -8,11 +10,25 @@ import useStrategyData from '@/hooks/useStrategyData';
 import { DateRangeData } from '@/types/chart';
 
 const StrategyBoardPage = () => {
+  const router = useRouter();
   const today = new Date();
   const weekAgo = new Date(today);
   weekAgo.setDate(today.getDate() - 7);
 
   const formatDate = (date: Date) => date.toISOString().split('T')[0];
+
+  // role 체크
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      const userRole = (await getMyInfo()).role;
+      console.log('userRole:', userRole);
+      if (userRole !== 'admin') {
+        router.replace('/admin');
+      }
+    };
+
+    checkAdminRole();
+  }, [router]);
 
   const [startDate, setStartDate] = useState<Date>(weekAgo);
   const [endDate, setEndDate] = useState<Date>(today);
