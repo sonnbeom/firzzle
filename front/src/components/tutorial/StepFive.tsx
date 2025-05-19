@@ -1,7 +1,26 @@
-// components/StepFive.tsx
-import React from 'react';
+import { memo } from 'react';
 
-const StepFive: React.FC = () => {
+const EditIcon = () => (
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width='20'
+    height='20'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth='2'
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    aria-hidden='true'
+  >
+    <path d='M12 20h9' />
+    <path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' />
+  </svg>
+);
+
+const SNAP_COUNT = 4;
+
+const StepFive = () => {
   return (
     <div className='container mx-auto my-8 px-4'>
       <div className='rounded-lg border border-gray-100 bg-white p-6 shadow-sm'>
@@ -24,47 +43,40 @@ const StepFive: React.FC = () => {
             </p>
 
             <div className='rounded-lg bg-gray-50 p-6'>
-              <div className='flex'>
-                {/* 스냅 이미지 4개 */}
-                <div className='mr-4 grid w-1/2 grid-cols-2 grid-rows-2 gap-4'>
-                  {[1, 2, 3, 4].map((num) => (
-                    <div
-                      key={num}
-                      className='aspect-video overflow-hidden rounded-lg border border-gray-200 bg-white'
-                    >
-                      <img
-                        src={`/assets/images/snap${num}.png`}
-                        alt={`스냅${num}`}
-                        className='h-full w-full object-cover'
-                      />
-                    </div>
-                  ))}
+              <div className='flex gap-4'>
+                <div className='grid w-1/2 grid-cols-2 grid-rows-2 gap-4'>
+                  {Array.from({ length: SNAP_COUNT }, (_, i) => i + 1).map(
+                    (num) => (
+                      <button
+                        key={num}
+                        className='aspect-video overflow-hidden rounded-lg border border-gray-200 bg-white transition-transform hover:scale-105'
+                        aria-label={`스냅 ${num} 재생하기`}
+                      >
+                        <img
+                          src={`/assets/images/snap${num}.png`}
+                          alt={`스냅 ${num} 미리보기`}
+                          className='h-full w-full object-cover'
+                          loading='lazy'
+                        />
+                      </button>
+                    ),
+                  )}
                 </div>
 
-                {/* 입력 창 */}
                 <div className='flex w-1/2 flex-col'>
                   <textarea
                     placeholder='핵심 장면에 대한 설명을 입력하세요.'
                     className='h-full w-full cursor-default resize-none rounded-lg border border-gray-200 bg-gray-100 p-4 text-gray-500'
                     readOnly
-                  ></textarea>
+                    aria-label='스냅 설명 입력창 (데모용)'
+                  />
 
                   <div className='mt-2 self-end'>
-                    <button className='text-gray-500'>
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        width='20'
-                        height='20'
-                        viewBox='0 0 24 24'
-                        fill='none'
-                        stroke='currentColor'
-                        strokeWidth='2'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                      >
-                        <path d='M12 20h9'></path>
-                        <path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'></path>
-                      </svg>
+                    <button
+                      className='text-gray-500 transition-colors hover:text-gray-700'
+                      aria-label='설명 편집하기'
+                    >
+                      <EditIcon />
                     </button>
                   </div>
                 </div>
@@ -77,4 +89,4 @@ const StepFive: React.FC = () => {
   );
 };
 
-export default StepFive;
+export default memo(StepFive);

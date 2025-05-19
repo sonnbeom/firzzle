@@ -1,9 +1,17 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { addVistiCount } from '@/api/log';
 import { Button } from '@/components/ui/button';
 import OAuthButton from './OAuthButton';
 
 const HeroSection = () => {
+  useEffect(() => {
+    addVistiCount();
+  }, []);
+
   return (
     <section className='bg-gradient-to-r from-[#E8EDFF] to-[#F8F9FF] py-16 lg:py-24'>
       {/* Decorative elements */}

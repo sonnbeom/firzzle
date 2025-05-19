@@ -1,7 +1,6 @@
-// components/StepThree.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-const StepThree: React.FC = () => {
+const StepThree = () => {
   const [mode, setMode] = useState<'learning' | 'exam'>('exam');
 
   return (

@@ -1,7 +1,6 @@
-// components/StepTwo.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-const StepTwo: React.FC = () => {
+const StepTwo = () => {
   const [mode, setMode] = useState<'easy' | 'expert'>('easy');
 
   return (

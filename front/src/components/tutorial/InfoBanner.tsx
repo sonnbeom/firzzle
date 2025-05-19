@@ -1,15 +1,24 @@
-// components/InfoBanner.tsx
-import React from 'react';
+import { memo } from 'react';
 
-const InfoBanner: React.FC = () => {
+const InfoIcon = () => (
+  <div
+    className='mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-400'
+    aria-hidden='true'
+  >
+    i
+  </div>
+);
+
+const InfoBanner = () => {
   return (
-    <div className='container mx-auto my-8 px-4'>
-      <div className='flex items-center rounded-lg border border-dashed border-[#4f46e5] bg-blue-50 p-4'>
-        <div className='mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 font-bold text-blue-400'>
-          i
-        </div>
-        <div>
-          <p className='font-medium text-blue-400'>
+    <aside className='container mx-auto my-8 px-4' role='complementary'>
+      <div
+        className='flex items-center rounded-lg border border-dashed border-blue-600 bg-blue-50 p-4 shadow-sm transition-colors hover:bg-blue-100'
+        role='alert'
+      >
+        <InfoIcon />
+        <div className='space-y-1'>
+          <p className='font-medium text-blue-600'>
             학습 전 과정에서 러닝챗을 활용해보세요!
           </p>
           <p className='text-sm text-gray-600'>
@@ -18,8 +27,8 @@ const InfoBanner: React.FC = () => {
           </p>
         </div>
       </div>
-    </div>
+    </aside>
   );
 };
 
-export default InfoBanner;
+export default memo(InfoBanner);
