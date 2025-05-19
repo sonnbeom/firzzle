@@ -38,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
 public class SttService {
 
     private static final Logger logger = LoggerFactory.getLogger(SttService.class);
-    private static final boolean DEV_MODE = false;
+    private static final boolean DEV_MODE = true;
 
     @Value("${app.file-storage.upload-dir}")
     private String uploadDir;

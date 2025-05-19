@@ -103,7 +103,7 @@ public class LearningChatConteller {
     }
 
     @GetMapping("/{ContentSeq}/exam")
-    @Operation(summary = "시험 모드 질문 조회회", description = "시험 모드에서 질문을 조회합니다.")
+    @Operation(summary = "시험 모드 질문 조회", description = "시험 모드에서 질문을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "질문 응답 성공"),
             @ApiResponse(responseCode = "404", description = "질문 없음"),

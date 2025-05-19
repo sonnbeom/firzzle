@@ -22,12 +22,4 @@ public class NextExamResponseDTO {
     @NotBlank
     @Schema(description = "질문 내용", example = "DDD(도메인 주도 설계)에 대해 설명해 보세요.")
     private String question;
-    
-    @NotBlank
-    @Schema(description = "전체 문제 개수", example = "10")
-    private int totalCount;
-
-    @NotBlank
-    @Schema(description = "현재 문제 인덱스 (1부터 시작)", example = "3")
-    private int currentIndex;
 }
