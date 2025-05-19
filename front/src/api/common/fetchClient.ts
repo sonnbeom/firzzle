@@ -130,13 +130,16 @@ export class FetchClient {
 
         if (error.message === 'Unauthorized') {
           // 토큰 갱신 API
-          const response = await fetch('/api/auth/refresh', {
-            method: 'POST',
-            credentials: 'include',
-            body: JSON.stringify({
-              retryCount: retryCount + 1,
-            }),
-          });
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`,
+            {
+              method: 'POST',
+              credentials: 'include',
+              body: JSON.stringify({
+                retryCount: retryCount + 1,
+              }),
+            },
+          );
 
           if (response.status === 200) {
             return this.request(url, {
