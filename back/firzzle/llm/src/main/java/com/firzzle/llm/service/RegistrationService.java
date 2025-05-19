@@ -2,6 +2,8 @@ package com.firzzle.llm.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.firzzle.common.exception.BusinessException;
+import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.llm.client.*;
 import com.firzzle.llm.domain.ContentBlock;
 import com.firzzle.llm.domain.TimeLine;
@@ -18,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import static java.time.LocalDateTime.now;
+import static java.time.format.DateTimeFormatter.ofPattern;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -49,6 +53,7 @@ public class RegistrationService {
      * 전체 자막 콘텐츠를 기반으로 대주제를 추출하고
      * 각 대주제 구간을 요약 및 벡터화하여 저장하는 메서드입니다.
      */
+    
     @Async
     public CompletableFuture<String> summarizeContents(LlmRequestDTO request) {
         String taskId = getOrGenerateTaskId(request);
@@ -61,23 +66,32 @@ public class RegistrationService {
         sendProgress(taskId, "대주제 추출 중...");
 
         return extractTimeLines(content)
-        	    .thenCompose(wrapper -> {
-        	        List<TimeLine> timelines = wrapper.getTimeline();
-        	        List<String> keywords = wrapper.getKeywords();
-        	        sendTimelineProgress(taskId, timelines);
-        	        return summarizeByChunksWithTaskId(taskId, timelines, scriptLines)
-        	            .thenApply(blocks -> Map.of("blocks", blocks, "keywords", keywords));
-        	    })
-        	    .thenApply(map -> {
-        	        List<ContentBlock> blocks = (List<ContentBlock>) map.get("blocks");
-        	        List<String> keywords = (List<String>) map.get("keywords");
+            .thenCompose(wrapper -> {
+                List<TimeLine> timelines = wrapper.getTimeline();
+                List<String> keywords = wrapper.getKeywords();
+                sendTimelineProgress(taskId, timelines);
+                return summarizeByChunksWithTaskId(taskId, timelines, scriptLines)
+                        .thenApply(blocks -> Map.of("blocks", blocks, "keywords", keywords));
+            })
+            .thenApply(map -> {
+                List<ContentBlock> blocks = (List<ContentBlock>) map.get("blocks");
+                List<String> keywords = (List<String>) map.get("keywords");
 
-        	        sendProgress(taskId, "요약 완료. 데이터 저장 중...", "blockCount", blocks.size());
-        	        blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
-        	        saveBlock(request.getContentSeq(), blocks, scriptLines, keywords);
-                sendResult(taskId, request.getUserContentSeq(), blocks);
-                sendComplete(taskId);
-                return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
+                sendProgress(taskId, "요약 완료. 데이터 저장 중...", "blockCount", blocks.size());
+                blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
+                try {
+                    saveBlock(request.getContentSeq(), blocks, scriptLines, keywords);
+                    sendResult(taskId, request.getUserContentSeq(), blocks);
+                    contentMapper.updateProcessStatusAndCompletedAtByContentSeq(
+                    	    request.getContentSeq(),
+                    	    "C",    // 또는 원하는 상태 값
+                    	    now().format(ofPattern("yyyyMMddHHmmss"))
+                    	);
+                    sendComplete(taskId);
+                    return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
+                } catch (Exception e) {
+                    throw new BusinessException(ErrorCode.OPENAI_REQUEST_FAILED, "요약 저장 중 오류가 발생했습니다.");
+                }
             })
             .exceptionally(e -> {
                 logger.error("❌ 전체 요약 처리 중 오류: taskId={}", taskId, e);

@@ -25,6 +25,14 @@
 	        (#{contentSeq}, #{tag})
 	    </foreach>
 	</insert>
+	
+	<update id="updateProcessStatusAndCompletedAtByContentSeq" parameterType="map">
+	    UPDATE fb_ai_contents
+	    SET 
+	        process_status = #{processStatus},
+	        completed_at = #{completedAt}
+	    WHERE content_seq = #{contentSeq}
+	</update>
 
 	<select id="selectContentSummaryByContentSeq" parameterType="long" resultType="com.firzzle.llm.dto.ContentDTO">
 	    SELECT
@@ -33,6 +41,32 @@
 	        thumbnail_url
 	    FROM fb_ai_contents
 	    WHERE content_seq = #{contentSeq}
+	</select>
+	
+	<select id="selectRecommendContentListBySeqList"
+        parameterType="list"
+        resultType="com.firzzle.llm.dto.RecommendContentDTO">
+	    SELECT
+	        C.content_seq,
+	        C.video_id,
+	        C.url,
+	        C.title,
+	        C.description,
+	        C.category AS content_type,
+	        C.thumbnail_url,
+	        C.duration,
+	        C.process_status,
+	        C.indate,
+	        C.completed_at,
+	        C.delete_yn,
+	        (SELECT GROUP_CONCAT(tag SEPARATOR ',') 
+	         FROM fb_ai_content_tags 
+	         WHERE content_seq = C.content_seq) AS tags
+	    FROM fb_ai_contents C
+	    WHERE C.content_seq IN
+	    <foreach collection="list" item="seq" open="(" separator="," close=")">
+	        #{seq}
+	    </foreach>
 	</select>
 	
 </mapper>

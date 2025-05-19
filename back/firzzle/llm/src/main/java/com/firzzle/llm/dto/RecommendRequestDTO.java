@@ -1,5 +1,7 @@
 package com.firzzle.llm.dto;
 
+import java.util.List;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,4 +22,7 @@ import lombok.NoArgsConstructor;
 public class RecommendRequestDTO {
     private int p_pageno = 1;       // ✅ 기본값 1
     private int p_pagesize = 6;     // ✅ 기본값 6
+
+    @Schema(description = "검색할 키워드 리스트", example = "[\"딥러닝\",\"신경망\"]")
+    private List<String> keywords;
 }

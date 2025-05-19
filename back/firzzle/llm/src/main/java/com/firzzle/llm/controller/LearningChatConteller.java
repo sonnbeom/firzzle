@@ -24,6 +24,7 @@ import com.firzzle.llm.dto.LearningChatResponseDTO;
 import com.firzzle.llm.dto.NextExamResponseDTO;
 import com.firzzle.llm.dto.ExamHistoryResponseDTO;
 import com.firzzle.llm.service.LearningChatService;
+import com.firzzle.llm.dto.ExamHistoryWrapperDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -103,7 +104,7 @@ public class LearningChatConteller {
     }
 
     @GetMapping("/{ContentSeq}/exam")
-    @Operation(summary = "시험 모드 질문 조회회", description = "시험 모드에서 질문을 조회합니다.")
+    @Operation(summary = "시험 모드 질문 조회", description = "시험 모드에서 질문을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "질문 응답 성공"),
             @ApiResponse(responseCode = "404", description = "질문 없음"),
@@ -169,29 +170,24 @@ public class LearningChatConteller {
             @ApiResponse(responseCode = "404", description = "대화 목록 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public CompletableFuture<ResponseEntity<Response<List<ExamHistoryResponseDTO>>>> getExamHistory(
+    public CompletableFuture<ResponseEntity<Response<ExamHistoryWrapperDTO>>> getExamHistory(
             @Parameter(description = "사용자 UUID", example = "abc-123-xyz")
             @RequestHeader(value = "X-User-UUID", required = true) String userUUID,
 
             @Parameter(description = "사용자 콘텐츠 일련번호", required = true)
-            @PathVariable("ContentSeq") Long userContentSeq,
+            @PathVariable("ContentSeq") Long userContentSeq
 
-            @Parameter(description = "가장 마지막 메시지 indate (무한 스크롤용)", example = "20250515132000")
-            @RequestParam(value = "lastIndate", required = false) String lastIndate,
-
-            @Parameter(description = "가져올 메시지 개수", example = "10")
-            @RequestParam(value = "limit", defaultValue = "10") int limit
     ) {
-        return learningChatService.getExamHistory(userUUID, userContentSeq, lastIndate, limit)
+        return learningChatService.getExamHistory(userUUID, userContentSeq, null, 20)
                 .thenApply(result -> ResponseEntity.ok(
-                        Response.<List<ExamHistoryResponseDTO>>builder()
+                        Response.<ExamHistoryWrapperDTO>builder()
                                 .status(Status.OK)
                                 .message("시험 응답 기록 조회 성공")
                                 .data(result)
                                 .build()
                 ))
                 .exceptionally(e -> ResponseEntity.status(500).body(
-                        Response.<List<ExamHistoryResponseDTO>>builder()
+                        Response.<ExamHistoryWrapperDTO>builder()
                                 .status(Status.FAIL)
                                 .message("시험 응답 기록 조회 오류: " + e.getMessage())
                                 .build()
