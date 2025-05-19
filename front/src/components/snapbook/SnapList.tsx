@@ -3,6 +3,7 @@
 import { getSnapReviews } from '@/api/snap';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { SnapReviewListResponse } from '@/types/snapReview';
+import SnapBookLoading from '../common/loading/SnapBookLoading';
 import LoadingSpinner from '../common/LoadingSpinner';
 import SnapDateGroup from './SnapDateGroup';
 
@@ -53,7 +54,7 @@ const SnapList = () => {
   });
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <SnapBookLoading />;
   }
 
   if (!snapReviews || snapReviews.length === 0) {

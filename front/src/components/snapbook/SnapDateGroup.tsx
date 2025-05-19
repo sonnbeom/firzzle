@@ -10,18 +10,21 @@ interface SnapDateGroupProps {
 
 const SnapDateGroup = ({ reviews, isPriorityPage }: SnapDateGroupProps) => {
   // 날짜별로 리뷰 그룹화
-  const reviewsByDate = reviews.reduce((acc, review) => {
-    const date = formatDate(review.indate);
-    if (!acc[date]) {
-      acc[date] = [];
-    }
-    acc[date].push(review);
-    return acc;
-  }, {} as { [date: string]: SnapReview[] });
+  const reviewsByDate = reviews.reduce(
+    (acc, review) => {
+      const date = formatDate(review.indate);
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(review);
+      return acc;
+    },
+    {} as { [date: string]: SnapReview[] },
+  );
 
   // 날짜별로 정렬
-  const sortedDates = Object.entries(reviewsByDate).sort(([dateA], [dateB]) => 
-    dateB.localeCompare(dateA)
+  const sortedDates = Object.entries(reviewsByDate).sort(([dateA], [dateB]) =>
+    dateB.localeCompare(dateA),
   );
   return (
     <>
@@ -30,7 +33,7 @@ const SnapDateGroup = ({ reviews, isPriorityPage }: SnapDateGroupProps) => {
           <h2 className='mb-4 text-lg text-gray-950 md:text-xl'>
             {formatDateToKorean(date)}
           </h2>
-          <div className='grid gap-4 grid-cols-3 md:grid-cols-4'>
+          <div className='grid grid-cols-3 gap-4 md:grid-cols-4'>
             {dateReviews.map((review, index) => (
               <Link
                 key={review.contentSeq}

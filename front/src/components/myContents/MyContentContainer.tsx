@@ -3,12 +3,14 @@
 import { getContentList } from '@/api/content';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Content } from '@/types/content';
+import ContentsLoading from '../common/loading/ContentsLoading';
 import MyContentCard from './MyContentCard';
 
 const MyContentContainer = () => {
   const {
     data: contents,
     isFetchingNextPage,
+    isLoading,
     observerTarget,
   } = useInfiniteScroll<Content>({
     queryKey: ['contents'],
@@ -24,6 +26,10 @@ const MyContentContainer = () => {
     },
     pageSize: 10,
   });
+
+  if (isLoading) {
+    return <ContentsLoading />;
+  }
 
   return (
     <div className='flex w-full flex-col gap-4 xl:gap-8'>
