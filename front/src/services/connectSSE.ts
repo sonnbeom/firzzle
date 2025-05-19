@@ -37,6 +37,9 @@ class SSEManager {
     onComplete,
     onError,
   }: ConnectSSEProps): Promise<EventSourcePolyfill> {
+    // 재연결 시도 횟수 초기화
+    this.reconnectAttempts = 0;
+
     // 이미 연결된 SSE가 있고 같은 URL이면 기존 연결 반환
     if (this.eventSource && this.url === url) {
       return this.eventSource;
