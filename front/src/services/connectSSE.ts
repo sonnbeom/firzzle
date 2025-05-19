@@ -52,8 +52,15 @@ class SSEManager {
         Accept: 'text/event-stream',
         Authorization: `Bearer ${accessToken}`,
       },
+      heartbeatTimeout: 45000, // 45초 타임아웃 설정
     });
     this.url = url;
+
+    // 하트비트 이벤트 처리
+    this.eventSource.addEventListener('heartbeat', () => {
+      // 하트비트 수신 시 아무 작업도 하지 않음 (연결 유지 목적)
+      console.debug('Heartbeat received');
+    });
 
     // 연결 성공
     this.eventSource.addEventListener('connect', (event: MessageEvent) => {
@@ -111,8 +118,9 @@ class SSEManager {
       try {
         const data = JSON.parse(event.data) as SSEEventData;
         onError?.(data);
-      } catch {
-        onError?.(event);
+      } catch (error) {
+        console.error('Error event parsing error:', error);
+        onError?.(error);
       }
       this.disconnect();
     });
