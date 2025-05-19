@@ -1,5 +1,4 @@
 import BasicToaster from '@/components/common/BasicToaster';
-import { api } from './common/apiInstance';
 
 // 학습모드 채팅 전송
 export const postLearningChat = async (
@@ -44,11 +43,37 @@ export const getLearningChatHistory = async (
 };
 
 // 시험모드 채팅 전송
-export const postExamChat = async (contentId: string) => {
-  return await api.get(`/contents/${contentId}/chat/exam/answer`);
+export const postExamChat = async (contentSeq: string, answer: string) => {
+  const response = await fetch(`/api/llm/${contentSeq}/exam`, {
+    method: 'POST',
+    body: JSON.stringify({ answer }),
+  });
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
+  return data.data;
 };
 
 // 시험모드 채팅 기록 조회
-const postExamChatHistory = async (contentId: string) => {
-  return await api.post(`/contents/${contentId}/chat/exam`);
+export const getExamChatHistory = async (
+  contentSeq: string,
+  lastIndate?: string,
+) => {
+  const url = lastIndate
+    ? `/api/llm/${contentSeq}/exam/history?lastIndate=${lastIndate}`
+    : `/api/llm/${contentSeq}/exam/history`;
+
+  const response = await fetch(url);
+
+  const data = await response.json();
+
+  if (response.status !== 200) {
+    throw new Error(data.message);
+  }
+
+  return data.data;
 };
