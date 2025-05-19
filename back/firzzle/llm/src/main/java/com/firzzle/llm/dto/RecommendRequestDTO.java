@@ -18,6 +18,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @Schema(description = "추천 콘텐츠 정보 + 유사도 정보 DTO")
 public class RecommendRequestDTO {
-    private int p_pageno;
-    private int p_pagesize;
+    private int p_pageno = 1;       // ✅ 기본값 1
+    private int p_pagesize = 6;     // ✅ 기본값 6
 }
