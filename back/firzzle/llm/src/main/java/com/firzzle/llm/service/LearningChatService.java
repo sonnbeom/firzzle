@@ -60,10 +60,19 @@ public class LearningChatService {
         if (question == null || question.isEmpty()) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "질문이 비어있습니다.");
         }
-        long userSeq = userMapper.selectUserSeqByUuid(uuid);
-        UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        // 1. UUID로 사용자 번호 조회
+        Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
 
+        // 2. 콘텐츠 매핑 정보 조회
+        UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        Long userSeq = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
+
+        // 3. 권한 체크
+        if (!actualUserSeq.equals(userSeq)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS, "해당 콘텐츠에 대한 접근 권한이 없습니다.");
+        }
+
         List<Float> vector = embeddingService.embed(question);
 
         // ✅ 이전 응답 2개 불러오기
@@ -122,9 +131,18 @@ public class LearningChatService {
      */
     @Transactional
     public List<ChatHistoryResponseDTO> getChatsByContentAndUser(String uuid, Long userContentSeq, String lastIndate, int limit) {
-       
-        // userContentSeq로 contentSeq와 userSeq 가져옴
+        // 1. UUID로 사용자 번호 조회
+        Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
+
+        // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        Long userSeq = userContent.getUserSeq();
+        Long contentSeq = userContent.getContentSeq();
+
+        // 3. 권한 체크
+        if (!actualUserSeq.equals(userSeq)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS, "해당 콘텐츠에 대한 접근 권한이 없습니다.");
+        }
 
         // 채팅 목록 조회
         List<ChatDTO> chatList = chatMapper.selectChatsByCursor(
@@ -159,10 +177,18 @@ public class LearningChatService {
     @Async
     @Transactional
     public CompletableFuture<NextExamResponseDTO> getNextExam(String uuid, Long userContentSeq) {
-        // 1. user_seq, content_seq 조회
+        // 1. UUID로 사용자 번호 조회
+        Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
+
+        // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
         Long userSeq = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
+
+        // 3. 권한 체크
+        if (!actualUserSeq.equals(userSeq)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS, "해당 콘텐츠에 대한 접근 권한이 없습니다.");
+        }
 
         // 2. 전체 문제 수
         int total = examsMapper.selectTotalExamCount(contentSeq);
@@ -282,13 +308,13 @@ public class LearningChatService {
             Object indate = row.get("indate");
 
             // ✅ 순서 및 타입 그대로 유지
-            ExamHistoryResponseDTO questionDto = toDto(row.get("question"), indate, 1);     // 질문
-            ExamHistoryResponseDTO answerDto = toDto(row.get("answer"), indate, 0);         // 답변
             ExamHistoryResponseDTO explanationDto = toDto(row.get("explanation"), indate, 1); // 해설
+            ExamHistoryResponseDTO answerDto = toDto(row.get("answer"), indate, 0);         // 답변
+            ExamHistoryResponseDTO questionDto = toDto(row.get("question"), indate, 1);     // 질문
 
-            if (questionDto != null) result.add(questionDto);
-            if (answerDto != null) result.add(answerDto);
             if (explanationDto != null) result.add(explanationDto);
+            if (answerDto != null) result.add(answerDto);
+            if (questionDto != null) result.add(questionDto);
         }
 
         return CompletableFuture.completedFuture(result);

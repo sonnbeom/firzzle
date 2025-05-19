@@ -131,11 +131,11 @@ public class SttService {
         saveUserContent(userSeq, contentDTO.getContentSeq());
 
         if (script != null) {
-            sttConvertedProducer.sendSttResult(contentDTO.getContentSeq(), script, taskId);
+            sttConvertedProducer.sendSttResult(userSeq, contentDTO.getContentSeq(), script, taskId);
         } else {
             throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
         }
-        return new LlmRequest(contentDTO.getContentSeq(), script, taskId);
+        return new LlmRequest(userSeq,contentDTO.getContentSeq(), script, taskId);
     }
 
     

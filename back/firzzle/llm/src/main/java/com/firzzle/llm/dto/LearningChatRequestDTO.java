@@ -2,11 +2,8 @@ package com.firzzle.llm.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-
-import java.util.List;
 
 /**
  * @Class Name : RunningChatRequestDTO.java
