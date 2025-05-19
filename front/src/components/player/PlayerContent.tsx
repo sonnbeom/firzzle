@@ -21,6 +21,8 @@ const PlayerContent = ({
     initialPlayerInfo,
   );
 
+  const [taskId, setTaskId] = useState<string | null>(null);
+
   return (
     <div className='flex h-full w-full flex-col items-center justify-around gap-5 pt-10 lg:gap-10'>
       {!playerInfo ? (
@@ -45,9 +47,10 @@ const PlayerContent = ({
             defaultUrl={initialUrl}
             setIsSubmitted={setIsSubmitted}
             setPlayerInfo={setPlayerInfo}
+            setTaskId={setTaskId}
           />
         ) : (
-          <ProgressBar />
+          <ProgressBar taskId={taskId} />
         )}
       </div>
 

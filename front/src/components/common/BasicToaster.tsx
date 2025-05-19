@@ -14,6 +14,14 @@ type BasicToasterProps = Omit<ToasterProps, 'theme' | 'duration'> & {
   duration?: number;
 };
 
+interface ToastOptions {
+  duration?: number;
+  id?: string;
+  persistent?: boolean; // 사용자가 토스트를 직접 닫을 수 있는지 여부
+  children?: React.ReactNode;
+  closeButton?: boolean; // 닫기 버튼 표시 여부
+}
+
 const BasicToaster = ({ duration = 1500, ...props }: BasicToasterProps) => {
   return (
     <Toaster
@@ -25,45 +33,50 @@ const BasicToaster = ({ duration = 1500, ...props }: BasicToasterProps) => {
   );
 };
 
-BasicToaster.success = (
-  message: string,
-  options?: { duration?: number; id?: string },
-) =>
+BasicToaster.success = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.success,
     className: 'font-medium text-md',
-    duration: options?.duration,
+    duration: options?.persistent ? Infinity : options?.duration,
+    onDismiss: (toast) => {
+      // 사용자가 직접 닫아야 함
+      if (options?.persistent) {
+        return false;
+      }
+    },
+    description: options?.children,
+    dismissible: options?.closeButton ?? false,
   });
-BasicToaster.error = (
-  message: string,
-  options?: { duration?: number; id?: string },
-) =>
+
+BasicToaster.error = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.error,
     className: 'font-medium text-md',
     duration: options?.duration,
+    description: options?.children,
+    dismissible: options?.closeButton ?? false,
   });
-BasicToaster.warning = (
-  message: string,
-  options?: { duration?: number; id?: string },
-) =>
+
+BasicToaster.warning = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.warning,
     className: 'font-medium text-md',
     duration: options?.duration,
+    description: options?.children,
+    dismissible: options?.closeButton ?? false,
   });
-BasicToaster.default = (
-  message: string,
-  options?: { duration?: number; id?: string },
-) =>
+
+BasicToaster.default = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.default,
     className: 'font-medium text-md',
     duration: options?.duration,
+    description: options?.children,
+    dismissible: options?.closeButton ?? false,
   });
 
 export default BasicToaster;

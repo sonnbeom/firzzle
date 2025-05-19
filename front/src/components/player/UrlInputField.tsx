@@ -1,6 +1,7 @@
 'use client';
 
 import { debounce } from 'lodash';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { postContent } from '@/api/content';
 import { getPlayer } from '@/services/youtubeService';
@@ -13,14 +14,17 @@ interface UrlInputFieldProps {
   defaultUrl?: string;
   setIsSubmitted: (isSubmitted: boolean) => void;
   setPlayerInfo: (playerInfo: PlayerInfo) => void;
+  setTaskId: (taskId: string) => void;
 }
 
 const UrlInputField = ({
   defaultUrl = '',
   setIsSubmitted,
   setPlayerInfo,
+  setTaskId,
 }: UrlInputFieldProps) => {
   const [value, setValue] = useState(defaultUrl);
+  const router = useRouter();
 
   // 입력된 url 영상 정보 조회
   const handleUrlSubmit = debounce(async (url: string) => {
@@ -41,8 +45,16 @@ const UrlInputField = ({
   const handleUrlConfirm = async () => {
     setIsSubmitted(true);
     try {
-      await postContent(value);
+      const response = await postContent({ youtubeUrl: value });
+
+      if (response.taskId) {
+        setTaskId(response.taskId);
+      } else {
+        router.push(`/content/${response.contentSeq}`);
+      }
     } catch (error) {
+      setIsSubmitted(false);
+
       return BasicToaster.error(error.message, {
         id: 'analyze youtube',
         duration: 2000,
