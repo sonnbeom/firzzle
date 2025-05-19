@@ -1,16 +1,24 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { getCookie } from '@/actions/auth';
 import { logout } from '@/api/auth';
 import OAuthButton from '../home/OAuthButton';
 const HeaderButton = () => {
-  const pathname = usePathname();
-  const router = useRouter();
+  const [accessToken, setAccessToken] = useState(null);
+
+  useEffect(() => {
+    const getAccessToken = async () => {
+      const token = await getCookie('accessToken');
+      setAccessToken(token);
+    };
+    getAccessToken();
+  }, [accessToken]);
 
   return (
     <>
-      {pathname == '/' ? (
+      {!accessToken ? (
         <OAuthButton
           url='https://kauth.kakao.com/oauth/authorize'
           oauth='kakao'
