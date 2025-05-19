@@ -173,7 +173,8 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/v3/api-docs/") ||
                 path.startsWith("/api-docs/") ||
                 path.startsWith("/actuator/health") ||
-                path.startsWith("/swagger-resources/");
+                path.startsWith("/swagger-resources/") ||
+                path.equals("/api/v1/logging/visit");
 
         if (shouldNotFilter) {
             logger.info("HeaderAuthFilter - 필터 제외 경로: {}", path);

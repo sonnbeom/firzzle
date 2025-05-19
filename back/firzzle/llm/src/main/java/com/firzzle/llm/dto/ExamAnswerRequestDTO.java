@@ -16,6 +16,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(description = "시험 모드 정답 제출 DTO")
 public class ExamAnswerRequestDTO {
+    @Schema(description = "문제 일련 번호", example = "1", required = true)
+    private Long exam_seq;
+	
     @Schema(description = "시험 모드 질문에 대한 응답", example = "판타지 장르는 18세기와 19세기 낭만주의 시기에 발전하였으며, 톨킨과 에드가 엘란 포 같은 작가들이 중요한 역할을 했다. ", required = true)
     private String answer;
 }
