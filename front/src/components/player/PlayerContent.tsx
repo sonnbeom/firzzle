@@ -50,7 +50,7 @@ const PlayerContent = ({
             setTaskId={setTaskId}
           />
         ) : (
-          <ProgressBar taskId={taskId} />
+          <ProgressBar taskId={taskId} setIsSubmitted={setIsSubmitted} />
         )}
       </div>
 
