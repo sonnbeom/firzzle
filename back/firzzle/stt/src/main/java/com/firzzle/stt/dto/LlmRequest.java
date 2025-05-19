@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class LlmRequest {
     private Long contentSeq;
     private String script;
+    private String taskId;
 }

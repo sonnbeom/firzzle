@@ -13,6 +13,7 @@ import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.learning.dto.ContentRequestDTO;
 import com.firzzle.learning.dto.ContentResponseDTO;
+import com.firzzle.learning.dto.ContentResponseWithTaskDTO;
 import com.firzzle.learning.dto.ContentSearchDTO;
 import com.firzzle.learning.service.ContentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,8 +70,9 @@ public class ContentController {
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
     @PreAuthorize("hasRole('ADMIN') or hasAuthority('content:write')")
-    public ResponseEntity<Response<ContentResponseDTO>> registerContent(
-            @Parameter(description = "콘텐츠 등록 정보", required = true)  @Valid @RequestBody ContentRequestDTO contentRequestDTO,
+    public ResponseEntity<Response<ContentResponseWithTaskDTO>> registerContent(
+            @Parameter(description = "콘텐츠 등록 정보", required = true)
+            @Valid @RequestBody ContentRequestDTO contentRequestDTO,
             HttpServletRequest request
 //            , @RequestBody Map<String, Object> requestBody // ContentRequestDTO를 없앤다면
     ) {
@@ -90,22 +92,47 @@ public class ContentController {
 
             DataBox dataBox = contentService.insertContent(box);
 
-            Response<ContentResponseDTO> response;
+            Response<ContentResponseWithTaskDTO> response;
 
-            if (dataBox == null) {
-                // 콘텐츠가 생성 중인 경우
-                response = Response.<ContentResponseDTO>builder()
+            if (dataBox == null || !dataBox.containsKey("d_content_seq")) {
+                // 신규 콘텐츠 생성 중인 경우 (taskId가 있음)
+                String taskId = dataBox != null ? dataBox.getString("taskId") : null;
+
+                ContentResponseWithTaskDTO processingContent = ContentResponseWithTaskDTO.builder()
+                        .taskId(taskId)
+                        .processStatus("Q") // 대기 상태로 초기화
+                        .build();
+
+                response = Response.<ContentResponseWithTaskDTO>builder()
                         .status(Status.OK)
-                        .message("콘텐츠가 생성 중입니다. 잠시 후 확인해주세요.")
-                        .data(null)
+                        .message("콘텐츠 분석이 요청되었습니다.")
+                        .data(processingContent)
                         .build();
             } else {
-                // 콘텐츠가 이미 생성된 경우
-                ContentResponseDTO registeredContent = convertToContentResponseDTO(dataBox);
+                // 이미 등록된 콘텐츠인 경우 (taskId가 없음, 이미 분석 완료됨)
+                ContentResponseDTO baseContent = convertToContentResponseDTO(dataBox);
 
-                response = Response.<ContentResponseDTO>builder()
+                ContentResponseWithTaskDTO registeredContent = ContentResponseWithTaskDTO.builder()
+                        .contentSeq(baseContent.getContentSeq())
+                        .title(baseContent.getTitle())
+                        .description(baseContent.getDescription())
+                        .contentType(baseContent.getContentType())
+                        .videoId(baseContent.getVideoId())
+                        .url(baseContent.getUrl())
+                        .thumbnailUrl(baseContent.getThumbnailUrl())
+                        .duration(baseContent.getDuration())
+                        .processStatus(baseContent.getProcessStatus())
+                        .tags(baseContent.getTags())
+                        .analysisData(baseContent.getAnalysisData())
+                        .transcript(baseContent.getTranscript())
+                        .indate(baseContent.getIndate())
+                        .completedAt(baseContent.getCompletedAt())
+                        .deleteYn(baseContent.getDeleteYn())
+                        .build();
+
+                response = Response.<ContentResponseWithTaskDTO>builder()
                         .status(Status.OK)
-                        .message("콘텐츠가 성공적으로 등록되었습니다.")
+                        .message("이미 등록된 콘텐츠입니다.")
                         .data(registeredContent)
                         .build();
             }
