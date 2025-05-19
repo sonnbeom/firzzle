@@ -5,8 +5,7 @@ import { cookies } from 'next/headers';
 // 쿠키 조회
 export const getCookie = async (name: string) => {
   const cookieStore = await cookies();
-  const cookie = cookieStore.get(name);
-  return cookie?.value;
+  return cookieStore.get(name)?.value;
 };
 
 // 쿠키 삭제
@@ -17,7 +16,6 @@ export const removeCookie = async (name: string) => {
 // 쿠키 설정
 export const setCookie = async (name: string, value: string) => {
   const cookieStore = await cookies();
-  console.log('쿠키 설정', name, value);
   cookieStore.set({
     name: name,
     value: value,
