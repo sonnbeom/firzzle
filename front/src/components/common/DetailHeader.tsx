@@ -15,6 +15,7 @@ const DetailHeader = () => {
   const [pathType, setPathType] = useState('');
   const [isLearningChatOpen, setIsLearningChatOpen] = useState(false);
 
+  // 컨텐츠 전환 로그
   useEffect(() => {
     setPathType(determinePathType(pathname));
 
@@ -39,22 +40,22 @@ const DetailHeader = () => {
         </button>
         <TabButton
           title='요약 노트'
-          isActive={isActive(contentSeq)}
+          isActive={isActive(`/content/${contentSeq}`, true)}
           route={`/content/${contentSeq}`}
         />
         <TabButton
           title='AI 퀴즈'
-          isActive={isActive('quiz')}
+          isActive={isActive(`/content/${contentSeq}/quiz`)}
           route={`/content/${contentSeq}/quiz`}
         />
         <TabButton
           title='스냅 리뷰'
-          isActive={isActive('snapreview')}
+          isActive={isActive(`/content/${contentSeq}/snapreview`)}
           route={`/content/${contentSeq}/snapreview`}
         />
         <TabButton
           title='관련 컨텐츠'
-          isActive={isActive('recommend')}
+          isActive={isActive(`/content/${contentSeq}/recommend`)}
           route={`/content/${contentSeq}/recommend`}
         />
       </div>

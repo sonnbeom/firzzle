@@ -16,3 +16,14 @@ export type AdminLoginResponse = {
   tokenType: string;
   issuedAt: string;
 };
+
+export type UserInfo = {
+  uuid: string;
+  username: string;
+  email: string;
+  name: string;
+  role: string;
+  profileImageUrl: string;
+  lastLogin: string;
+  signupType: string;
+};

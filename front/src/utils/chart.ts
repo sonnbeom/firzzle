@@ -47,15 +47,15 @@ export const chartMappings = {
   // 기능 전환율
   functionChange: [
     {
-      key: 'SUMMARY=>QUIZ_READ',
+      key: 'SUMMARY=\u003EQUIZ',
       label: 'SUMMARY > QUIZ',
     },
     {
-      key: 'QUIZ_READ=>SNAP_REVIEW_READ',
+      key: 'QUIZ=\u003ESNAP_REVIEW',
       label: 'QUIZ > SNAP_REVIEW',
     },
     {
-      key: 'SNAP_REVIEW_READ=>RECOMMEND',
+      key: 'SNAP_REVIEW=\u003ERECOMMEND',
       label: 'SNAP_REVIEW > RECOMMEND',
     },
   ],

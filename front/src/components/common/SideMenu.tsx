@@ -10,7 +10,7 @@ const SideMenu = () => {
     <div className='flex w-full items-start gap-4 xl:flex-col'>
       <TabButton
         title='사진첩'
-        isActive={isActive('snapbook')}
+        isActive={isActive('/mylearning/snapbook')}
         route='/mylearning/snapbook'
         iconId='snapbook'
         className='items-start'
@@ -18,7 +18,7 @@ const SideMenu = () => {
 
       <TabButton
         title='최근 학습 내역'
-        isActive={isActive('contents')}
+        isActive={isActive('/mylearning/contents')}
         route='/mylearning/contents'
         iconId='content'
         className='items-start'
