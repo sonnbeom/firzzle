@@ -292,7 +292,7 @@ public class LearningChatService {
                 examsMapper.insertExamAnswer(answerDTO);
 
                 // 10. 응답 DTO 구성 및 반환
-                return new ExamAnswerResponseDTO(indate, aiExplanation);
+                return new ExamAnswerResponseDTO(aiExplanation);
             })
             .exceptionally(e -> {
                 logger.error("❌ 시험 응답 처리 중 오류 발생", e);

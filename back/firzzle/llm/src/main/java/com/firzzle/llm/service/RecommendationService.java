@@ -10,18 +10,13 @@ import org.springframework.stereotype.Service;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
-import com.firzzle.llm.client.OpenAiClient;
-import com.firzzle.llm.client.QdrantClient;
 import com.firzzle.llm.dto.RecommendContentDTO;
 import com.firzzle.llm.dto.RecommendRequestDTO;
 import com.firzzle.llm.dto.RecommendResponseDTO;
 import com.firzzle.llm.dto.UserContentDTO;
-import com.firzzle.llm.mapper.ChatMapper;
 import com.firzzle.llm.mapper.ContentMapper;
-import com.firzzle.llm.mapper.ExamsMapper;
 import com.firzzle.llm.mapper.UserContentMapper;
 import com.firzzle.llm.mapper.UserMapper;
-import com.firzzle.llm.prompt.PromptFactory;
 import com.firzzle.llm.util.QdrantCollections;
 
 import lombok.RequiredArgsConstructor;
