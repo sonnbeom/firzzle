@@ -1,14 +1,15 @@
 package com.firzzle.learning.logging.controller;
 
-import com.firzzle.common.library.RequestBox;
-import com.firzzle.common.library.RequestManager;
 import com.firzzle.common.logging.dto.UserActionLog;
 import com.firzzle.common.logging.service.LoggingService;
+import com.firzzle.common.response.Response;
+import com.firzzle.common.response.Status;
 import com.firzzle.learning.logging.common.service.HttpServletRequestCheckService;
 import com.firzzle.learning.logging.dto.request.RequestTransitionDto;
 import com.firzzle.learning.logging.service.LearningServerLoggingService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,16 +24,24 @@ public class LoggingController {
     private final HttpServletRequestCheckService servletRequestCheckService;
 
     @PostMapping("/visit")
-    public String loggingVisit() {
+    public ResponseEntity<Response<String>> loggingVisit() {
         LoggingService.log(UserActionLog.fromVisit("VISIT"));
-        return "inserted visit logs";
+        Response<String> response = Response.<String>builder()
+                .status(Status.OK)
+                .data("ok")
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/transition")
-    public String loggingTransition(@RequestBody RequestTransitionDto reqDto, HttpServletRequest request) throws Exception {
+    public ResponseEntity<Response<String>> loggingTransition(@RequestBody RequestTransitionDto reqDto, HttpServletRequest request) throws Exception {
         String userId = servletRequestCheckService.getUserUUID(request);
         learningServerLoggingService.loggingLearningTransition(userId, reqDto);
-        return "inserted transition logs";
+        Response<String> response = Response.<String>builder()
+                .status(Status.OK)
+                .data("ok")
+                .build();
+        return ResponseEntity.ok(response);
     }
 
 }

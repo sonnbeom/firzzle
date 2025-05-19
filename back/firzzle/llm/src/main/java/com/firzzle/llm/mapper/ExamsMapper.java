@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.firzzle.llm.dto.ExamAnswerDTO;
+import com.firzzle.llm.dto.ExamProgressDTO;
 import com.firzzle.llm.dto.ExamsDTO;
 
 @Mapper
@@ -24,6 +25,31 @@ public interface ExamsMapper {
      * @param answerDto 답변 정보 DTO
      */
     void insertExamAnswer(ExamAnswerDTO answerDto);
+    
+    /**
+     * 사용자가 아직 답변하지 않은 문제 중 랜덤으로 한 개 조회
+     *
+     * @param contentSeq 콘텐츠 번호
+     * @param userSeq 사용자 번호
+     * @return 무작위로 선택된 문제 DTO
+     */
+    ExamsDTO selectRandomUnansweredExam(
+        @Param("contentSeq") Long contentSeq,
+        @Param("userSeq") Long userSeq
+    );
+    
+    /**
+     * 시험 문제 단건 조회 (exam_seq 기준)
+     *
+     * @param examSeq 문제 번호
+     * @return 문제 상세 DTO
+     */
+    ExamsDTO selectExamByExamSeq(@Param("examSeq") Long examSeq);
+        
+    int countExamAnswerByUserAndExam(@Param("examSeq") Long examSeq, @Param("userSeq") Long userSeq);
+
+    
+    
 
     /**
      * 콘텐츠 기준 전체 시험 문제 개수 조회
@@ -65,4 +91,13 @@ public interface ExamsMapper {
     	    @Param("lastIndate") String lastIndate,
     	    @Param("limit") int limit
     	);
+    
+    // 1. 등록
+    int insertExamProgress(ExamProgressDTO dto);
+
+    // 2. 업데이트
+    int updateExamProgress(ExamProgressDTO dto);
+
+    // 3. 단건 조회 (user_seq + content_seq 기준)
+    ExamProgressDTO selectByUserAndContent(@Param("userSeq") Long userSeq, @Param("contentSeq") Long contentSeq);
 }

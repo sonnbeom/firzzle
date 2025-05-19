@@ -22,6 +22,8 @@ import com.firzzle.llm.dto.ExamAnswerDTO;
 import com.firzzle.llm.dto.ExamAnswerRequestDTO;
 import com.firzzle.llm.dto.ExamAnswerResponseDTO;
 import com.firzzle.llm.dto.ExamHistoryResponseDTO;
+import com.firzzle.llm.dto.ExamHistoryWrapperDTO;
+import com.firzzle.llm.dto.ExamProgressDTO;
 import com.firzzle.llm.dto.ExamsDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
@@ -57,65 +59,61 @@ public class LearningChatService {
     public CompletableFuture<LearningChatResponseDTO> learningChat(String uuid, Long userContentSeq, LearningChatRequestDTO request) {
         String question = request.getQuestion();
         logger.info("📥 [learningChat 시작] userContentSeq={}, userId={}, question={}", userContentSeq, question);
-        if (question == null || question.isEmpty()) {
-            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "질문이 비어있습니다.");
+        if (question == null || question.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "질문이 비어 있습니다.");
         }
-        // 1. UUID로 사용자 번호 조회
+
         Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
 
-        // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
         Long userSeq = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
 
-        // 3. 권한 체크
         if (!actualUserSeq.equals(userSeq)) {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS, "해당 콘텐츠에 대한 접근 권한이 없습니다.");
         }
 
-        List<Float> vector = embeddingService.embed(question);
+        List<Float> vector;
+        try {
+            vector = embeddingService.embed(question);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.VECTOR_EMBEDDING_FAILED, "질문 임베딩 중 오류가 발생했습니다.");
+        }
 
-        // ✅ 이전 응답 2개 불러오기
-        List<ChatDTO> previousChats = chatMapper.selectChatsByCursor(
-            contentSeq,
-            userContent.getUserSeq(),
-            null, // 최신순으로부터
-            2
-        );
-
+        List<ChatDTO> previousChats = chatMapper.selectChatsByCursor(contentSeq, userContent.getUserSeq(), null, 2);
         String previousMessages = previousChats.stream()
-            .sorted((a, b) -> a.getIndate().compareTo(b.getIndate())) // 오래된 순 정렬
+            .sorted((a, b) -> a.getIndate().compareTo(b.getIndate()))
             .map(chat -> "Q: " + chat.getQuestion() + "\nA: " + chat.getAnswer())
             .collect(Collectors.joining("\n\n"));
+
         logger.info(previousMessages);
+
         return ragService.searchTopPayloadsByContentSeq(QdrantCollections.SCRIPT, vector, contentSeq)
-                .toFuture()
-                .thenCompose(contents -> {
-                    logger.debug("🔍 [벡터 검색 결과] top contents count={}", contents.size());
+            .toFuture()
+            .thenCompose(contents -> {
+                logger.debug("🔍 [벡터 검색 결과] top contents count={}", contents.size());
+                String context = contents.stream().limit(5).collect(Collectors.joining("\n"));
 
-                    String context = contents.stream().limit(5).collect(Collectors.joining("\n"));
+                if (context.isEmpty()) {
+                    logger.info("⚠️ [context 없음] 기본 응답 반환");
+                    String defaultAnswer = "해당 내용은 영상에서 언급되지 않았어요. 다른 질문이 있으신가요?";
+                    insertChat(contentSeq, userContent.getUserSeq(), question, defaultAnswer);
+                    return CompletableFuture.completedFuture(new LearningChatResponseDTO(defaultAnswer));
+                }
 
-                    if (context.isEmpty()) {
-                        logger.info("⚠️ [context 없음] 기본 응답 반환");
-                        String defaultAnswer = "해당 내용은 영상에서 언급되지 않았어요. 다른 질문이 있으신가요? 궁금한 점을 말씀해 주시면 최대한 도와드릴게요!";
-                        insertChat(contentSeq, userContent.getUserSeq(), question, defaultAnswer);
-                        return CompletableFuture.completedFuture(new LearningChatResponseDTO(defaultAnswer));
-                    }
+                ChatCompletionRequestDTO chatRequest = promptFactory.createLearningChatRequest(question, context, previousMessages);
+                logger.debug("📬 [OpenAI 요청 전] 생성된 prompt context 일부=\n{}", context.substring(0, Math.min(context.length(), 300)));
 
-                    // ✅ previousMessages 추가하여 prompt 구성
-                    ChatCompletionRequestDTO chatRequest = promptFactory.createLearningChatRequest(question, context, previousMessages);
-                    logger.debug("📬 [OpenAI 요청 전] 생성된 prompt context 일부=\n{}", context.substring(0, Math.min(context.length(), 300)));
-
-                    return openAiClient.getChatCompletionAsync(chatRequest)
-                            .thenApply(answer -> {
-                                insertChat(contentSeq, userContent.getUserSeq(), question, answer);
-                                return new LearningChatResponseDTO(answer);
-                            });
-                })
-                .exceptionally(e -> {
-                    logger.error("❌ learningChat 처리 중 오류", e);
-                    return new LearningChatResponseDTO("답변 생성 중 오류가 발생했습니다.");
-                });
+                return openAiClient.getChatCompletionAsync(chatRequest)
+                    .thenApply(answer -> {
+                        insertChat(contentSeq, userContent.getUserSeq(), question, answer);
+                        return new LearningChatResponseDTO(answer);
+                    });
+            })
+            .exceptionally(e -> {
+                logger.error("❌ learningChat 처리 중 오류", e);
+                throw new BusinessException(ErrorCode.OPENAI_REQUEST_FAILED, "답변 생성 중 오류가 발생했습니다.");
+            });
     }
 
 
@@ -123,8 +121,8 @@ public class LearningChatService {
     /**
      * 무한 스크롤 방식으로 채팅 목록을 조회합니다.
      *
-     * @param contentSeq 콘텐츠 번호
-     * @param userSeq 사용자 번호
+     * @param uuid 사용자 UUID
+     * @param userContentSeq 사용자-콘텐츠 매핑 ID
      * @param lastIndate 마지막 생성 시간 (null이면 최신순 최초 요청)
      * @param limit 가져올 개수
      * @return 채팅 목록
@@ -133,9 +131,16 @@ public class LearningChatService {
     public List<ChatHistoryResponseDTO> getChatsByContentAndUser(String uuid, Long userContentSeq, String lastIndate, int limit) {
         // 1. UUID로 사용자 번호 조회
         Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
+        if (actualUserSeq == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "해당 UUID로 사용자를 찾을 수 없습니다.");
+        }
 
         // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        if (userContent == null) {
+            throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "해당 콘텐츠 정보를 찾을 수 없습니다.");
+        }
+
         Long userSeq = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
 
@@ -144,28 +149,29 @@ public class LearningChatService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS, "해당 콘텐츠에 대한 접근 권한이 없습니다.");
         }
 
-        // 채팅 목록 조회
+        // 4. 채팅 목록 조회
         List<ChatDTO> chatList = chatMapper.selectChatsByCursor(
-                userContent.getContentSeq(),
-                userContent.getUserSeq(),
-                lastIndate,
-                limit
+            contentSeq,
+            userSeq,
+            lastIndate,
+            limit
         );
 
-        // ChatDTO를 ChatHistoryResponseDTO로 분리 (question, answer 각각 하나의 응답)
+        // 5. ChatDTO → ChatHistoryResponseDTO 변환 (질문/답변 분리)
         return chatList.stream()
-                .flatMap(chat -> {
-                    List<ChatHistoryResponseDTO> items = new ArrayList<>();
-                    if (chat.getQuestion() != null) {
-                        items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getQuestion(), chat.getIndate(), 0));
-                    }
-                    if (chat.getAnswer() != null) {
-                        items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getAnswer(), chat.getIndate(), 1));
-                    }
-                    return items.stream();
-                })
-                .collect(Collectors.toList());
+            .flatMap(chat -> {
+                List<ChatHistoryResponseDTO> items = new ArrayList<>();
+                if (chat.getQuestion() != null && !chat.getQuestion().isBlank()) {
+                    items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getQuestion(), chat.getIndate(), 0));
+                }
+                if (chat.getAnswer() != null && !chat.getAnswer().isBlank()) {
+                    items.add(new ChatHistoryResponseDTO(chat.getChatSeq(), chat.getAnswer(), chat.getIndate(), 1));
+                }
+                return items.stream();
+            })
+            .collect(Collectors.toList());
     }
+
     
     /**
      * 다음 시험 문제 받아오기 
@@ -179,9 +185,16 @@ public class LearningChatService {
     public CompletableFuture<NextExamResponseDTO> getNextExam(String uuid, Long userContentSeq) {
         // 1. UUID로 사용자 번호 조회
         Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
+        if (actualUserSeq == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다.");
+        }
 
         // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        if (userContent == null) {
+            throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "해당 콘텐츠를 찾을 수 없습니다.");
+        }
+
         Long userSeq = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
 
@@ -190,21 +203,39 @@ public class LearningChatService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS, "해당 콘텐츠에 대한 접근 권한이 없습니다.");
         }
 
-        // 2. 전체 문제 수
-        int total = examsMapper.selectTotalExamCount(contentSeq);
-
-        // 3. 사용자 답변 수
-        int answered = examsMapper.selectAnsweredExamCount(contentSeq, userSeq);
-
-        // 4. 다음 문제 정보
-        ExamsDTO nextQuestion = examsMapper.selectNextExamQuestion(contentSeq, answered+1);
-
-        // 5. 반환 DTO 조립
-        NextExamResponseDTO response = NextExamResponseDTO.builder()
-                .question(nextQuestion != null ? nextQuestion.getQuestionContent() : "모든 문제를 다 푸셨습니다.")
-                .totalCount(total)
-                .currentIndex(answered + 1) // 1부터 시작
+        // 4. 아직 풀지 않은 시험 문제 중 랜덤으로 1개 조회
+        ExamsDTO randomExam = examsMapper.selectRandomUnansweredExam(contentSeq, userSeq);
+        ExamProgressDTO progress = examsMapper.selectByUserAndContent(userSeq, contentSeq);
+        if (randomExam == null || (progress != null && "Y".equals(progress.getIsCompleted()))) {
+            // 문제를 모두 푼 경우 - 특별 메시지 반환
+            NextExamResponseDTO completedResponse = NextExamResponseDTO.builder()
+                .question("모든 문제를 이미 푼 상태입니다.")
+                .exam_seq(null)
                 .build();
+
+            return CompletableFuture.completedFuture(completedResponse);
+        }
+
+        // 6. 진행 정보 없으면 새로 생성, 있으면 업데이트
+        if (progress == null) {
+            ExamProgressDTO newProgress = ExamProgressDTO.builder()
+                .userSeq(userSeq)
+                .contentSeq(contentSeq)
+                .examSeq(randomExam.getExamSeq())
+                .solvedCount(0)
+                .isCompleted("N")
+                .build();
+            examsMapper.insertExamProgress(newProgress);
+        } else {
+            progress.setExamSeq(randomExam.getExamSeq());
+            examsMapper.updateExamProgress(progress);
+        }
+
+        // 8. 정상 문제 응답 반환
+        NextExamResponseDTO response = NextExamResponseDTO.builder()
+            .exam_seq(randomExam.getExamSeq())
+            .question(randomExam.getQuestionContent())
+            .build();
 
         return CompletableFuture.completedFuture(response);
     }
@@ -221,9 +252,16 @@ public class LearningChatService {
     public CompletableFuture<ExamAnswerResponseDTO> submitExamAnswer(String uuid, Long userContentSeq, ExamAnswerRequestDTO request) {
         // 1. UUID로 사용자 번호 조회
         Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
+        if (actualUserSeq == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다.");
+        }
 
         // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        if (userContent == null) {
+            throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "해당 콘텐츠 정보를 찾을 수 없습니다.");
+        }
+
         Long userSeq = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
 
@@ -232,65 +270,95 @@ public class LearningChatService {
             throw new BusinessException(ErrorCode.UNAUTHORIZED_ACCESS, "해당 콘텐츠에 대한 접근 권한이 없습니다.");
         }
 
-        // 4. 답변 수 기준 다음 문제 index
-        int answered = examsMapper.selectAnsweredExamCount(contentSeq, userSeq);
-        int nextIndex = answered + 1;
+        String userAnswer = request.getAnswer();
+        if (userAnswer == null || userAnswer.isBlank()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "답변이 비어 있습니다.");
+        }
+        Long exam_seq = request.getExam_seq();
+     
+        // 4. 현재 진행 중인 문제 번호(progress)와 제출 exam_seq 비교
+        ExamProgressDTO progress = examsMapper.selectByUserAndContent(userSeq, contentSeq);
 
-        // 5. 해당 시험 문제 조회
-        ExamsDTO currentExam = examsMapper.selectNextExamQuestion(contentSeq, nextIndex);
-        if (currentExam == null) {
-            return CompletableFuture.completedFuture(
-                new ExamAnswerResponseDTO(
-                    TimeUtil.getCurrentTimestamp14(),
-                    "모든 문제를 이미 푸셨습니다. 고생하셨습니다!"
-                )
-            );
+        if (progress == null) {
+            throw new BusinessException(ErrorCode.QUIZ_NOT_FOUND, "진행 중인 시험 정보가 존재하지 않습니다.");
+        }
+
+        Long submittedExamSeq = request.getExam_seq();
+        Long currentExamSeq = progress.getExamSeq();
+
+        if (!submittedExamSeq.equals(currentExamSeq)) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "제출한 문제 번호가 현재 진행 중인 문제와 일치하지 않습니다.");
         }
         
-        // 6. 사용자 답변
-        String userAnswer = request.getAnswer();
+        // 6. 이미 푼 문제인지 확인
+        int existingAnswer = examsMapper.countExamAnswerByUserAndExam(exam_seq, userSeq);
+        if (existingAnswer > 0) {
+            throw new BusinessException(ErrorCode.ANSWER_ALREADY_COMPLETED , "이미 제출된 문제입니다.");
+        }
+        
+        ExamsDTO exam = examsMapper.selectExamByExamSeq(exam_seq);
+        if (exam == null) {
+            throw new BusinessException(ErrorCode.QUIZ_NOT_FOUND, "해당 문제 정보를 찾을 수 없습니다.");
+        }
 
         // 7. 프롬프트 구성
         ChatCompletionRequestDTO prompt = promptFactory.createExamAnswerRequest(
             userAnswer,
-            currentExam.getModelAnswer(),
-            currentExam.getReferenceText()
+            exam.getModelAnswer(),
+            exam.getReferenceText()
         );
 
-        // 8. 해설 생성 → 저장 → 응답 DTO 생성
+        // 9. 해설 생성 → 저장 및 진행 상태 업데이트 → 응답 반환
         return openAiClient.getChatCompletionAsync(prompt)
             .thenApply(aiExplanation -> {
                 String indate = TimeUtil.getCurrentTimestamp14();
 
-                // 9. DB 저장
+                // 9-1. 답변 저장
                 ExamAnswerDTO answerDTO = ExamAnswerDTO.builder()
-                        .examSeq(currentExam.getExamSeq())
-                        .userSeq(userSeq)
-                        .answerContent(userAnswer)
-                        .explanationContent(aiExplanation)
-                        .indate(indate)
-                        .build();
+                    .examSeq(exam_seq)
+                    .userSeq(userSeq)
+                    .answerContent(userAnswer)
+                    .explanationContent(aiExplanation)
+                    .indate(indate)
+                    .build();
                 examsMapper.insertExamAnswer(answerDTO);
 
-                // 10. 응답 DTO 구성 및 반환
-                return new ExamAnswerResponseDTO(indate, aiExplanation);
+                // 9-2. 진행 정보 업데이트
+                int solvedCount = progress.getSolvedCount() + 1;
+                int totalCount = examsMapper.selectTotalExamCount(contentSeq);
+
+                progress.setExamSeq(null); // 현재 진행 중 문제 초기화
+                progress.setSolvedCount(solvedCount);
+                progress.setIsCompleted(solvedCount >= 3 ? "Y" : "N");
+                examsMapper.updateExamProgress(progress);
+
+                // 10. 응답 DTO 반환
+                return new ExamAnswerResponseDTO(aiExplanation, indate);
             })
             .exceptionally(e -> {
                 logger.error("❌ 시험 응답 처리 중 오류 발생", e);
-                return new ExamAnswerResponseDTO(TimeUtil.getCurrentTimestamp14(), "해설 생성 중 오류가 발생했습니다.");
+                throw new BusinessException(ErrorCode.OPENAI_REQUEST_FAILED, "해설 생성 중 오류가 발생했습니다.");
             });
     }
+
     
- // Service 내부
+    // Service 내부
     @Async
-    public CompletableFuture<List<ExamHistoryResponseDTO>> getExamHistory(
+    public CompletableFuture<ExamHistoryWrapperDTO> getExamHistory(
             String uuid, Long userContentSeq, String lastIndate, int limit) {
 
         // 1. UUID로 사용자 번호 조회
         Long actualUserSeq = userMapper.selectUserSeqByUuid(uuid);
+        if (actualUserSeq == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다.");
+        }
 
         // 2. 콘텐츠 매핑 정보 조회
         UserContentDTO userContent = userContentMapper.selectUserAndContentByUserContentSeq(userContentSeq);
+        if (userContent == null) {
+            throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "콘텐츠 정보를 찾을 수 없습니다.");
+        }
+
         Long userSeq = userContent.getUserSeq();
         Long contentSeq = userContent.getContentSeq();
 
@@ -304,20 +372,34 @@ public class LearningChatService {
 
         // 5. 질문 → 답변 → 해설 순서로 정렬하여 구성
         List<ExamHistoryResponseDTO> result = new ArrayList<>();
+        // 6. 현재 진행 중인 문제가 있다면 질문을 추가
+        ExamProgressDTO progress = examsMapper.selectByUserAndContent(userSeq, contentSeq);
+        if (progress != null && progress.getExamSeq() != null) {
+            ExamsDTO currentExam = examsMapper.selectExamByExamSeq(progress.getExamSeq());
+            if (currentExam != null) {
+                ExamHistoryResponseDTO currentQuestion = toDto(currentExam.getQuestionContent(), TimeUtil.getCurrentTimestamp14(), 1); // 질문
+                result.add(currentQuestion);
+            }
+        }
+        
         for (Map<String, Object> row : rawList) {
             Object indate = row.get("indate");
 
-            // ✅ 순서 및 타입 그대로 유지
             ExamHistoryResponseDTO explanationDto = toDto(row.get("explanation"), indate, 1); // 해설
-            ExamHistoryResponseDTO answerDto = toDto(row.get("answer"), indate, 0);         // 답변
-            ExamHistoryResponseDTO questionDto = toDto(row.get("question"), indate, 1);     // 질문
+            ExamHistoryResponseDTO answerDto = toDto(row.get("answer"), indate, 0);           // 답변
+            ExamHistoryResponseDTO questionDto = toDto(row.get("question"), indate, 1);       // 질문
 
             if (explanationDto != null) result.add(explanationDto);
             if (answerDto != null) result.add(answerDto);
             if (questionDto != null) result.add(questionDto);
         }
-
-        return CompletableFuture.completedFuture(result);
+        
+        return CompletableFuture.completedFuture(
+        	    ExamHistoryWrapperDTO.builder()
+        	        .currentExamSeq(progress != null ? progress.getExamSeq() : null)
+        	        .historyList(result)
+        	        .build()
+        	);
     }
 
     /**
@@ -327,7 +409,7 @@ public class LearningChatService {
     private ExamHistoryResponseDTO toDto(Object content, Object indate, int type) {
         if (content == null || content.toString().isBlank()) return null;
         return ExamHistoryResponseDTO.builder()
-                .content(content.toString())
+                .chatText(content.toString())
                 .indate(indate.toString())
                 .type(type)
                 .build();
