@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { postTransitionLog } from '@/api/log';
 import { useIsActiveTab } from '@/hooks/useIsActiveTab';
 import { determinePathType } from '@/utils/determinePathType';
 import LearningChatDrawer from '../learningChat/LearningChatDrawer';
@@ -16,6 +17,15 @@ const DetailHeader = () => {
 
   useEffect(() => {
     setPathType(determinePathType(pathname));
+
+    const transitionLog = async () => {
+      await postTransitionLog({
+        fromContent: pathType, // 이전 페이지
+        toContent: determinePathType(pathname), // 현재 페이지
+      });
+    };
+
+    transitionLog();
   }, [pathname]);
 
   return (
