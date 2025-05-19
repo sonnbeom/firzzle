@@ -25,6 +25,14 @@
 	        (#{contentSeq}, #{tag})
 	    </foreach>
 	</insert>
+	
+	<update id="updateProcessStatusAndCompletedAtByContentSeq" parameterType="map">
+	    UPDATE fb_ai_contents
+	    SET 
+	        process_status = #{processStatus},
+	        completed_at = #{completedAt}
+	    WHERE content_seq = #{contentSeq}
+	</update>
 
 	<select id="selectContentSummaryByContentSeq" parameterType="long" resultType="com.firzzle.llm.dto.ContentDTO">
 	    SELECT

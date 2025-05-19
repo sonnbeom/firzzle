@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import static java.time.LocalDateTime.now;
+import static java.time.format.DateTimeFormatter.ofPattern;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -80,6 +82,11 @@ public class RegistrationService {
                 try {
                     saveBlock(request.getContentSeq(), blocks, scriptLines, keywords);
                     sendResult(taskId, request.getUserContentSeq(), blocks);
+                    contentMapper.updateProcessStatusAndCompletedAtByContentSeq(
+                    	    request.getContentSeq(),
+                    	    "C",    // 또는 원하는 상태 값
+                    	    now().format(ofPattern("yyyyMMddHHmmss"))
+                    	);
                     sendComplete(taskId);
                     return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
                 } catch (Exception e) {
