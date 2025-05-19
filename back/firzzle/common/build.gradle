@@ -73,6 +73,10 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+    // AWS SDK for S3 - 추가된 부분
+    implementation 'software.amazon.awssdk:s3:2.31.40'
+    implementation 'software.amazon.awssdk:auth:2.31.40'
 }
 
 tasks.named('test') {

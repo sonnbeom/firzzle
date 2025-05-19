@@ -27,5 +27,20 @@ public class UserPromptManager {
     public String getTimelineUserPrompt(String script) {
         return script;
     }
+
+    public String getExamUserPrompt( String userAnswer, String modelAnswer, String referenceText) {
+        return String.format("""
+            [사용자 답변]
+            %s
+
+            [모델 답변]
+            %s
+
+            [참고 텍스트]
+            %s
+
+            위 내용을 기반으로, 사용자 답변에 대한 평가 및 해설을 300자 이내로 작성하세요.
+        """, userAnswer, modelAnswer, referenceText);
+    }
 }
 

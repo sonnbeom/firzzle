@@ -17,6 +17,9 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  mvc:
+    async:
+      request-timeout: 300000  # 5분 (SSE 연결 타임아웃)
   ai:
     openai:
       api-key: ENC(T2d/CMHeJB/CwlAq+ID4gcQqyLTlfTzPFvtJkCKXCzQ7+bm6DmUK6gSURhSVbnwWR2FojzJSzn3F91AgrT8VYz2EIG0/j6KkyiJySQS9BUmj3NucnYiClsDAgD718VFua02pMNNY9VHIdjYP+/vrBDj6zLpAnbc/I4j+cGfM/GpZCvgKa28+6+9HfXk+/CQUf6hiPDLb7lNWU3fXXLf3BSmsZ8TGn3i071hhmISZsx0OKRDwC5u/cM5ZXxRkGDnb)
@@ -36,6 +39,10 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
+  sse:
+    enabled: true  # SSE 기능 활성화
+    timeout: 180000  # 3분 (밀리초)
+    heartbeat-interval: 30000  # 30초 (밀리초)
 
 springdoc:
   api-docs:
