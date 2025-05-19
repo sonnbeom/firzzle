@@ -129,20 +129,18 @@ export class FetchClient {
         );
 
         if (error.message === 'Unauthorized') {
+          console.log('토큰 갱신');
           // 토큰 갱신 API
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({
-                retryCount: retryCount + 1,
-              }),
+          const response = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
             },
-          );
+            body: JSON.stringify({
+              retryCount: retryCount + 1,
+            }),
+          });
 
           if (response.status === 200) {
             return this.request(url, {
