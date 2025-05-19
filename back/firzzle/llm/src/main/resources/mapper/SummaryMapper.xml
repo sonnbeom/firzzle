@@ -15,4 +15,11 @@
 	    </foreach>
 	</insert>
 
+	<select id="selectSectionTitlesByContentSeq" parameterType="long" resultType="string">
+	    SELECT s.title
+	    FROM fb_ai_sections s
+	    JOIN fb_ai_summaries sm ON s.summary_seq = sm.summary_seq
+	    WHERE sm.content_seq = #{contentSeq}
+	      AND sm.level = 'E'
+	</select>
 </mapper>

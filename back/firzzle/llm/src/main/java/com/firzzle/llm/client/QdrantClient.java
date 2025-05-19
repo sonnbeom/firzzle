@@ -1,13 +1,16 @@
 package com.firzzle.llm.client;
 
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.firzzle.llm.dto.*;
 import reactor.core.publisher.Mono;
@@ -136,30 +139,79 @@ public class QdrantClient {
     }
     
     
-    public Mono<List<String>> searchWithPayload(String collection, List<Float> vector, int limit, double scoreThreshold) {
+    public Mono<List<String>> searchWithPayload(
+            String collection,
+            List<Float> vector,
+            int limit,
+            double scoreThreshold
+    ) {
         return search(collection, vector, limit)
             .map(results -> results.stream()
                 .filter(result -> {
                     Object score = result.get("score");
-                    return score instanceof Number && ((Number) score).doubleValue() >= scoreThreshold;
+                    return score instanceof Number
+                        && ((Number) score).doubleValue() >= scoreThreshold;
                 })
                 .map(result -> {
-                    Map<String, Object> payload = (Map<String, Object>) result.get("payload");
-                    return payload != null ? payload.getOrDefault("content", "").toString() : "";
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> payload =
+                        (Map<String, Object>) result.get("payload");
+                    return payload != null
+                        ? payload.getOrDefault("content", "").toString()
+                        : "";
                 })
                 .filter(content -> !content.isBlank())
-                .toList()
+                .collect(Collectors.toList())      // ← use collect instead of toList()
             );
     }
+
     
     public Mono<List<Map<String, Object>>> searchRaw(String collection, Map<String, Object> requestBody) {
+        // 요청 바디 로깅
+        log.debug("🔍 Qdrant searchRaw 요청 바디: {}", requestBody);
+
         return webClient.post()
             .uri("/collections/{collection}/points/search", collection)
             .bodyValue(requestBody)
             .retrieve()
             .bodyToMono(QdrantSearchResponseDTO.class)
             .map(QdrantSearchResponseDTO::getResult)
-            .doOnSuccess(result -> log.info("🔍 필터 포함 검색 성공: {}개", result.size()))
-            .doOnError(e -> log.error("❌ 검색 실패", e));
+            .doOnSuccess(result ->
+                log.info("🔍 필터 포함 검색 성공: {}개", result.size())
+            )
+            .doOnError(WebClientResponseException.class, ex -> {
+                // HTTP 에러일 때 상태 코드와 응답 본문, 요청 바디 모두 로깅
+                log.error("❌ Qdrant 검색 실패: status={} body={}",
+                    ex.getRawStatusCode(),
+                    ex.getResponseBodyAsString(),
+                    ex
+                );
+                log.error("   요청 바디: {}", requestBody);
+            });
+    }
+    
+    public Mono<List<Map<String,Object>>> scrollRaw(
+            String collection,
+            Map<String,Object> requestBody
+    ) {
+        log.debug("🌀 Qdrant scrollRaw 요청 바디: {}", requestBody);
+
+        return webClient.post()
+            .uri("/collections/{collection}/points/scroll", collection)
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(QdrantScrollResponseDTO.class)
+            // ← 여기에 제네릭 힌트를 추가하세요
+            .<List<Map<String,Object>>>map(dto -> {
+                Object raw = dto.getResult().get("points");
+                if (raw instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Map<String,Object>> points = (List<Map<String,Object>>) raw;
+                    return points;
+                }
+                return Collections.<Map<String,Object>>emptyList();
+            })
+            .doOnSuccess(r -> log.info("🌀 scroll 성공: {}개", r.size()))
+            .doOnError(e -> log.error("❌ scroll 실패", e));
     }
 }
