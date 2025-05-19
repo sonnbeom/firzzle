@@ -28,7 +28,7 @@ const HeaderButton = () => {
       ) : (
         <div className='flex items-center gap-8'>
           <Link
-            href='/mylearning/snapbook'
+            href='/mylearning/contents'
             className='bg-white font-medium text-gray-900 hover:bg-gray-50 md:text-lg lg:text-xl'
           >
             학습내역
