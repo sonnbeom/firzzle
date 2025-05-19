@@ -13,7 +13,6 @@ const AuthCallback = () => {
       const accessToken = searchParams.get('accessToken');
       const redirectUrl = await login(accessToken);
 
-      console.log('리다이렉트', redirectUrl);
       router.replace(redirectUrl);
     };
 
