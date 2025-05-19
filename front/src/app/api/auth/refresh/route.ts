@@ -5,6 +5,7 @@ import { TokenResponse } from '@/types/auth';
 
 // 토큰 갱신
 export async function POST(request: NextRequest) {
+  console.log('토큰 갱신 API 라우트');
   try {
     const { retryCount } = await request.json();
 
