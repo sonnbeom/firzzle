@@ -1,4 +1,5 @@
 import BasicToaster from '@/components/common/BasicToaster';
+import { AdminLoginRequest } from '@/types/auth';
 
 // 로그아웃
 export const logout = async () => {
@@ -13,5 +14,21 @@ export const logout = async () => {
     window.location.href = '/';
   } else {
     BasicToaster.error(data.message, { id: 'logout' });
+  }
+};
+
+// 관리자 로그인
+export const adminLogin = async (request: AdminLoginRequest) => {
+  const response = await fetch('/api/auth/admin', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+
+  const data = await response.json();
+
+  if (response.status === 200) {
+    window.location.href = '/admin/strategyboard';
+  } else {
+    BasicToaster.error(data.message, { id: 'admin-login' });
   }
 };
