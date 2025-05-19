@@ -68,7 +68,7 @@ const StrategyBoardPage = () => {
   }, [selectedOption, formattedStart, formattedEnd]);
 
   return (
-    <div className='flex flex-col gap-6 p-6'>
+    <div className='flex flex-col gap-6 bg-blue-50 p-6'>
       <DateRangeSelector
         onChange={handleDateChange}
         initialStartDate={startDate}
