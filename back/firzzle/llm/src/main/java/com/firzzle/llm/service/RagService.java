@@ -75,5 +75,21 @@ public class RagService {
                 .collect(Collectors.toList())
             );
     }
+    
+    /**
+     * Qdrant에서 임의의 조건 없이 유사도 기준으로 상위 N개의 payload.content 값을 반환합니다.
+     *
+     * @param collection Qdrant 컬렉션 이름
+     * @param vector 기준 벡터
+     * @param limit 최대 개수 (보통 5~10 정도)
+     * @param scoreThreshold 유사도 필터링 기준 (예: 0.8)
+     * @return payload.content 값 리스트 (유사도 기준 정렬)
+     */
+    public Mono<List<String>> searchTopPayloads(String collection, List<Float> vector, int limit, double scoreThreshold) {
+        return qdrantClient.searchWithPayload(collection, vector, limit, scoreThreshold)
+            .doOnSuccess(result -> log.info("✅ Qdrant 일반 유사도 검색 결과 {}개", result.size()))
+            .doOnError(e -> log.error("❌ Qdrant 일반 유사도 검색 실패", e));
+    }
+
 
 }

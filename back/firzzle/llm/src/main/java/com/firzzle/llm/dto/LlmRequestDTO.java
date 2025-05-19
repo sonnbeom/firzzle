@@ -15,7 +15,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(description = "LLM 처리 요청 DTO")
-public class LlmRequestDTO {
+public class LlmRequestDTO {	
+    @Schema(description = "사용자 콘텐츠 일련 번호", example = "1001", required = true)
+    private Long userContentSeq;
+	
 
     @Schema(description = "콘텐츠 일련 번호", example = "1001", required = true)
     private Long contentSeq;
