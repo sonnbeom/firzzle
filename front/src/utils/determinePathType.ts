@@ -6,10 +6,16 @@ export const determinePathType = (path: string) => {
   }
 
   if (splitPath === 'quiz') {
-    return 'QUIZ_READ';
+    return 'QUIZ';
   }
 
   if (splitPath === 'snapreview') {
-    return 'SNAP_REVIEW_READ';
+    return 'SNAP_REVIEW';
   }
+
+  if (splitPath === 'recommend') {
+    return 'RECOMMEND';
+  }
+
+  return null;
 };
