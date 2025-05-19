@@ -45,7 +45,7 @@ class SSEManager {
       this.disconnect();
     }
 
-    const accessToken = getCookie('accessToken');
+    const accessToken = await getCookie('accessToken');
 
     this.eventSource = new EventSourcePolyfill(url, {
       headers: {
