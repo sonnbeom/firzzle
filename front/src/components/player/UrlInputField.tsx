@@ -45,7 +45,13 @@ const UrlInputField = ({
   const handleUrlConfirm = async () => {
     setIsSubmitted(true);
     try {
-      const response = await postContent({ youtubeUrl: value });
+      const response = await postContent({
+        youtubeUrl: value,
+        title: null,
+        description: null,
+        category: null,
+        tags: null,
+      });
 
       if (response.taskId) {
         setTaskId(response.taskId);

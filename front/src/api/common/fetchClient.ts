@@ -92,18 +92,6 @@ export class FetchClient {
         throw new Error(response.statusText);
       }
 
-      // 201 Created 응답 처리
-      if (response.status === 201) {
-        return {
-          status: 'OK',
-          message: '',
-          cause: '',
-          prevUrl: '',
-          redirectUrl: '',
-          data: null,
-        } as ApiResponseWithoutData;
-      }
-
       // 204 No Content 응답 처리
       if (response.status === 204) {
         return {
