@@ -1,21 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { getCookie } from '@/actions/auth';
 import { logout } from '@/api/auth';
 import OAuthButton from '../home/OAuthButton';
-const HeaderButton = () => {
-  const [accessToken, setAccessToken] = useState(null);
 
-  useEffect(() => {
-    const getAccessToken = async () => {
-      const token = await getCookie('accessToken');
-      setAccessToken(token);
-    };
-    getAccessToken();
-  }, [accessToken]);
+interface HeaderButtonProps {
+  accessToken: string | null;
+}
 
+const HeaderButton = ({ accessToken }: HeaderButtonProps) => {
   return (
     <>
       {!accessToken ? (
