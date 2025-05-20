@@ -76,7 +76,7 @@ BasicToaster.default = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    closeButton: options?.closeButton ?? true,
+    closeButton: options?.closeButton ?? false,
   });
 
 export default BasicToaster;
