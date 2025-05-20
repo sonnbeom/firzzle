@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/api-docs/**", "/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/logging/visit").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/learning/share/**").permitAll() // GET 요청에 대해 /api/v1/learning/share/** 경로 허용
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(headerAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -169,15 +169,24 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
+        String method = request.getMethod();
+
+        // 기본적으로 필터가 적용되지 않는 경로들
         boolean shouldNotFilter = path.startsWith("/swagger-ui/") ||
                 path.startsWith("/v3/api-docs/") ||
                 path.startsWith("/api-docs/") ||
                 path.startsWith("/actuator/health") ||
                 path.startsWith("/swagger-resources/") ||
-                path.equals("/api/v1/logging/visit");
+                path.startsWith("/api/v1/logging/visit");
+
+        // /api/v1/learning/share/ 경로에 대한 GET 요청만 필터에서 제외
+        if (path.startsWith("/api/v1/learning/share/") && "GET".equalsIgnoreCase(method)) {
+            shouldNotFilter = true;
+            logger.info("HeaderAuthFilter - GET 요청에 대해 필터 제외 경로: {}", path);
+        }
 
         if (shouldNotFilter) {
-            logger.info("HeaderAuthFilter - 필터 제외 경로: {}", path);
+            logger.info("HeaderAuthFilter - 필터 제외 경로: {}, 메소드: {}", path, method);
         }
 
         return shouldNotFilter;
