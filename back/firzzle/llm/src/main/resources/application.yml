@@ -41,7 +41,7 @@ spring:
       api-key: ENC(T2d/CMHeJB/CwlAq+ID4gcQqyLTlfTzPFvtJkCKXCzQ7+bm6DmUK6gSURhSVbnwWR2FojzJSzn3F91AgrT8VYz2EIG0/j6KkyiJySQS9BUmj3NucnYiClsDAgD718VFua02pMNNY9VHIdjYP+/vrBDj6zLpAnbc/I4j+cGfM/GpZCvgKa28+6+9HfXk+/CQUf6hiPDLb7lNWU3fXXLf3BSmsZ8TGn3i071hhmISZsx0OKRDwC5u/cM5ZXxRkGDnb)
       base-url: https://api.openai.com/v1
       timeline:
-        model: gpt-4o-mini
+        model: gpt-4o
       summary:
         model: gpt-4o-mini
       learningchat:
