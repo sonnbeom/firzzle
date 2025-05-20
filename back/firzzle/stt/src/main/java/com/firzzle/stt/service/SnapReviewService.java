@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -21,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,8 @@ public class SnapReviewService {
     /**
      * 외부 이미지 생성 API 호출
      */
-    public void generateSnapReview(Long contentSeq, List<String> timeline) {
+    @Async
+    public CompletableFuture<Void> generateSnapReview(Long contentSeq, List<String> timeline) {
         try {
             String videoUrl = contentMapper.selectUrlByContentSeq(contentSeq);
 
@@ -49,7 +52,7 @@ public class SnapReviewService {
             requestDTO.setUrl(videoUrl);
             requestDTO.setTimelines(timeline);
 
-            List<String> imageUrls = webClientBuilder
+            return webClientBuilder
                     .baseUrl(externalUrl)
                     .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .defaultHeader("X-API-KEY", secretKey)
@@ -62,20 +65,20 @@ public class SnapReviewService {
                     .doOnError(e -> logger.error("❌ SnapReview 외부 API 호출 실패", e))
                     .onErrorMap(e -> new BusinessException(ErrorCode.SNAP_REVIEW_API_CALL_FAILED, "SnapReview 외부 API 요청 실패"))
                     .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND, "스냅리뷰 이미지 응답 없음")))
-                    .block();
+                    .flatMap(imageUrls -> {
+                        if (imageUrls == null || imageUrls.isEmpty()) {
+                            return Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND, "스냅리뷰 이미지가 비어 있습니다"));
+                        }
 
-            if (imageUrls == null || imageUrls.isEmpty()) {
-                throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND, "스냅리뷰 이미지가 비어 있습니다");
-            }
+                        saveFrames(contentSeq, timeline, imageUrls);
+                        logger.info("✅ SnapReview 이미지 생성 완료 - contentSeq={}, 개수={}", contentSeq, imageUrls.size());
 
-            logger.info("✅ SnapReview 이미지 생성 완료 - contentSeq={}, 개수={}", contentSeq, imageUrls.size());
-
-            saveFrames(contentSeq, timeline, imageUrls);
-
-        } catch (BusinessException e) {
-            throw e; // 이미 처리된 비즈니스 예외는 그대로 던짐
+                        return Mono.empty(); // void 처리
+                    })
+                    .then()
+                    .toFuture(); // CompletableFuture<Void>
         } catch (Exception e) {
-            logger.error("❌ SnapReview 생성 실패 - contentSeq={}", contentSeq, e);
+            logger.error("❌ SnapReview 비동기 처리 실패 - contentSeq={}", contentSeq, e);
             throw new BusinessException(ErrorCode.SNAP_REVIEW_PROCESSING_FAILED, "SnapReview 생성 중 알 수 없는 오류 발생");
         }
     }
