@@ -18,19 +18,24 @@ const MyContentCard = ({
   processStatus,
 }: MyContentCardProps) => {
   const content = (
-    <div className='flex w-full gap-3 rounded py-2'>
-      <div className='relative aspect-[16/9]'>
+    <div
+      className={`flex w-full gap-3 rounded py-2 ${
+        processStatus !== 'C' ? 'hover:bg-gray-100' : ''
+      }`}
+    >
+      <div className='relative h-[90px] w-[160px]'>
         <Image
           src={thumbnailUrl}
           alt='thumbnail'
-          width={160}
-          height={90}
-          objectFit='cover'
+          fill
+          className='object-cover'
         />
       </div>
       <div className='flex flex-col justify-between py-3'>
         <p className='line-clamp-2 font-medium text-gray-950'>{title}</p>
-        <p className='text-sm text-gray-700'>{formatDate(completedAt)}</p>
+        <p className='text-sm text-gray-700'>
+          {processStatus === 'C' ? formatDate(completedAt) : '컨텐츠 생성 중'}
+        </p>
       </div>
     </div>
   );
