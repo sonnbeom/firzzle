@@ -33,7 +33,7 @@ const ProgressBar = ({
       children: (
         <Link
           href={`/content/${seq}`}
-          className='bg-opacity-20 hover:bg-opacity-30 mt-2 rounded-md bg-white px-4 py-2 transition-all'
+          className='mt-2 rounded-md px-4 py-2 text-blue-400 hover:bg-white'
           onClick={() => toast.dismiss('sse youtube')}
         >
           요약 보러가기
