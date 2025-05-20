@@ -41,11 +41,6 @@ export const getLearningChatHistory = async (
     return;
   }
 
-  useChatStore.setState({
-    currentExamSeq: data.info.currentExamSeq,
-    solvedCount: data.info.solvedCount,
-  });
-
   return data.data;
 };
 
