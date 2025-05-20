@@ -74,6 +74,20 @@ public enum ErrorCode {
     FRAME_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070606", "프레임을 찾을 수 없습니다"),
     SHARE_CODE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070607", "공유 코드를 찾을 수 없습니다"),
     SHARE_CODE_ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "MSG_0000070608", "이미 취소된 공유 코드입니다"),
+    LINKEDIN_PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070609", "LinkedIn 프로필을 찾을 수 없습니다"),
+    LINKEDIN_CRAWLING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070610", "LinkedIn 프로필 크롤링에 실패했습니다"),
+    LINKEDIN_URL_INVALID(HttpStatus.BAD_REQUEST, "MSG_0000070611", "유효하지 않은 LinkedIn URL입니다"),
+    LINKEDIN_API_ERROR(HttpStatus.BAD_GATEWAY, "MSG_0000070612", "LinkedIn API 호출 중 오류가 발생했습니다"),
+    LINKEDIN_QUOTA_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "MSG_0000070613", "LinkedIn API 호출 한도를 초과했습니다"),
+    LINKEDIN_PROFILE_ALREADY_EXISTS(HttpStatus.CONFLICT, "MSG_0000070614", "이미 등록된 LinkedIn 프로필입니다"),
+    LINKEDIN_SEARCH_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070615", "LinkedIn 프로필 검색에 실패했습니다"),
+    APIFY_API_ERROR(HttpStatus.BAD_GATEWAY, "MSG_0000070616", "Apify API 호출 중 오류가 발생했습니다"),
+    GOOGLE_SEARCH_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070617", "Google 검색 중 오류가 발생했습니다"),
+    LINKEDIN_PROFILE_DATA_INVALID(HttpStatus.BAD_REQUEST, "MSG_0000070618", "LinkedIn 프로필 데이터가 유효하지 않습니다"),
+    DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070619", "요청한 데이터를 찾을 수 없습니다"),
+    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, "MSG_0000070620", "유효하지 않은 파라미터입니다"),
+    KAFKA_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070621", "Kafka 메시지 전송에 실패했습니다"),
+    LINKEDIN_PROFILE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "MSG_0000070622", "LinkedIn 프로필 크롤링 한도를 초과했습니다"),
 
     // =========== LLM Module ===========
     LLM_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "MSG_0000070701", "LLM 서비스가 일시적으로 이용 불가합니다"),
@@ -88,6 +102,16 @@ public enum ErrorCode {
     OPENAI_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070710", "OpenAI 응답 생성 중 오류가 발생했습니다"),
     ANSWER_ALREADY_COMPLETED(HttpStatus.CONFLICT, "MSG_0000070711", "모든 시험 문제를 이미 완료했습니다"),
     VECTOR_EMBEDDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070712", "질문 임베딩 처리 중 오류가 발생했습니다"),
+    KAFKA_REQUEST_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070713", "카프카 요청 처리 중 오류가 발생했습니다"),
+    SUMMARY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070714", "요약 저장 중 오류가 발생했습니다"),
+    SUMMARY_INSERT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070715", "요약 DB 저장 중 오류가 발생했습니다"),
+    OXQUIZ_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070716", "OX 퀴즈 저장 중 오류가 발생했습니다"),
+    EXAM_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070717", "서술형 퀴즈 저장 중 오류가 발생했습니다"),
+    VECTOR_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070718", "벡터 DB 저장 중 오류가 발생했습니다"),
+    CONTENT_TAG_INSERT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070719", "콘텐츠 태그 저장 중 오류가 발생했습니다"),
+    SNAP_REVIEW_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070720", "SnapReview Kafka 전송 중 오류가 발생했습니다"),
+
+
     
 
     // =========== STT Module ===========
@@ -95,6 +119,15 @@ public enum ErrorCode {
     SCRIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070802", "해당 영상에서 자막을 찾을 수 없습니다"),
     VIDEO_TOO_SHORT(HttpStatus.BAD_REQUEST, "MSG_0000070803", "영상 길이가 너무 짧습니다"),
     VIDEO_TOO_LONG(HttpStatus.BAD_REQUEST, "MSG_0000070804", "영상 길이가 너무 깁니다"),
+    SNAP_REVIEW_API_CALL_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070805", "SnapReview 외부 API 호출에 실패했습니다"),
+    SNAP_REVIEW_IMAGE_MISMATCH(HttpStatus.BAD_REQUEST, "MSG_0000070806", "타임라인 수와 이미지 수가 일치하지 않습니다"),
+    SNAP_REVIEW_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070807", "SnapReview 처리 중 알 수 없는 오류가 발생했습니다"),
+    STT_PROCESS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070808", "STT 처리 중 오류가 발생했습니다"),
+    SUBTITLE_EXTRACTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070809", "자막 추출에 실패했습니다"),
+    YTDLP_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070810", "yt-dlp 실행 중 오류가 발생했습니다"),
+
+
+    
 
     // =========== Main Module ===========
     // 여기부터 MSG_0000070901 시작

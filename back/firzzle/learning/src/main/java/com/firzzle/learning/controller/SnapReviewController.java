@@ -474,7 +474,7 @@ public class SnapReviewController {
             }
             logger.debug(dataBox.toString());
             return SnapReviewListResponseDTO.builder()
-                    .contentSeq(dataBox.getLong2("d_content_seq"))
+                    .contentSeq(dataBox.getLong2("d_user_content_seq"))
                     .contentTitle(dataBox.getString("d_content_title"))
                     .category(dataBox.getString("d_category"))
                     .thumbnailUrl(dataBox.getString("d_thumbnail_url"))

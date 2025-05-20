@@ -16,9 +16,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Schema(description = "시험 모드 응답")
 public class ExamAnswerResponseDTO {
-    @Schema(description = "작성 시간", example = "YYYYMMDDHHMMSS", required = true)
-    private String Indate;
-
     @Schema(description = "시험 모드 응답 및 해설", example = "안녕하세요. 이 영상에서는 도메인 주도 설계, 즉 DDD에 대해 설명합니다...", required = true)
     private String Explanation;
+
+    @Schema(description = "생성 시간", example = "20250519165647", required = true)
+    private String indate;
 }

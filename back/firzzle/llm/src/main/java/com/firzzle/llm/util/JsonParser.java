@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firzzle.llm.domain.ContentBlock;
-import com.firzzle.llm.domain.ParsedSummary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,24 +17,6 @@ public class JsonParser {
 
     private final ObjectMapper mapper = new ObjectMapper();
     
-//    public static ParsedSummary parseSummary(String raw) {
-//        String easy = "", high = "";
-//        Pattern easyPattern = Pattern.compile("\\[쉬운 설명\\](.*?)\\[전문가 설명\\]", Pattern.DOTALL);
-//        Pattern highPattern = Pattern.compile("\\[전문가 설명\\](.*)", Pattern.DOTALL);
-//
-//        Matcher easyMatcher = easyPattern.matcher(raw);
-//        Matcher highMatcher = highPattern.matcher(raw);
-//
-//        if (easyMatcher.find()) {
-//            easy = easyMatcher.group(1).trim();
-//        }
-//        if (highMatcher.find()) {
-//            high = highMatcher.group(1).trim();
-//        }
-//
-//        return new ParsedSummary(easy, high);
-//    }
-
     public static List<JsonNode> parseFlexibleJsonChunks(List<String> rawJsonChunks) {
         ObjectMapper mapper = new ObjectMapper();
         List<JsonNode> all = new ArrayList<>();

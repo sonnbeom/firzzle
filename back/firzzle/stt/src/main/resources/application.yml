@@ -66,7 +66,7 @@ logging:
 
 external:
   api:
-    url: ENC(IeU/Yto0k2J8Khl59uRz6MPiuCTZH3gGeTsvdxOPTxlakPUR5dE7ZzvrRjNTPyikki9CdynGV2vAYYV8xnjStg==)
+    url: ENC(vbGPM6Mb9oiuRWHQwUJATiv1/+UQmgO6bmgv3ZJPaa4OWvbZYbU47vm460QWWHRAgDZbZQ/HrISjY5jSVjAoCQ==)
     key: ENC(NvfpCyz8FQxDsP3jIHJ442NqU0IA29d3TAYYdwW0o5G0JuEniYlbbIlm8UjB4fnj)
 
 # 서버 (HTTP 헤더 전달 전략, UTF-8)
@@ -92,7 +92,7 @@ spring:
     maximum-pool-size: 10
   kafka:
     listener:
-      auto-startup: false
+      auto-startup: true
     bootstrap-servers: localhost:9092
     consumer:
       group-id: stt-group
