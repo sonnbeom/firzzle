@@ -23,13 +23,13 @@ const MyContentCard = ({
         processStatus !== 'C' ? 'bg-gray-100 px-1' : ''
       }`}
     >
-      <div className='relative h-[90px] w-[160px]'>
+      <div className='relative h-[90px] w-[160px] overflow-hidden'>
         <Image
           src={thumbnailUrl}
           alt='thumbnail'
-          width={160}
-          height={90}
-          className='h-full w-full object-cover'
+          fill
+          sizes='160px'
+          className='object-cover'
         />
       </div>
       <div className='flex flex-col justify-between py-3'>
