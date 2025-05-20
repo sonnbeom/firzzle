@@ -9,6 +9,7 @@ import com.firzzle.llm.domain.ContentBlock;
 import com.firzzle.llm.domain.TimeLine;
 import com.firzzle.llm.domain.TimeLineWrapper;
 import com.firzzle.llm.dto.*;
+import com.firzzle.llm.kafka.producer.SnapReviewProducer;
 import com.firzzle.llm.mapper.ContentMapper;
 import com.firzzle.llm.prompt.*;
 import com.firzzle.llm.sse.SseEmitterRepository;
@@ -42,6 +43,7 @@ public class RegistrationService {
     private final ContentMapper contentMapper;
     private final PromptFactory promptFactory;
     private final SseEmitterRepository sseEmitterRepository;
+    private final SnapReviewProducer snapReviewProducer;
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
 
@@ -70,6 +72,22 @@ public class RegistrationService {
                 List<TimeLine> timelines = wrapper.getTimeline();
                 List<String> keywords = wrapper.getKeywords();
                 sendTimelineProgress(taskId, timelines);
+                
+                try {
+                    List<String> formattedTimeline = timelines.stream()
+                        .map(TimeLine::getTime)
+                        .map(TimeUtil::formatSecondsToHHMMSS)
+                        .toList();
+
+                    snapReviewProducer.sendSnapReviewRequest(request.getContentSeq(), formattedTimeline);
+                    logger.info("📤 SnapReview Kafka 전송 완료: {}", formattedTimeline);
+                } catch (Exception e) {
+                    logger.error("❌ SnapReview Kafka 전송 실패", e);
+                    throw new BusinessException(ErrorCode.KAFKA_REQUEST_FAILED, "SnapReview Kafka 전송 중 오류가 발생했습니다.");
+                    // 또는 신규 코드 사용 시:
+                    // throw new BusinessException(ErrorCode.SNAP_REVIEW_SEND_FAILED);
+                }
+                
                 return summarizeByChunksWithTaskId(taskId, timelines, scriptLines)
                         .thenApply(blocks -> Map.of("blocks", blocks, "keywords", keywords));
             })
