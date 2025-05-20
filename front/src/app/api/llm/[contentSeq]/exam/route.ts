@@ -24,7 +24,7 @@ export async function GET(
         { status: 200 },
       );
     }
-    return NextResponse.json({ message: response.message }, { status: 500 });
+    return NextResponse.json({ message: response.message }, { status: 400 });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
@@ -36,13 +36,13 @@ export async function POST(
   { params }: { params: Promise<{ contentSeq: string }> },
 ) {
   const contentSeq = (await params).contentSeq;
-  const { answer } = await request.json();
+  const { answer, exam_seq } = await request.json();
 
   try {
     const response = await api.post<SendExamChatResponse, SendExamChatRequest>(
       `/llm/${contentSeq}/exam`,
       {
-        body: { answer },
+        body: { answer, exam_seq },
       },
     );
 

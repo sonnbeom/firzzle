@@ -1,48 +1,58 @@
 'use client';
 
-import { throttle } from 'lodash';
-import { useCallback, useState } from 'react';
+import { getNewExamChat } from '@/api/learningChat';
+import { useChatStore } from '@/stores/chatStore';
+import { LearningChat } from '@/types/learningChat';
+import { MAX_NEW_EXAM_COUNT } from '@/utils/const';
+import BasicToaster from '../common/BasicToaster';
 import Icons from '../common/Icons';
 
-const NewChatButton = () => {
-  const dummyData = {
-    currentCount: 1,
-    total: 10,
+interface NewChatButtonProps {
+  contentId: string;
+  addOptimisticChat?: (chat: LearningChat) => void;
+}
+
+const NewChatButton = ({
+  contentId,
+  addOptimisticChat,
+}: NewChatButtonProps) => {
+  const { setCurrentExamSeq, solvedCount } = useChatStore();
+
+  const handleNewChat = async () => {
+    try {
+      const response = await getNewExamChat(contentId);
+
+      setCurrentExamSeq(response.exam_seq);
+
+      const currentTime = new Date().toISOString();
+      const optimisticChat: LearningChat = {
+        chatText: response.question,
+        indate: currentTime,
+        type: '1', // 시스템 메시지
+      };
+
+      // 낙관적 업데이트 적용
+      if (addOptimisticChat) {
+        addOptimisticChat(optimisticChat);
+      }
+    } catch (error) {
+      BasicToaster.error(error.message);
+    }
   };
-
-  const [currentCount, setCurrentCount] = useState(dummyData.currentCount);
-
-  const handleClick = useCallback(
-    throttle(
-      () => {
-        setCurrentCount((prevCount) => {
-          console.log(prevCount);
-          return prevCount + 1;
-        });
-      },
-      1000,
-      { trailing: false },
-    ),
-    [],
-  );
 
   return (
     <div className='flex flex-col items-end'>
-      {currentCount < dummyData.total && (
-        <button
-          className='flex cursor-pointer items-center gap-2'
-          aria-label='새 질문 생성'
-          onClick={handleClick}
-          disabled={currentCount === dummyData.total}
-        >
-          <Icons id='new-chat' size={20} />
-          <p className='text-gray-950'>새 질문 생성</p>
-        </button>
-      )}
+      <button
+        className='flex cursor-pointer items-center gap-2'
+        aria-label='새 질문 생성'
+        onClick={handleNewChat}
+        disabled={solvedCount === MAX_NEW_EXAM_COUNT}
+      >
+        <Icons id='new-chat' size={20} />
+        <p className='text-gray-950'>새 질문 생성</p>
+      </button>
       <p className='text-sm text-gray-700'>
-        {currentCount < dummyData.total
-          ? `${currentCount} / ${dummyData.total}`
-          : '문제 풀이 완료'}
+        {solvedCount} / {MAX_NEW_EXAM_COUNT}
       </p>
     </div>
   );

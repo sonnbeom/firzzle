@@ -8,3 +8,5 @@ export const MAX_SNAP_REVIEW_LENGTH = 250;
 export const ITEMS_PER_PAGE = 2;
 // 스냅 리뷰 최대 개수
 export const SNAP_COUNT = 4;
+// 시험모드 최대 새질문
+export const MAX_NEW_EXAM_COUNT = 3;
