@@ -548,13 +548,12 @@ public class RegistrationService {
 
 
     /**
-     * SSE - 오류 발생 시 전송
+     * SSE - 오류 발생 시 전송 및 연결 종료
      */
     private void sendError(String taskId, String errorMessage) {
-        sendSseEvent(taskId, "error", Map.of(
-            "message", errorMessage,
-            "timestamp", System.currentTimeMillis()
-        ));
+        // SseEmitterRepository의 completeWithError 메서드 직접 호출
+        // (이 메서드는 오류 이벤트 전송 후 오류와 함께 연결을 종료함)
+        sseEmitterRepository.completeWithError(taskId, errorMessage);
     }
 
     /**
