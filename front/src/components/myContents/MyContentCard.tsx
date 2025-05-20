@@ -23,12 +23,12 @@ const MyContentCard = ({
         processStatus !== 'C' ? 'bg-gray-100 px-1' : ''
       }`}
     >
-      <div className='relative h-[90px] w-[160px] overflow-hidden'>
+      <div style={{ position: 'relative', width: '100vw', height: '90px' }}>
         <Image
           src={thumbnailUrl}
           alt='thumbnail'
           fill
-          sizes='160px'
+          sizes='100vw'
           className='object-cover'
         />
       </div>

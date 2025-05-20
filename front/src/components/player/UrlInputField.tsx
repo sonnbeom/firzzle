@@ -43,7 +43,6 @@ const UrlInputField = ({
 
   // 영상 분석 시작
   const handleUrlConfirm = async () => {
-    setIsSubmitted(true);
     try {
       const response = await postContent({
         youtubeUrl: value,
@@ -55,6 +54,7 @@ const UrlInputField = ({
 
       if (response.taskId) {
         setTaskId(response.taskId);
+        setIsSubmitted(true);
       } else {
         router.push(`/content/${response.contentSeq}`);
       }
