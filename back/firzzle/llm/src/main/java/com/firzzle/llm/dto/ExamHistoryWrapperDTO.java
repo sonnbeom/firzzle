@@ -9,6 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExamHistoryWrapperDTO {
-    private Long currentExamSeq; // 진행 중 문제 번호 (없으면 null)
+    private InfoDTO info; // 진행 중 문제 번호 (없으면 null)
     private List<ExamHistoryResponseDTO> historyList;
 }

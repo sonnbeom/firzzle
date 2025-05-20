@@ -2,15 +2,11 @@ package com.firzzle.llm.controller;
 
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
-import com.firzzle.llm.dto.LearningChatResponseDTO;
 import com.firzzle.llm.dto.RecommendRequestDTO;
 import com.firzzle.llm.dto.RecommendResponseDTO;
-import com.firzzle.llm.dto.UserContentDTO;
 import com.firzzle.llm.service.RecommendationService;
-import com.firzzle.llm.mapper.UserContentMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;

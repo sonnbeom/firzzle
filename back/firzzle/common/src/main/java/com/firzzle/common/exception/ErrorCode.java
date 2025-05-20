@@ -88,6 +88,16 @@ public enum ErrorCode {
     OPENAI_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070710", "OpenAI 응답 생성 중 오류가 발생했습니다"),
     ANSWER_ALREADY_COMPLETED(HttpStatus.CONFLICT, "MSG_0000070711", "모든 시험 문제를 이미 완료했습니다"),
     VECTOR_EMBEDDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070712", "질문 임베딩 처리 중 오류가 발생했습니다"),
+    KAFKA_REQUEST_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070713", "카프카 요청 처리 중 오류가 발생했습니다"),
+    SUMMARY_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070714", "요약 저장 중 오류가 발생했습니다"),
+    SUMMARY_INSERT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070715", "요약 DB 저장 중 오류가 발생했습니다"),
+    OXQUIZ_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070716", "OX 퀴즈 저장 중 오류가 발생했습니다"),
+    EXAM_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070717", "서술형 퀴즈 저장 중 오류가 발생했습니다"),
+    VECTOR_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070718", "벡터 DB 저장 중 오류가 발생했습니다"),
+    CONTENT_TAG_INSERT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070719", "콘텐츠 태그 저장 중 오류가 발생했습니다"),
+    SNAP_REVIEW_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070720", "SnapReview Kafka 전송 중 오류가 발생했습니다"),
+
+
     
 
     // =========== STT Module ===========
@@ -95,6 +105,15 @@ public enum ErrorCode {
     SCRIPT_NOT_FOUND(HttpStatus.NOT_FOUND, "MSG_0000070802", "해당 영상에서 자막을 찾을 수 없습니다"),
     VIDEO_TOO_SHORT(HttpStatus.BAD_REQUEST, "MSG_0000070803", "영상 길이가 너무 짧습니다"),
     VIDEO_TOO_LONG(HttpStatus.BAD_REQUEST, "MSG_0000070804", "영상 길이가 너무 깁니다"),
+    SNAP_REVIEW_API_CALL_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070805", "SnapReview 외부 API 호출에 실패했습니다"),
+    SNAP_REVIEW_IMAGE_MISMATCH(HttpStatus.BAD_REQUEST, "MSG_0000070806", "타임라인 수와 이미지 수가 일치하지 않습니다"),
+    SNAP_REVIEW_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070807", "SnapReview 처리 중 알 수 없는 오류가 발생했습니다"),
+    STT_PROCESS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070808", "STT 처리 중 오류가 발생했습니다"),
+    SUBTITLE_EXTRACTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070809", "자막 추출에 실패했습니다"),
+    YTDLP_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070810", "yt-dlp 실행 중 오류가 발생했습니다"),
+
+
+    
 
     // =========== Main Module ===========
     // 여기부터 MSG_0000070901 시작

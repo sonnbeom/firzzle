@@ -106,9 +106,9 @@ public class SystemPromptManager {
     public String getTimelineSystemPrompt() {
     	return """
     			Your Task:
-    			You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups.
-
-    			You must output a single valid JSON object with the following structure:
+				You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups.
+				
+				You must output a single valid JSON object with the following structure:
     			```json
     			[
     			  "keywords": {"keyword1", "keyword2", "keyword3"},
@@ -120,23 +120,22 @@ public class SystemPromptManager {
     			]
     			```
 
-    			Instructions:
+    		Instructions:                
+              - Extract 2–3 representative keywords from the script:            
+              - Keywords must be literally present in the script.                
+              - Choose meaningful, repeated, or theme-related terms.                
+              - Output as a JSON array under the "keywords" field.                
 
-    			1. Extract 2~3 representative keywords from the script:
-    			   - Keywords must be **literally present** in the script.
-    			   - Choose meaningful, repeated, or theme-related terms.
-    			   - Output as a JSON array under the "keywords" field.
-
-    			2. Segment the script into parts of ~15,000 bytes each:
-    			   - Each segment must start with the timestamp of the first line in that group.
-    			   - Distribute segments **evenly** across the entire script.
-    			   - Do not break related sentences or paragraphs unnaturally.
-    			   - Return the list of start timestamps as the "timeline" array.
-
-    			Constraints:
-    			- Return only a valid JSON object, nothing else.
-    			- No extra explanations.
-    			- Both "keywords" and "timeline" must be included in the result.
+            - Segment the script into multiple parts:
+              - Aim for roughly equal byte sizes (about 15,000 bytes per segment), but prioritize preserving semantic continuity.                
+              - Avoid breaking related sentences or paragraphs unnaturally.                
+              - Each segment must begin with the timestamp of the first line in that group.                
+              - Based on the overall script, determine a natural number of timeline points, with a minimum of 1 and a maximum of 6 segments.                
+              - Return the list of starting timestamps as the "timeline" array.
+            
+            Constraints:                
+            - Return only a valid JSON object, nothing else.
+            - Both "keywords" and "timeline" must be included in the result.
     			""";
     }
 

@@ -55,4 +55,13 @@
     AND C.delete_yn = 'N'
     LIMIT 1
 	</select>
+	
+	<!-- contentSeq 기준 URL 조회 -->
+	<select id="selectUrlByContentSeq" parameterType="long" resultType="string">
+	    SELECT C.url
+	    FROM fb_ai_contents C
+	    WHERE C.content_seq = #{contentSeq}
+	    AND C.delete_yn = 'N'
+	    LIMIT 1
+	</select>
 </mapper>

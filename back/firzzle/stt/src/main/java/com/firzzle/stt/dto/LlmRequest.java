@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LlmRequest {
-	private Long usrContentSeq;
+	private Long userContentSeq;
     private Long contentSeq;
     private String script;
     private String taskId;

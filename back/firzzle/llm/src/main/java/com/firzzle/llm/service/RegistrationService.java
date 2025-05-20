@@ -9,6 +9,7 @@ import com.firzzle.llm.domain.ContentBlock;
 import com.firzzle.llm.domain.TimeLine;
 import com.firzzle.llm.domain.TimeLineWrapper;
 import com.firzzle.llm.dto.*;
+import com.firzzle.llm.kafka.producer.SnapReviewProducer;
 import com.firzzle.llm.mapper.ContentMapper;
 import com.firzzle.llm.prompt.*;
 import com.firzzle.llm.sse.SseEmitterRepository;
@@ -42,6 +43,7 @@ public class RegistrationService {
     private final ContentMapper contentMapper;
     private final PromptFactory promptFactory;
     private final SseEmitterRepository sseEmitterRepository;
+    private final SnapReviewProducer snapReviewProducer;
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationService.class);
 
@@ -70,6 +72,20 @@ public class RegistrationService {
                 List<TimeLine> timelines = wrapper.getTimeline();
                 List<String> keywords = wrapper.getKeywords();
                 sendTimelineProgress(taskId, timelines);
+
+                try {
+                    List<String> formattedTimeline = timelines.stream()
+                        .map(TimeLine::getTime)
+                        .map(TimeUtil::formatSecondsToHHMMSS)
+                        .toList();
+
+                    snapReviewProducer.sendSnapReviewRequest(request.getContentSeq(), formattedTimeline);
+                    logger.info("📤 SnapReview Kafka 전송 완료: {}", formattedTimeline);
+                } catch (Exception e) {
+                    logger.error("❌ SnapReview Kafka 전송 실패: {}", e.getMessage(), e);
+                    throw new BusinessException(ErrorCode.SNAP_REVIEW_SEND_FAILED);
+                }
+
                 return summarizeByChunksWithTaskId(taskId, timelines, scriptLines)
                         .thenApply(blocks -> Map.of("blocks", blocks, "keywords", keywords));
             })
@@ -79,18 +95,26 @@ public class RegistrationService {
 
                 sendProgress(taskId, "요약 완료. 데이터 저장 중...", "blockCount", blocks.size());
                 blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
+
                 try {
+                    logger.info("💾 블록 저장 시작 - contentSeq={}, blockCount={}", request.getContentSeq(), blocks.size());
                     saveBlock(request.getContentSeq(), blocks, scriptLines, keywords);
-                    sendResult(taskId, request.getUserContentSeq(), blocks);
+                    logger.info("✅ 블록 저장 완료");
+
+                    logger.info("⏱️ 처리 상태 및 완료일시 업데이트 시작");
                     contentMapper.updateProcessStatusAndCompletedAtByContentSeq(
-                    	    request.getContentSeq(),
-                    	    "C",    // 또는 원하는 상태 값
-                    	    now().format(ofPattern("yyyyMMddHHmmss"))
-                    	);
+                            request.getContentSeq(),
+                            "C",
+                            now().format(ofPattern("yyyyMMddHHmmss"))
+                    );
+                    logger.info("✅ 처리 상태 및 완료일시 업데이트 완료");
+                    sendResult(taskId, request.getUserContentSeq(), blocks);
                     sendComplete(taskId);
+
                     return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
                 } catch (Exception e) {
-                    throw new BusinessException(ErrorCode.OPENAI_REQUEST_FAILED, "요약 저장 중 오류가 발생했습니다.");
+                    logger.error("❌ 저장 처리 중 예외 발생 - contentSeq={}, error={}", request.getContentSeq(), e.getMessage(), e);
+                    throw new BusinessException(ErrorCode.SUMMARY_SAVE_FAILED);
                 }
             })
             .exceptionally(e -> {
@@ -99,6 +123,7 @@ public class RegistrationService {
                 return "GPT 응답 중 오류가 발생했습니다: " + e.getMessage();
             });
     }
+
     
     // ============================================
     // INTERNAL LOGIC POINT
@@ -107,7 +132,6 @@ public class RegistrationService {
     /**
      * 요약된 블록들을 DB 및 벡터 DB에 저장하는 메서드입니다.
      */
-    @Async
     @Transactional
     protected CompletableFuture<Void> saveBlock(long contentSeq, List<ContentBlock> blocks, List<String> scriptLines, List<String> keywords) {
         try {
@@ -122,19 +146,37 @@ public class RegistrationService {
 
                 String endTimeStr = (i < blocks.size() - 1 && blocks.get(i + 1).getTime() != null)
                     ? blocks.get(i + 1).getTime()
-                    : "99999"; // fallback
+                    : "99999";
 
                 handleSummary(block, startTime, endTimeStr, contentSeq, scriptLines, levelToSections);
                 handleOxQuiz(block, startTime, contentSeq, oxQuizList);
                 handleExam(block, startTime, contentSeq, examList);
             }
 
-            saveSummaries(contentSeq, levelToSections);
-            if (!oxQuizList.isEmpty()) oxQuizService.saveOxQuizzes(contentSeq, oxQuizList);
-            if (!examList.isEmpty()) examsService.saveExams(contentSeq, examList);
-            saveTitleSummaryVector(contentSeq, blocks, keywords);
+            try {
+                saveSummaries(contentSeq, levelToSections);
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.SUMMARY_INSERT_FAILED, e);
+            }
 
-            // 🔹 키워드 태그 저장 (중복 제거 후 저장)
+            try {
+                if (!oxQuizList.isEmpty()) oxQuizService.saveOxQuizzes(contentSeq, oxQuizList);
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.OXQUIZ_SAVE_FAILED, e);
+            }
+
+            try {
+                if (!examList.isEmpty()) examsService.saveExams(contentSeq, examList);
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.EXAM_SAVE_FAILED, e);
+            }
+
+            try {
+                saveTitleSummaryVector(contentSeq, blocks, keywords);
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.VECTOR_SAVE_FAILED, e);
+            }
+
             if (keywords != null && !keywords.isEmpty()) {
                 List<String> uniqueTags = keywords.stream()
                         .map(String::trim)
@@ -142,8 +184,12 @@ public class RegistrationService {
                         .distinct()
                         .collect(Collectors.toList());
                 if (!uniqueTags.isEmpty()) {
-                    contentMapper.insertContentTags(contentSeq, uniqueTags);
-                    logger.info("🏷️ 콘텐츠 태그 저장 완료: {}", uniqueTags);
+                    try {
+                        contentMapper.insertContentTags(contentSeq, uniqueTags);
+                        logger.info("🏷️ 콘텐츠 태그 저장 완료: {}", uniqueTags);
+                    } catch (Exception e) {
+                        throw new BusinessException(ErrorCode.CONTENT_TAG_INSERT_FAILED, e);
+                    }
                 }
             }
 
