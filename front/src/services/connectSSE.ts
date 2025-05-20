@@ -58,7 +58,6 @@ class SSEManager {
         Accept: 'text/event-stream',
         Authorization: `Bearer ${accessToken}`,
       },
-      heartbeatTimeout: 60000,
       withCredentials: true,
     });
     this.url = url;
