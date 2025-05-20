@@ -180,7 +180,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
                 path.startsWith("/api/v1/logging/visit");
 
         // /api/v1/learning/share/ 경로에 대한 GET 요청만 필터에서 제외
-        if (path.startsWith("/api/v1/learning/share/") && "GET".equalsIgnoreCase(method)) {
+        if (path.startsWith("/api/v1/share/") && "GET".equalsIgnoreCase(method)) {
             shouldNotFilter = true;
             logger.info("HeaderAuthFilter - GET 요청에 대해 필터 제외 경로: {}", path);
         }
