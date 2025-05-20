@@ -19,7 +19,6 @@ public class LlmRequestDTO {
     @Schema(description = "사용자 콘텐츠 일련 번호", example = "1001", required = true)
     private Long userContentSeq;
 	
-
     @Schema(description = "콘텐츠 일련 번호", example = "1001", required = true)
     private Long contentSeq;
 
