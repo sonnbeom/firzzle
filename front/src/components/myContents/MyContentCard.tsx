@@ -23,13 +23,13 @@ const MyContentCard = ({
         processStatus !== 'C' ? 'bg-gray-100 px-1' : ''
       }`}
     >
-      <div style={{ position: 'relative', width: '100vw', height: '90px' }}>
+      <div className='relative h-[90px] w-full'>
         <Image
           src={thumbnailUrl}
           alt='thumbnail'
           fill
-          sizes='100vw'
-          className='object-cover'
+          priority
+          className='contain'
         />
       </div>
       <div className='flex flex-col justify-between py-3'>

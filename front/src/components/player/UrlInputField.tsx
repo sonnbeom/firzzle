@@ -52,9 +52,10 @@ const UrlInputField = ({
         tags: null,
       });
 
+      setIsSubmitted(true);
+
       if (response.taskId) {
         setTaskId(response.taskId);
-        setIsSubmitted(true);
       } else {
         router.push(`/content/${response.contentSeq}`);
       }

@@ -43,7 +43,7 @@ const ProgressBar = ({
   }, []);
 
   useEffect(() => {
-    if (!taskId) return;
+    if (!taskId || !setIsSubmitted) return;
 
     let currentContentSeq: string | null = null;
 
