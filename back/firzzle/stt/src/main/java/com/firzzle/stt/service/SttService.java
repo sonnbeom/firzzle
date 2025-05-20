@@ -1,21 +1,5 @@
 package com.firzzle.stt.service;
 
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
-import io.netty.resolver.DefaultAddressResolverGroup;
-import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.scheduling.annotation.Async;
-
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.stt.dto.ContentDTO;
@@ -26,6 +10,21 @@ import com.firzzle.stt.mapper.UserContentMapper;
 import com.firzzle.stt.mapper.UserMapper;
 import com.firzzle.stt.util.SubtitleUtil;
 import com.firzzle.stt.util.TimeUtil;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import io.netty.resolver.DefaultAddressResolverGroup;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -64,61 +63,52 @@ public class SttService {
                         : extractSubtitleDirect(uuid, url, videoId, taskId))
                 .exceptionally(e -> {
                     logger.error("[STT] transcribeFromYoutube pipeline error", e);
-                    throw new RuntimeException(e);
+                    throw new BusinessException(ErrorCode.STT_PROCESS_FAILED, "STT 처리 중 오류 발생", e);
                 });
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(
-            String uuid, String url, String videoId, String taskId) {
-        logger.debug("[STT] extractSubtitleViaLocalProxy start: uuid={}, videoId={}, taskId={}", uuid, videoId, taskId);
+    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId) {
         return CompletableFuture.supplyAsync(() -> userMapper.selectUserSeqByUuid(uuid))
                 .thenCompose(userSeq -> {
-                    logger.debug("[STT] userSeq fetched: {}", userSeq);
-                    HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
+                    try {
+                        HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
 
-                    WebClient webClient = WebClient.builder()
-                            .clientConnector(new ReactorClientHttpConnector(httpClient))
-                            .baseUrl(externalUrl)
-                            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                            .defaultHeader("X-API-KEY", secretKey)
-                            .build();
+                        WebClient webClient = WebClient.builder()
+                                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                                .baseUrl(externalUrl)
+                                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                                .defaultHeader("X-API-KEY", secretKey)
+                                .build();
 
-                    Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
-                    logger.debug("[STT] external API request body: {}", requestBody);
+                        Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
 
-                    return webClient.post()
-                            .uri("/api/v1/extract")
-                            .bodyValue(requestBody)
-                            .retrieve()
-                            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                            .doOnError(e -> logger.error("[STT] external extract API error", e))
-                            .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
-                            .toFuture()
-                            .thenApply(response -> {
-                                logger.debug("[STT] external API response keys: {}", response.keySet());
-                                if (!response.containsKey("script"))
-                                    throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+                        return webClient.post()
+                                .uri("/api/v1/extract")
+                                .bodyValue(requestBody)
+                                .retrieve()
+                                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                                .doOnError(e -> logger.error("[STT] external extract API error", e))
+                                .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
+                                .toFuture()
+                                .thenApply(response -> {
+                                    if (!response.containsKey("script"))
+                                        throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
 
-                                ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-                                return processFinalResult(userSeq, contentDTO,
-                                        (String) response.get("script"), taskId);
-                            });
-                })
-                .exceptionally(e -> {
-                    logger.error("[STT] extractSubtitleViaLocalProxy pipeline error", e);
-                    throw new RuntimeException(e);
+                                    ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+                                    return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId);
+                                });
+                    } catch (Exception e) {
+                        throw new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출 중 오류 발생", e);
+                    }
                 });
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleDirect(
-            String uuid, String url, String videoId, String taskId) {
-        logger.debug("[STT] extractSubtitleDirect start: uuid={}, videoId={}, taskId={}", uuid, videoId, taskId);
+    public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId, String taskId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Long userSeq = userMapper.selectUserSeqByUuid(uuid);
-                logger.debug("[STT] userSeq fetched: {}", userSeq);
                 runAndPrint(new ProcessBuilder(
                         "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
                         "--write-auto-sub", "--sub-lang", "ko", "--sub-format", "vtt", "--convert-subs", "srt",
@@ -126,10 +116,7 @@ public class SttService {
                         .directory(new File(uploadDir)).redirectErrorStream(true));
 
                 String scripts = printDownloadedFiles(videoId);
-                if (scripts == null) {
-                    throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-                }
-                logger.debug("[STT] scripts length: {} chars", scripts.length());
+                if (scripts == null) throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
 
                 ProcessBuilder metadataExtractor = new ProcessBuilder(
                         "yt-dlp", "--no-check-certificate", "--referer", "https://www.youtube.com",
@@ -139,68 +126,54 @@ public class SttService {
                         .redirectErrorStream(true);
 
                 List<String> lines = readProcessOutput(metadataExtractor.start());
-                logger.debug("[STT] metadata lines count: {}", lines.size());
                 ContentDTO contentDTO = parseMetadata(videoId, url, lines);
                 return processFinalResult(userSeq, contentDTO, scripts, taskId);
+            } catch (BusinessException e) {
+                throw e;
             } catch (Exception e) {
-                logger.error("[STT] extractSubtitleDirect error", e);
-                throw new RuntimeException(e);
+                throw new BusinessException(ErrorCode.YTDLP_EXECUTION_FAILED, "yt-dlp 처리 중 오류 발생", e);
             }
         });
     }
 
-    @Async
     @Transactional
-    public LlmRequest processFinalResult(
-            Long userSeq, ContentDTO contentDTO, String script, String taskId) {
-        logger.debug("[STT] processFinalResult start: userSeq={} contentSeq={} taskId={}",
-                userSeq, contentDTO.getContentSeq(), taskId);
+    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId) {
         contentService.insertContent(contentDTO);
-        saveUserContent(userSeq, contentDTO.getContentSeq());
+        UserContentDTO dto = new UserContentDTO();
 
-        if (script != null) {
-            logger.debug("[STT] sending STT result: contentSeq={} script length={} chars",
-                    contentDTO.getContentSeq(), script.length());
-            sttConvertedProducer.sendSttResult(userSeq, contentDTO.getContentSeq(), script, taskId);
+        // ✅ 여기서 userContentSeq가 자동으로 채워짐
+        Long userContentSeq = saveUserContent(userSeq, contentDTO.getContentSeq());
+        if (script != null && !script.isBlank()) {
+            sttConvertedProducer.sendSttResult(userContentSeq, contentDTO.getContentSeq(), script, taskId);
         } else {
             throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
         }
         return new LlmRequest(userSeq, contentDTO.getContentSeq(), script, taskId);
     }
 
-
-    
-    private void saveUserContent(Long userSeq, Long contentSeq) {
+    private Long saveUserContent(Long userSeq, Long contentSeq) {
         UserContentDTO userContentDTO = new UserContentDTO();
         userContentDTO.setUserSeq(userSeq);
         userContentDTO.setContentSeq(contentSeq);
         userContentDTO.setLastAccessedAt(TimeUtil.getCurrentTimestamp14());
         userContentDTO.setIndate(TimeUtil.getCurrentTimestamp14());
         userContentMapper.insertUserContent(userContentDTO);
+        return userContentDTO.getUserContentSeq();
     }
 
     public String printDownloadedFiles(String videoId) throws IOException {
         Path srtPath = Paths.get(uploadDir).resolve(videoId + ".ko.srt");
         if (Files.exists(srtPath)) {
             String result = SubtitleUtil.cleanSrtToText(srtPath);
-            try {
-                Files.deleteIfExists(srtPath);
-                logger.info("✅ 자막 파일 삭제 완료: {}", srtPath);
-            } catch (IOException e) {
-                logger.warn("⚠️ 자막 파일 삭제 실패: {}", srtPath, e);
-            }
+            Files.deleteIfExists(srtPath);
             return result;
-        } else {
-            logger.info("❗ ko.srt 자막 파일이 없습니다.");
-            return null;
         }
+        return null;
     }
 
     private void runAndPrint(ProcessBuilder pb) throws Exception {
         Process process = pb.start();
         List<String> outputLines = readProcessOutput(process);
-        logger.error("📌 yt-dlp 전체 로그:\n{}", String.join("\n", outputLines));
-
         int exitCode = process.waitFor();
         if (exitCode != 0) {
             String output = String.join("\n", outputLines);
@@ -209,18 +182,16 @@ public class SttService {
             } else if (output.contains("No subtitles") || output.contains("There are no subtitles")) {
                 throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
             } else {
-                throw new RuntimeException("❌ 프로세스 종료 코드: " + exitCode);
+                throw new BusinessException(ErrorCode.YTDLP_EXECUTION_FAILED, "yt-dlp 종료 코드: " + exitCode);
             }
         }
     }
 
     private List<String> readProcessOutput(Process process) throws IOException {
         List<String> lines = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                logger.info("[process] {}", line);
                 lines.add(line);
             }
         }
@@ -236,11 +207,16 @@ public class SttService {
         contentDTO.setCategory((String) response.getOrDefault("category", ""));
         contentDTO.setThumbnailUrl((String) response.getOrDefault("thumbnail", ""));
 
-        Object durationObj = response.get("duration");
-        if (durationObj instanceof Number) {
-            contentDTO.setDuration(((Number) durationObj).longValue());
-        } else if (durationObj instanceof String) {
-            contentDTO.setDuration(Long.parseLong((String) durationObj));
+        try {
+            Object durationObj = response.get("duration");
+            if (durationObj instanceof Number) {
+                contentDTO.setDuration(((Number) durationObj).longValue());
+            } else if (durationObj instanceof String) {
+                contentDTO.setDuration(Long.parseLong((String) durationObj));
+            }
+        } catch (Exception e) {
+            logger.warn("⚠️ duration 파싱 실패: {}", response.get("duration"));
+            contentDTO.setDuration(0L);
         }
         return contentDTO;
     }
@@ -257,7 +233,11 @@ public class SttService {
         contentDTO.setDescription(descBuilder.toString().trim());
         contentDTO.setCategory(lines.size() >= 3 ? lines.get(lines.size() - 3) : "");
         contentDTO.setThumbnailUrl(lines.size() >= 2 ? lines.get(lines.size() - 2) : "");
-        contentDTO.setDuration(Long.parseLong(lines.size() >= 1 ? lines.get(lines.size() - 1) : "0"));
+        try {
+            contentDTO.setDuration(Long.parseLong(lines.get(lines.size() - 1)));
+        } catch (NumberFormatException e) {
+            contentDTO.setDuration(0L);
+        }
         return contentDTO;
     }
 }

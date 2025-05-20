@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.firzzle.stt.mapper.FrameMapper">
+
+    <!-- 프레임 등록 -->
+    <insert id="insertFrame" parameterType="com.firzzle.stt.dto.FrameDTO" useGeneratedKeys="true" keyProperty="frameSeq">
+        INSERT INTO fb_ai_frames (
+            image_url,
+            timestamp,
+            ldate,
+            content_seq,
+            indate
+        ) VALUES (
+            #{imageUrl},
+            #{timestamp},
+            #{ldate},
+            #{contentSeq},
+            #{indate}
+        )
+    </insert>
+
+</mapper>
