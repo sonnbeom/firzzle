@@ -26,7 +26,7 @@ const MyContentCard = ({
           alt='thumbnail'
           fill
           sizes='100vw,'
-          className='object-contain'
+          className='object-cover'
         />
       </div>
       <div className='flex flex-col justify-between py-3'>

@@ -206,9 +206,32 @@ class SSEManager {
         timestamp: new Date().toISOString(),
         error: event instanceof Error ? event.message : 'Unknown error',
       });
+
+      // 연결 상태 확인
+      const state = this.eventSource?.readyState;
+      console.log('[SSE] Connection state at error:', state);
+
       try {
         if (!event.data) {
           console.warn('[SSE] Error event received with no data');
+
+          // 연결이 끊어진 경우 재연결 시도
+          if (state === 2) {
+            console.log('[SSE] Attempting to reconnect...');
+            this.disconnect();
+            if (this.url) {
+              this.connect({
+                url: this.url,
+                onConnect,
+                onStart,
+                onProgress,
+                onResult,
+                onComplete,
+                onError,
+              });
+            }
+          }
+
           onError?.(event);
           return;
         }
@@ -218,7 +241,11 @@ class SSEManager {
         console.error('[SSE] Error event parsing error:', error);
         onError?.(event);
       }
-      this.disconnect();
+
+      // 연결이 완전히 끊어진 경우에만 disconnect 호출
+      if (state === 2) {
+        this.disconnect();
+      }
     });
 
     return this.eventSource;
