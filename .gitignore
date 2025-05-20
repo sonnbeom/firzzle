@@ -4,6 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+# .env
 
 # === IDEs ===
 
@@ -49,7 +50,7 @@ Thumbs.db
 *.log
 
 # === Environment Config ===
-*.env
+# *.env
 *.local
 application-dev.yml
 application-local.yml
