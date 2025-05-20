@@ -240,6 +240,7 @@ class SSEManager {
 
     // 오류 발생
     this.eventSource.addEventListener('error', (event: MessageEvent) => {
+      console.log('에러사항: ', event);
       console.log('[SSE] Error event received:', {
         event,
         data: event.data ? JSON.parse(event.data) : null,

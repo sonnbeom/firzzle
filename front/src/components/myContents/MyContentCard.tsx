@@ -25,7 +25,7 @@ const MyContentCard = ({
           src={thumbnailUrl}
           alt='thumbnail'
           fill
-          sizes='100vw,'
+          sizes='150px'
           className='object-cover'
         />
       </div>
