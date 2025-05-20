@@ -1,6 +1,5 @@
 import { Event, EventSourcePolyfill } from 'event-source-polyfill';
 import { getCookie } from '@/actions/auth';
-import { FetchClient } from '@/api/common/fetchClient';
 import { SSEEventData } from '@/types/sse';
 
 interface ConnectSSEProps {
@@ -52,16 +51,6 @@ class SSEManager {
 
   private currentCallbacks: ConnectSSEProps | null = null;
 
-  private async refreshToken(): Promise<string> {
-    const fetchClient = new FetchClient(process.env.NEXT_PUBLIC_BASE_URL);
-    await fetchClient.post('/api/auth/refresh', {
-      body: { retryCount: 0 },
-      withAuth: true,
-    });
-    const newToken = await getCookie('accessToken');
-    return newToken;
-  }
-
   public async connect({
     url,
     onConnect,
@@ -70,7 +59,6 @@ class SSEManager {
     onResult,
     onComplete,
     onError,
-    token,
   }: ConnectSSEProps): Promise<EventSourcePolyfill> {
     // 콜백 저장
     this.currentCallbacks = {
@@ -96,7 +84,7 @@ class SSEManager {
     // Visibility API 핸들러 설정 (탭 전환 시 재연결)
     this.setupVisibilityHandler();
 
-    const accessToken = token || (await getCookie('accessToken'));
+    const accessToken = await getCookie('accessToken');
 
     this.eventSource = new EventSourcePolyfill(url, {
       headers: {
@@ -106,33 +94,6 @@ class SSEManager {
       withCredentials: true,
     });
     this.url = url;
-
-    // EventSource 자체의 연결 오류 처리
-    this.eventSource.onerror = async (error) => {
-      console.log('EventSource 연결 오류:', error);
-
-      // EventSource의 readyState를 확인하여 연결 상태 체크
-      if (this.eventSource?.readyState === EventSourcePolyfill.CLOSED) {
-        console.log('EventSource 연결이 종료됨');
-
-        // 401 에러 발생 시 토큰 갱신 후 재연결
-        const newToken = await this.refreshToken();
-        console.log('SSE 토큰 갱신');
-
-        if (this.url) {
-          this.connect({
-            url: this.url,
-            onConnect: this.currentCallbacks?.onConnect,
-            onStart: this.currentCallbacks?.onStart,
-            onProgress: this.currentCallbacks?.onProgress,
-            onResult: this.currentCallbacks?.onResult,
-            onComplete: this.currentCallbacks?.onComplete,
-            onError: this.currentCallbacks?.onError,
-            token: newToken,
-          });
-        }
-      }
-    };
 
     // 하트비트 이벤트 처리
     this.eventSource.addEventListener('heartbeat', () => {});
