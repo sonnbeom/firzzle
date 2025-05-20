@@ -20,15 +20,16 @@ const MyContentCard = ({
   const content = (
     <div
       className={`flex w-full gap-3 rounded py-2 ${
-        processStatus !== 'C' ? 'hover:bg-gray-100' : ''
+        processStatus !== 'C' ? 'bg-gray-100 px-1' : ''
       }`}
     >
       <div className='relative h-[90px] w-[160px]'>
         <Image
           src={thumbnailUrl}
           alt='thumbnail'
-          fill
-          className='object-cover'
+          width={160}
+          height={90}
+          className='h-full w-full object-cover'
         />
       </div>
       <div className='flex flex-col justify-between py-3'>
