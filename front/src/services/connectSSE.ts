@@ -95,6 +95,25 @@ class SSEManager {
     });
     this.url = url;
 
+    // EventSource 자체의 연결 오류 처리
+    this.eventSource.onerror = (error) => {
+      console.log('EventSource 연결 오류:', error);
+      // 401 에러 발생 시 토큰 갱신 후 재연결
+      this.refreshToken().then(() => {
+        if (this.url) {
+          this.connect({
+            url: this.url,
+            onConnect: this.currentCallbacks?.onConnect,
+            onStart: this.currentCallbacks?.onStart,
+            onProgress: this.currentCallbacks?.onProgress,
+            onResult: this.currentCallbacks?.onResult,
+            onComplete: this.currentCallbacks?.onComplete,
+            onError: this.currentCallbacks?.onError,
+          });
+        }
+      });
+    };
+
     // 하트비트 이벤트 처리
     this.eventSource.addEventListener('heartbeat', () => {});
 
@@ -154,21 +173,7 @@ class SSEManager {
         const data = JSON.parse(event.data) as SSEEventData;
         onError?.(data);
       } catch (error) {
-        console.log('SSE 오류 발생', error);
-        if (error.message === 'Unauthorized') {
-          // 토큰 갱신 로직 추가
-          this.refreshToken().then(() => {
-            this.connect({
-              url: this.url,
-              onConnect: this.currentCallbacks?.onConnect,
-              onStart: this.currentCallbacks?.onStart,
-              onProgress: this.currentCallbacks?.onProgress,
-              onResult: this.currentCallbacks?.onResult,
-              onComplete: this.currentCallbacks?.onComplete,
-              onError: this.currentCallbacks?.onError,
-            });
-          });
-        }
+        throw error;
       }
     });
 

@@ -23,7 +23,7 @@ const HeaderButton = () => {
           url='https://kauth.kakao.com/oauth/authorize'
           oauth='kakao'
           title='시작하기'
-          className='hidden md:block'
+          className='hidden py-1 md:block'
         />
       ) : (
         <div className='flex items-center gap-4 lg:gap-8'>
