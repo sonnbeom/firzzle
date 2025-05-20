@@ -16,6 +16,7 @@ class SSEManager {
   private static instance: SSEManager;
   private eventSource: EventSourcePolyfill | null = null;
   private url: string | null = null;
+  private visibilityHandler: (() => void) | null = null;
 
   private constructor() {}
 
@@ -26,6 +27,31 @@ class SSEManager {
     return SSEManager.instance;
   }
 
+  private setupVisibilityHandler(): void {
+    if (typeof document !== 'undefined') {
+      this.visibilityHandler = () => {
+        if (document.visibilityState === 'visible') {
+          console.log('[SSE] Tab became visible, checking connection...');
+          if (!this.isConnected() && this.url) {
+            console.log('[SSE] Reconnecting after tab visibility change...');
+            this.connect({
+              url: this.url,
+              onConnect: this.currentCallbacks?.onConnect,
+              onStart: this.currentCallbacks?.onStart,
+              onProgress: this.currentCallbacks?.onProgress,
+              onResult: this.currentCallbacks?.onResult,
+              onComplete: this.currentCallbacks?.onComplete,
+              onError: this.currentCallbacks?.onError,
+            });
+          }
+        }
+      };
+      document.addEventListener('visibilitychange', this.visibilityHandler);
+    }
+  }
+
+  private currentCallbacks: ConnectSSEProps | null = null;
+
   public async connect({
     url,
     onConnect,
@@ -35,6 +61,17 @@ class SSEManager {
     onComplete,
     onError,
   }: ConnectSSEProps): Promise<EventSourcePolyfill> {
+    // 콜백 저장
+    this.currentCallbacks = {
+      url,
+      onConnect,
+      onStart,
+      onProgress,
+      onResult,
+      onComplete,
+      onError,
+    };
+
     // 이미 연결된 SSE가 있고 같은 URL이면 기존 연결 반환
     if (this.eventSource && this.url === url) {
       return this.eventSource;
@@ -44,6 +81,9 @@ class SSEManager {
     if (this.eventSource) {
       this.disconnect();
     }
+
+    // Visibility API 핸들러 설정
+    this.setupVisibilityHandler();
 
     const accessToken = await getCookie('accessToken');
 
@@ -215,21 +255,27 @@ class SSEManager {
         if (!event.data) {
           console.warn('[SSE] Error event received with no data');
 
-          // 연결이 끊어진 경우 재연결 시도
-          if (state === 2) {
-            console.log('[SSE] Attempting to reconnect...');
+          // 연결이 끊어지거나 연결 중인 경우 재연결 시도
+          if (state === 2 || state === 0) {
+            console.log(
+              '[SSE] Connection lost or failed to connect. Attempting to reconnect...',
+            );
             this.disconnect();
-            if (this.url) {
-              this.connect({
-                url: this.url,
-                onConnect,
-                onStart,
-                onProgress,
-                onResult,
-                onComplete,
-                onError,
-              });
-            }
+
+            // 재연결 시도 전 약간의 지연 추가
+            setTimeout(() => {
+              if (this.url) {
+                this.connect({
+                  url: this.url,
+                  onConnect,
+                  onStart,
+                  onProgress,
+                  onResult,
+                  onComplete,
+                  onError,
+                });
+              }
+            }, 1000); // 1초 지연
           }
 
           onError?.(event);
@@ -256,6 +302,13 @@ class SSEManager {
       this.eventSource.close();
       this.eventSource = null;
       this.url = null;
+      this.currentCallbacks = null;
+    }
+
+    // Visibility API 핸들러 제거
+    if (this.visibilityHandler && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
     }
   }
 
