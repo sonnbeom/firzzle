@@ -46,7 +46,7 @@ BasicToaster.success = (message: string, options?: ToastOptions) =>
       }
     },
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? true,
   });
 
 BasicToaster.error = (message: string, options?: ToastOptions) =>
@@ -56,7 +56,7 @@ BasicToaster.error = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? true,
   });
 
 BasicToaster.warning = (message: string, options?: ToastOptions) =>
@@ -66,7 +66,7 @@ BasicToaster.warning = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? true,
   });
 
 BasicToaster.default = (message: string, options?: ToastOptions) =>
@@ -76,7 +76,7 @@ BasicToaster.default = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? true,
   });
 
 export default BasicToaster;
