@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getCookie } from '@/actions/auth';
 import { logout } from '@/api/auth';
 import OAuthButton from '../home/OAuthButton';
 const HeaderButton = () => {
   const [accessToken, setAccessToken] = useState(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const getAccessToken = async () => {
@@ -14,7 +16,7 @@ const HeaderButton = () => {
       setAccessToken(token);
     };
     getAccessToken();
-  }, [accessToken]);
+  }, [accessToken, pathname]);
 
   return (
     <>
