@@ -87,6 +87,10 @@ class SSEManager {
     const accessToken = await getCookie('accessToken');
     console.log('accessToken 받아옴');
 
+    if (!accessToken) {
+      throw new Error('No access token available');
+    }
+
     this.eventSource = new EventSourcePolyfill(url, {
       headers: {
         Accept: 'text/event-stream',

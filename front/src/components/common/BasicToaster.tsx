@@ -46,7 +46,7 @@ BasicToaster.success = (message: string, options?: ToastOptions) =>
       }
     },
     description: options?.children,
-    closeButton: options?.closeButton ?? true,
+    closeButton: options?.closeButton ?? false,
   });
 
 BasicToaster.error = (message: string, options?: ToastOptions) =>
