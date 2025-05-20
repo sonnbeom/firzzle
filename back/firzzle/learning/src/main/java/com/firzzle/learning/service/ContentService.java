@@ -73,12 +73,15 @@ public class ContentService {
             RequestBox checkBox = new RequestBox("checkBox");
             checkBox.put("videoId", videoId);
             DataBox existingContent = contentDAO.selectContentByVideoId(checkBox);
+
+            logger.info("existingContent : {}", existingContent);
+
             Long contentSeq = null;
 
             if (existingContent != null) {
                 // 콘텐츠 일련번호 가져오기
-                contentSeq = existingContent.getLong2("content_seq");
-                logger.debug("이미 등록된 YouTube 동영상입니다. 사용자-콘텐츠 매핑만 생성합니다. ContentSeq: {}", contentSeq);
+                contentSeq = existingContent.getLong2("d_content_seq");
+                logger.info("이미 등록된 YouTube 동영상입니다. 사용자-콘텐츠 매핑만 생성합니다. ContentSeq: {}", contentSeq);
 
                 // 이미 해당 사용자가 등록한 콘텐츠인지 확인
                 RequestBox userContentCheckBox = new RequestBox("userContentCheckBox");
@@ -87,7 +90,7 @@ public class ContentService {
                 int userContentCount = contentDAO.selectUserContentCount(userContentCheckBox);
 
                 if (userContentCount > 0) {
-                    logger.debug("이미 해당 사용자가 등록한 콘텐츠입니다. ContentSeq: {}, UUID: {}",
+                    logger.info("이미 해당 사용자가 등록한 콘텐츠입니다. ContentSeq: {}, UUID: {}",
                             contentSeq, box.getString("uuid"));
 
                     // 이미 등록된 콘텐츠 정보 조회 및 반환

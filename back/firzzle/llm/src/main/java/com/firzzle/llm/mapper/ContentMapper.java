@@ -29,4 +29,9 @@ public interface ContentMapper {
      * Qdrant 유사도 검색 결과 기반 콘텐츠 리스트 조회
      */
     List<RecommendContentDTO> selectRecommendContentListBySeqList(@Param("list") List<Long> contentSeqList);
+    
+    // completed_at 업데이트
+    int updateProcessStatusAndCompletedAtByContentSeq(@Param("contentSeq") Long contentSeq,
+                                                       @Param("processStatus") String processStatus,
+                                                       @Param("completedAt") String completedAt);
 }
