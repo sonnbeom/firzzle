@@ -52,10 +52,10 @@ const UrlInputField = ({
         tags: null,
       });
 
-      setIsSubmitted(true);
-
       if (response.taskId) {
+        console.log('컨텐츠 등록', response);
         setTaskId(response.taskId);
+        setIsSubmitted(true);
       } else {
         router.push(`/content/${response.contentSeq}`);
       }

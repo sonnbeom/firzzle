@@ -85,6 +85,7 @@ class SSEManager {
     this.setupVisibilityHandler();
 
     const accessToken = await getCookie('accessToken');
+    console.log('accessToken 받아옴');
 
     this.eventSource = new EventSourcePolyfill(url, {
       headers: {

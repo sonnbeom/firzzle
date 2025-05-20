@@ -47,6 +47,8 @@ const ProgressBar = ({
 
     let currentContentSeq: string | null = null;
 
+    console.log('SSE 연결 시작');
+
     // SSE 연결
     sseManager.connect({
       url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,

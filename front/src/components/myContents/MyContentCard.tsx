@@ -23,11 +23,12 @@ const MyContentCard = ({
         processStatus !== 'C' ? 'bg-gray-100 px-1' : ''
       }`}
     >
-      <div className='relative h-[90px] w-full'>
+      <div className='relative h-[90px] w-[160px]'>
         <Image
           src={thumbnailUrl}
           alt='thumbnail'
           fill
+          sizes='160px'
           priority
           className='contain'
         />
