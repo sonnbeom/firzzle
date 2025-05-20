@@ -58,7 +58,8 @@ class SSEManager {
         Accept: 'text/event-stream',
         Authorization: `Bearer ${accessToken}`,
       },
-      heartbeatTimeout: 60000, // 60초로 타임아웃 시간 증가
+      heartbeatTimeout: 60000,
+      withCredentials: true,
     });
     this.url = url;
 
@@ -67,7 +68,34 @@ class SSEManager {
       console.log('[SSE] Connection opened successfully:', {
         url,
         timestamp: new Date().toISOString(),
+        readyState: this.eventSource?.readyState,
       });
+    };
+
+    // 연결 실패 시점 로깅
+    this.eventSource.onerror = (error) => {
+      console.error('[SSE] Connection error:', {
+        error,
+        readyState: this.eventSource?.readyState,
+        timestamp: new Date().toISOString(),
+        url: this.url,
+      });
+
+      // readyState 값에 따른 상태 로깅
+      const state = this.eventSource?.readyState;
+      switch (state) {
+        case 0:
+          console.error('[SSE] Connection is being established');
+          break;
+        case 1:
+          console.error('[SSE] Connection is open and working');
+          break;
+        case 2:
+          console.error('[SSE] Connection is closed');
+          break;
+        default:
+          console.error('[SSE] Unknown connection state');
+      }
     };
 
     // 하트비트 이벤트 처리
