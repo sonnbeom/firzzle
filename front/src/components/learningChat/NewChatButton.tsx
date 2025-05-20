@@ -19,6 +19,13 @@ const NewChatButton = ({
   const { setCurrentExamSeq, solvedCount } = useChatStore();
 
   const handleNewChat = async () => {
+    if (solvedCount >= MAX_NEW_EXAM_COUNT) {
+      BasicToaster.default('질문 횟수 초과로 시험모드가 종료되었습니다.', {
+        id: 'new-chat',
+      });
+      return;
+    }
+
     try {
       const response = await getNewExamChat(contentId);
 

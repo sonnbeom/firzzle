@@ -16,8 +16,6 @@ export async function POST(request: NextRequest) {
       body,
     });
 
-    console.log(response);
-
     if (response.status === 'OK') {
       return NextResponse.json(
         { message: response.message, data: response.data },

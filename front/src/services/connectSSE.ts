@@ -52,7 +52,6 @@ class SSEManager {
         Accept: 'text/event-stream',
         Authorization: `Bearer ${accessToken}`,
       },
-      heartbeatTimeout: 45000, // 45초 타임아웃 설정
     });
     this.url = url;
 
@@ -64,7 +63,12 @@ class SSEManager {
 
     // 연결 성공
     this.eventSource.addEventListener('connect', (event: MessageEvent) => {
+      console.log('connect', event);
       try {
+        if (!event.data) {
+          console.warn('Connect event received with no data');
+          return;
+        }
         const data = JSON.parse(event.data) as SSEEventData;
         onConnect?.(data);
       } catch (error) {
@@ -74,7 +78,12 @@ class SSEManager {
 
     // 시작
     this.eventSource.addEventListener('start', (event: MessageEvent) => {
+      console.log('start', event);
       try {
+        if (!event.data) {
+          console.warn('Start event received with no data');
+          return;
+        }
         const data = JSON.parse(event.data) as SSEEventData;
         onStart?.(data);
       } catch (error) {
@@ -84,7 +93,12 @@ class SSEManager {
 
     // 진행 상황
     this.eventSource.addEventListener('progress', (event: MessageEvent) => {
+      console.log('progress', event);
       try {
+        if (!event.data) {
+          console.warn('Progress event received with no data');
+          return;
+        }
         const data = JSON.parse(event.data) as SSEEventData;
         onProgress?.(data);
       } catch (error) {
@@ -94,7 +108,12 @@ class SSEManager {
 
     // 결과
     this.eventSource.addEventListener('result', (event: MessageEvent) => {
+      console.log('result', event);
       try {
+        if (!event.data) {
+          console.warn('Result event received with no data');
+          return;
+        }
         const data = JSON.parse(event.data) as SSEEventData;
         onResult?.(data);
       } catch (error) {
@@ -104,7 +123,12 @@ class SSEManager {
 
     // 완료
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
+      console.log('complete', event);
       try {
+        if (!event.data) {
+          console.warn('Complete event received with no data');
+          return;
+        }
         const data = JSON.parse(event.data) as SSEEventData;
         onComplete?.(data);
         this.disconnect();
@@ -115,12 +139,18 @@ class SSEManager {
 
     // 오류 발생
     this.eventSource.addEventListener('error', (event: MessageEvent) => {
+      console.log('error', event);
       try {
+        if (!event.data) {
+          console.warn('Error event received with no data');
+          onError?.(event);
+          return;
+        }
         const data = JSON.parse(event.data) as SSEEventData;
         onError?.(data);
       } catch (error) {
         console.error('Error event parsing error:', error);
-        onError?.(error);
+        onError?.(event);
       }
       this.disconnect();
     });

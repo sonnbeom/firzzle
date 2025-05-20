@@ -4,7 +4,7 @@ import { ChangeEvent, KeyboardEvent, useState } from 'react';
 import { postExamChat, postLearningChat } from '@/api/learningChat';
 import { useChatStore } from '@/stores/chatStore';
 import { LearningChat, Mode } from '@/types/learningChat';
-import { MAX_LEARNING_CHAT_LENGTH } from 'utils/const';
+import { MAX_LEARNING_CHAT_LENGTH, MAX_NEW_EXAM_COUNT } from 'utils/const';
 import BasicToaster from '../common/BasicToaster';
 import Icons from '../common/Icons';
 
@@ -109,10 +109,17 @@ const ChatTextAreaField = ({
         value={value}
         onChange={onChange}
         onKeyDown={onKeyDown}
-        placeholder='어떤 정보가 궁금하신가요?'
+        placeholder={
+          mode === '시험모드' && solvedCount >= MAX_NEW_EXAM_COUNT
+            ? '질문 횟수 초과로 시험모드가 종료되었습니다.'
+            : '어떤 정보가 궁금하신가요?'
+        }
         className='w-full flex-1 resize-none rounded-md border border-none border-gray-300 px-2 text-gray-900 focus:outline-none'
         style={{ height: value ? 'auto' : '24px' }}
-        disabled={isLoading}
+        disabled={
+          isLoading ||
+          (mode === '시험모드' && solvedCount >= MAX_NEW_EXAM_COUNT)
+        }
       />
       <button onClick={handleSubmit} disabled={isLoading}>
         <Icons id='write' color={value ? 'text-gray-950' : 'text-gray-500'} />
