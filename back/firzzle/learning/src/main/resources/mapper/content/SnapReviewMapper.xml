@@ -243,6 +243,7 @@
         C.indate,
         (SELECT COUNT(*) FROM fb_ai_frames F WHERE F.content_seq = C.content_seq) AS frame_count,
         (SELECT F.image_url FROM fb_ai_frames F WHERE F.content_seq = C.content_seq ORDER BY F.timestamp ASC LIMIT 1) AS representative_image_url
+        , UC.user_content_seq
         FROM
         fb_ai_user_contents UC
         INNER JOIN fb_ai_contents C ON UC.content_seq = C.content_seq
