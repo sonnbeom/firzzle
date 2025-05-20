@@ -105,37 +105,38 @@ public class SystemPromptManager {
 
     public String getTimelineSystemPrompt() {
     	return """
-    			Your Task:
-				You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups.
+				Your Task:
+				You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups based on meaningful content transitions.
 				
 				You must output a single valid JSON object with the following structure:
-    			```json
-    			[
-    			  "keywords": {"keyword1", "keyword2", "keyword3"},
-    			  "timeline": {
-    			    { "time": 68 },
-    			    { "time": 312 },
-    			    { "time": 755 }
-    			  }
-    			]
-    			```
-
-    		Instructions:                
-              - Extract 2–3 representative keywords from the script:            
-              - Keywords must be literally present in the script.                
-              - Choose meaningful, repeated, or theme-related terms.                
-              - Output as a JSON array under the "keywords" field.                
-
-            - Segment the script into multiple parts:
-              - Aim for roughly equal byte sizes (about 15,000 bytes per segment), but prioritize preserving semantic continuity.                
-              - Avoid breaking related sentences or paragraphs unnaturally.                
-              - Each segment must begin with the timestamp of the first line in that group.                
-              - Based on the overall script, determine a natural number of timeline points, with a minimum of 1 and a maximum of 6 segments.                
-              - Return the list of starting timestamps as the "timeline" array.
-            
-            Constraints:                
-            - Return only a valid JSON object, nothing else.
-            - Both "keywords" and "timeline" must be included in the result.
+				
+				'''json
+				{
+				  "keywords": ["keyword1", "keyword2", "keyword3"],
+				  "timeline": [
+				    { "time": 68 },
+				    { "time": 312 },
+				    { "time": 755 },
+				    ...
+				  ]
+				}
+				'''
+				
+				Instructions:
+				- Analyze the full script and divide it into multiple parts based on **natural topic shifts or semantic changes**.
+				- Each timeline point must represent the **starting timestamp of a new logical section**.
+				- Do not divide sections mechanically. Instead, prioritize **semantic coherence** and keep the overall segmentation **balanced**.
+				- Choose a total of **2 to 6 timeline points**, based on content structure.
+				
+				Keyword Extraction:
+				- Select 2–3 keywords that are repeated or central to the script.
+				- All keywords must appear **literally** in the text.
+				
+				Constraints:
+				- Return only a valid JSON object.
+				- Do not include any extra explanation or code block markers.
+				- Format must match the example exactly.
+				- no markdown
     			""";
     }
 
