@@ -81,10 +81,10 @@ const QuizContainer = ({ contentSeq }: QuizContainerProps) => {
 
       {/* 도전하기 버튼 */}
       {!showAnswer && (
-        <div className='sticky bottom-0 left-0 w-full bg-white py-4'>
+        <div className='sticky bottom-0 left-0 w-full bg-white py-3'>
           <Button
             variant={isCompleted ? 'default' : 'disabled'}
-            className={`w-full py-6 text-lg font-semibold ${isCompleted ? 'bg-blue-400 hover:bg-blue-400' : ''} text-white`}
+            className={`w-full py-4 text-lg font-semibold ${isCompleted ? 'bg-blue-400 hover:bg-blue-400' : ''} text-white`}
             onClick={handleSubmit}
             disabled={!isCompleted}
           >
