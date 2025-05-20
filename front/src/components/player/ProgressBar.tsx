@@ -64,7 +64,11 @@ const ProgressBar = ({
       },
       onComplete: (data) => {
         if (currentContentSeq) {
-          showCompleteToast(data.message, currentContentSeq, data.title);
+          showCompleteToast(
+            data.message,
+            currentContentSeq,
+            data.blocks[data.blocks.length - 1].title,
+          );
         }
       },
       onError: (error: SSEEventData) => {

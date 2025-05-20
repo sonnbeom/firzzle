@@ -57,99 +57,123 @@ class SSEManager {
 
     // 하트비트 이벤트 처리
     this.eventSource.addEventListener('heartbeat', () => {
-      // 하트비트 수신 시 아무 작업도 하지 않음 (연결 유지 목적)
-      console.debug('Heartbeat received');
+      console.debug('[SSE] Heartbeat received at:', new Date().toISOString());
     });
 
     // 연결 성공
     this.eventSource.addEventListener('connect', (event: MessageEvent) => {
-      console.log('connect', event);
+      console.log('[SSE] Connect event received:', {
+        event,
+        data: event.data ? JSON.parse(event.data) : null,
+        timestamp: new Date().toISOString(),
+      });
       try {
         if (!event.data) {
-          console.warn('Connect event received with no data');
+          console.warn('[SSE] Connect event received with no data');
           return;
         }
         const data = JSON.parse(event.data) as SSEEventData;
         onConnect?.(data);
       } catch (error) {
-        console.error('Connect event parsing error:', error);
+        console.error('[SSE] Connect event parsing error:', error);
       }
     });
 
     // 시작
     this.eventSource.addEventListener('start', (event: MessageEvent) => {
-      console.log('start', event);
+      console.log('[SSE] Start event received:', {
+        event,
+        data: event.data ? JSON.parse(event.data) : null,
+        timestamp: new Date().toISOString(),
+      });
       try {
         if (!event.data) {
-          console.warn('Start event received with no data');
+          console.warn('[SSE] Start event received with no data');
           return;
         }
         const data = JSON.parse(event.data) as SSEEventData;
         onStart?.(data);
       } catch (error) {
-        console.error('Start event parsing error:', error);
+        console.error('[SSE] Start event parsing error:', error);
       }
     });
 
     // 진행 상황
     this.eventSource.addEventListener('progress', (event: MessageEvent) => {
-      console.log('progress', event);
+      console.log('[SSE] Progress event received:', {
+        event,
+        data: event.data ? JSON.parse(event.data) : null,
+        timestamp: new Date().toISOString(),
+      });
       try {
         if (!event.data) {
-          console.warn('Progress event received with no data');
+          console.warn('[SSE] Progress event received with no data');
           return;
         }
         const data = JSON.parse(event.data) as SSEEventData;
         onProgress?.(data);
       } catch (error) {
-        console.error('Progress event parsing error:', error);
+        console.error('[SSE] Progress event parsing error:', error);
       }
     });
 
     // 결과
     this.eventSource.addEventListener('result', (event: MessageEvent) => {
-      console.log('result', event);
+      console.log('[SSE] Result event received:', {
+        event,
+        data: event.data ? JSON.parse(event.data) : null,
+        timestamp: new Date().toISOString(),
+      });
       try {
         if (!event.data) {
-          console.warn('Result event received with no data');
+          console.warn('[SSE] Result event received with no data');
           return;
         }
         const data = JSON.parse(event.data) as SSEEventData;
         onResult?.(data);
       } catch (error) {
-        console.error('Result event parsing error:', error);
+        console.error('[SSE] Result event parsing error:', error);
       }
     });
 
     // 완료
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
-      console.log('complete', event);
+      console.log('[SSE] Complete event received:', {
+        event,
+        data: event.data ? JSON.parse(event.data) : null,
+        timestamp: new Date().toISOString(),
+      });
       try {
         if (!event.data) {
-          console.warn('Complete event received with no data');
+          console.warn('[SSE] Complete event received with no data');
           return;
         }
         const data = JSON.parse(event.data) as SSEEventData;
         onComplete?.(data);
         this.disconnect();
       } catch (error) {
-        console.error('Complete event parsing error:', error);
+        console.error('[SSE] Complete event parsing error:', error);
       }
     });
 
     // 오류 발생
     this.eventSource.addEventListener('error', (event: MessageEvent) => {
-      console.log('error', event);
+      console.log('[SSE] Error event received:', {
+        event,
+        data: event.data ? JSON.parse(event.data) : null,
+        timestamp: new Date().toISOString(),
+        error: event instanceof Error ? event.message : 'Unknown error',
+      });
       try {
         if (!event.data) {
-          console.warn('Error event received with no data');
+          console.warn('[SSE] Error event received with no data');
           onError?.(event);
           return;
         }
         const data = JSON.parse(event.data) as SSEEventData;
         onError?.(data);
       } catch (error) {
-        console.error('Error event parsing error:', error);
+        console.error('[SSE] Error event parsing error:', error);
         onError?.(event);
       }
       this.disconnect();
