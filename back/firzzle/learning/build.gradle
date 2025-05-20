@@ -67,6 +67,15 @@ dependencies {
 
 	// logstash
 	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
+
+	// Jsoup 의존성
+	implementation 'org.jsoup:jsoup:1.16.2'
+
+	// Selenium for dynamic web crawling
+	implementation 'org.seleniumhq.selenium:selenium-java:4.11.0'
+
+	// WebDriverManager to manage browser drivers
+	implementation 'io.github.bonigarcia:webdrivermanager:5.4.1'
 }
 
 // learning 모듈의 build.gradle

@@ -35,7 +35,7 @@ springdoc:
     path: /swagger-ui.html
     tags-sorter: alpha
     operations-sorter: alpha
-  packages-to-scan: com.firzzle.learning.controller, com.firzzle.learning.ai.controller, com.firzzle.learning.image.controller
+  packages-to-scan: com.firzzle.learning.controller, com.firzzle.learning.ai.controller, com.firzzle.learning.image.controller, com.firzzle.learning.expert.controller
 
 #Jasypt 설정
 jasypt:
@@ -60,6 +60,21 @@ server:
       charset: UTF-8
       enabled: true
       force: true
+
+linkedin:
+  crawler:
+    max-profiles: 10  # 최대 크롤링 프로필 수
+    timeout-seconds: 600  # 크롤링 타임아웃 (초)
+    user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
+    enabled: true
+
+# 공통 설정에 추가
+apify:
+  api:
+    token: ENC(QDmoZIyqqBHd17WQ15fMG3QLp/Ad6pFudh/fWKeZV4gTptAAsSRxXRZFuTF6DjooamlSvWcDvJ0QgXhCBFpdkQ==)  # Jasypt로 암호화하여 설정
+  actor:
+    id: ENC(G1LXa9NAMrchgVHI9MKGe2Mn2JWWE6c0I0ApU70lUjSi5q13JU/6N/L4506qcNb9)  # Apify에서 사용할 액터 ID
+
 ---
 # 로컬 환경 설정
 spring:
@@ -127,6 +142,7 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
+      linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(7sOLzFedm3q4VS1FLRsa7YPZ7tB3IHHC7mNKqIB+Bbagkmux2AG+lUjUo0HNyd0U)
 
@@ -193,6 +209,7 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
+      linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
 
@@ -259,5 +276,6 @@ app:
   kafka:
     topic:
       content-analysis: content-analysis-topic
+      linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
