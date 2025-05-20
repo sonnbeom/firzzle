@@ -54,6 +54,7 @@ const UrlInputField = ({
 
       if (response.taskId) {
         console.log('컨텐츠 등록', response);
+        setIsSubmitted(true);
         setTaskId(response.taskId);
       } else {
         router.push(`/content/${response.contentSeq}`);
