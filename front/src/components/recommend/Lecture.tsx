@@ -78,11 +78,24 @@ const Lecture = () => {
           </button>
         </div>
       )}
-      <div className='grid grid-cols-3 gap-5 pt-5'>
-        {lectures.map((video, idx) => (
-          <LectureCard key={idx} video={video} />
-        ))}
-      </div>
+      {lectures.length > 0 ? (
+        <div className='grid grid-cols-3 gap-5 pt-5'>
+          {lectures.map((video, idx) => (
+            <LectureCard key={idx} video={video} />
+          ))}
+        </div>
+      ) : (
+        <div className='pt-5'>
+          <div
+            className='relative w-full overflow-hidden rounded-lg border border-gray-200 bg-blue-50'
+            style={{ aspectRatio: '16/4.5' }}
+          >
+            <div className='flex h-full items-center justify-center text-center text-gray-500'>
+              현재는 관련 강의가 없습니다.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
