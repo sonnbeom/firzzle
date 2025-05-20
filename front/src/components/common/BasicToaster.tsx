@@ -25,7 +25,7 @@ interface ToastOptions {
 const BasicToaster = ({ duration = 1500, ...props }: BasicToasterProps) => {
   return (
     <Toaster
-      theme='dark'
+      theme='system'
       position='bottom-center'
       duration={duration}
       {...props}

@@ -90,6 +90,7 @@ const ProgressBar = ({
     }
 
     return () => {
+      setIsSubmitted(false);
       sseManager.disconnect();
     };
   }, [taskId, handleMessage, showCompleteToast]);
