@@ -92,7 +92,7 @@ spring:
     maximum-pool-size: 10
   kafka:
     listener:
-      auto-startup: false
+      auto-startup: true
     bootstrap-servers: localhost:9092
     consumer:
       group-id: stt-group

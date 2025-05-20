@@ -24,8 +24,12 @@ public class SttConvertedConsumer {
         try {
             // ✅ JSON 문자열 → LlmRequest 객체로 역직렬화
             LlmRequestDTO requestObj = objectMapper.readValue(message, LlmRequestDTO.class);
-
+            if (requestObj.getUserContentSeq() == null) {
+                System.out.println("❌ userContentSeq가 null입니다. 메시지 처리 중단. message=" + message);
+                return; // ❌ 처리 중단
+            }
             LlmRequestDTO request = new LlmRequestDTO();
+            request.setUserContentSeq(requestObj.getUserContentSeq());
             request.setContentSeq(requestObj.getContentSeq());
             request.setScript(requestObj.getScript()); // 🎯 스크립트만 추출
             request.setTaskId(requestObj.getTaskId()); // sse taskId
