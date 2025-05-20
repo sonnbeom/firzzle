@@ -42,10 +42,11 @@ public class SystemPromptManager {
     				* "summary_Easy": 배경지식이 전혀 없는 사용자도 이해할 수 있도록 친절하고 상세하게 서술
     	            	- 어려운 용어는 구체적인 예시와 쉬운 설명을 포함
     					- 초등학생 수준의 학습자도 이해할 수 있는 말투로 작성
+    					- 여러 문장으로 원문의 내용을 상세히 구조화.
     				* "summary_High": 배경지식이 있는 사용자(대학생 또는 현업 종사자)를 위한 요약
     					- 핵심만 간결하게 개조식으로 작성
     					- 용어는 기본적으로 이해한다고 가정하고 설명
-
+    					- 여러 문장으로 원문의 내용을 상세히 구조화.
     			
     			---
     			2. oxQuiz
@@ -105,38 +106,40 @@ public class SystemPromptManager {
 
     public String getTimelineSystemPrompt() {
     	return """
-				Your Task:
-				You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups based on meaningful content transitions.
-				
-				You must output a single valid JSON object with the following structure:
-				
-				'''json
-				{
-				  "keywords": ["keyword1", "keyword2", "keyword3"],
-				  "timeline": [
-				    { "time": 68 },
-				    { "time": 312 },
-				    { "time": 755 },
-				    ...
-				  ]
-				}
-				'''
-				
-				Instructions:
-				- Analyze the full script and divide it into multiple parts based on **natural topic shifts or semantic changes**.
-				- Each timeline point must represent the **starting timestamp of a new logical section**.
-				- Do not divide sections mechanically. Instead, prioritize **semantic coherence** and keep the overall segmentation **balanced**.
-				- Choose a total of **2 to 6 timeline points**, based on content structure.
-				
-				Keyword Extraction:
-				- Select 2–3 keywords that are repeated or central to the script.
-				- All keywords must appear **literally** in the text.
-				
-				Constraints:
-				- Return only a valid JSON object.
-				- Do not include any extra explanation or code block markers.
-				- Format must match the example exactly.
-				- no markdown
+Your Task:
+You are given a transcript in the form of timestamped lines. Your job is to extract important keywords and segment the script into timeline groups based on meaningful content transitions.
+
+You must return a single valid JSON object with the following structure:
+
+{
+  "keywords": ["김금희", "소설", "대온실 수리 보고서"],
+  "timeline": [
+    { "time": 0 },
+    { "time": 312 },
+    { "time": 755 }
+  ]
+}
+
+Instructions:
+- Analyze the entire script thoroughly and holistically.
+- Divide it into logical sections based on **topic shifts or semantic changes**, not just surface patterns or line breaks.
+- Each timeline point must represent the **start of a new meaningful segment**.
+- Timeline points must be **evenly distributed across the entire duration** of the script, not clustered at the beginning.
+- Avoid placing more than two timeline points in the first 20% of the total duration.
+- Use semantic grouping, but also consider **temporal balance** when choosing timeline locations.
+- Assume the script is long (e.g., 20–30 minutes).
+- Return **4 to 6 timeline points** if possible, or at least 3 if the structure is simpler.
+- Timeline times must be provided in **seconds** (e.g., { "time": 755 }).
+
+Keyword Extraction:
+- Select **2–3 important keywords** that are central to the script’s topic.
+- All keywords must appear **literally** in the text and be meaningful and frequent.
+- Avoid overly generic or one-off words.
+
+Constraints:
+- Return only a valid JSON object and nothing else.
+- Do not include markdown, explanations, or comments.
+- The JSON format must match the example exactly.
     			""";
     }
 
