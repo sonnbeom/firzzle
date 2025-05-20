@@ -5,6 +5,7 @@ import HeaderButton from './HeaderButton';
 
 const Header = async () => {
   const accessToken = await getCookie('accessToken');
+
   return (
     <div className='sticky top-0 z-50 flex w-full items-center justify-between border-b border-gray-100 bg-white px-3 py-4 lg:px-6 lg:py-5'>
       <Link href='/'>
