@@ -538,13 +538,12 @@ public class RegistrationService {
     }
 
     /**
-     * SSE - 완료 상태 전송
+     * SSE - 완료 상태 전송 및 연결 해제
      */
     private void sendComplete(String taskId) {
-        sendSseEvent(taskId, "complete", Map.of(
-            "message", "요약 작업이 완료되었습니다.",
-            "timestamp", System.currentTimeMillis()
-        ));
+        // SseEmitterRepository의 complete 메서드 직접 호출
+        // (이 메서드는 이벤트 전송 후 remove까지 수행)
+        sseEmitterRepository.complete(taskId);
     }
 
 
