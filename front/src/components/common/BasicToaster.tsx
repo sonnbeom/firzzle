@@ -5,7 +5,7 @@ import { Toaster } from '../ui/sonner';
 
 const styles = {
   default: { background: 'rgba(26, 26, 26, 0.8)', color: '#fff' },
-  success: { background: 'rgba(241, 243, 255, 0.8)', color: '#fff' },
+  success: { background: 'rgba(50, 78, 239, 0.8)', color: '#fff' },
   warning: { background: 'rgba(146, 64, 14, 0.8)', color: '#fff' },
   error: { background: 'rgba(185, 28, 28, 0.8)', color: '#fff' },
 } as const;
@@ -37,7 +37,7 @@ BasicToaster.success = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.success,
-    className: 'font-medium text-md flex flex-col gap-2',
+    className: 'font-medium text-md',
     duration: options?.persistent ? Infinity : options?.duration,
     onDismiss: (toast) => {
       // 사용자가 직접 닫아야 함
