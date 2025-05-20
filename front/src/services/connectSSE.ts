@@ -85,10 +85,9 @@ class SSEManager {
     this.setupVisibilityHandler();
 
     const accessToken = await getCookie('accessToken');
-    console.log('accessToken 받아옴');
 
     if (!accessToken) {
-      throw new Error('No access token available');
+      throw new Error('UnAuthorized');
     }
 
     this.eventSource = new EventSourcePolyfill(url, {
