@@ -213,16 +213,34 @@ public class RegistrationService {
             .thenApply(response -> {
                 try {
                     ObjectMapper mapper = new ObjectMapper();
-                    String cleaned = ScriptUtils.extractJsonOnly(response);
-                    TimeLineWrapper wrapper = mapper.readValue(cleaned, TimeLineWrapper.class);
-                    logger.info("🧩 추출된 키워드: {}", wrapper.getKeywords());
-                    return wrapper;
+
+                    // ✅ 실제 GPT 응답 그대로 로깅
+                    logger.info("📨 GPT 원 응답:\n{}", response);
+
+                    // ✅ 안전하게 가장 바깥 JSON 블록 추출
+                    String cleaned = ScriptUtils.extractJsonObject(response);
+
+                    // ✅ 배열이면 리스트로 파싱 후 첫 개만 사용
+                    if (cleaned.startsWith("[")) {
+                        List<TimeLineWrapper> list = mapper.readValue(
+                            cleaned,
+                            new TypeReference<List<TimeLineWrapper>>() {}
+                        );
+                        if (list.isEmpty()) throw new RuntimeException("타임라인 응답이 비어 있음");
+                        return list.get(0);
+                    } else {
+                        TimeLineWrapper wrapper = mapper.readValue(cleaned, TimeLineWrapper.class);
+                        logger.info("🧩 추출된 키워드: {}", wrapper.getKeywords());
+                        return wrapper;
+                    }
+
                 } catch (Exception e) {
-                    logger.error("❌ 타임라인 파싱 실패: {}", response, e);
+                    logger.error("❌ 타임라인 파싱 실패 (raw):\n{}", response, e);
                     throw new RuntimeException("타임라인 파싱 실패", e);
                 }
             });
     }
+
 
 
     /**

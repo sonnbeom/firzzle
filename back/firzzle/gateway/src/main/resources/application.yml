@@ -46,11 +46,20 @@ spring:
                 enabled: true
             - RewritePath=/api/v2/auth/(?<segment>.*), /api/v2/${segment}
 
-        # Learning 서비스 - 인증 관련 공개 경로 (필터 적용 안함)
-        - id: learning-public-v1
+        # Learning 서비스 - 로깅 관련 공개 경로 (필터 적용 안함)
+        - id: learning-public-logging-v1
           uri: lb://learning-server
           predicates:
             - Path=/api/v1/learning/logging/visit
+          filters:
+            - RewritePath=/api/v1/learning/(?<segment>.*), /api/v1/${segment}
+
+        # Learning 서비스 - 공유 관련 GET 요청 공개 경로 (필터 적용 안함)
+        - id: learning-public-share-v1
+          uri: lb://learning-server
+          predicates:
+            - Path=/api/v1/learning/share/**
+            - Method=GET
           filters:
             - RewritePath=/api/v1/learning/(?<segment>.*), /api/v1/${segment}
 
