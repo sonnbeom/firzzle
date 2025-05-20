@@ -110,21 +110,27 @@ class SSEManager {
     // EventSource 자체의 연결 오류 처리
     this.eventSource.onerror = async (error) => {
       console.log('EventSource 연결 오류:', error);
-      // 401 에러 발생 시 토큰 갱신 후 재연결
-      const newToken = await this.refreshToken();
 
-      console.log('SSE 토큰 갱신');
-      if (this.url) {
-        this.connect({
-          url: this.url,
-          onConnect: this.currentCallbacks?.onConnect,
-          onStart: this.currentCallbacks?.onStart,
-          onProgress: this.currentCallbacks?.onProgress,
-          onResult: this.currentCallbacks?.onResult,
-          onComplete: this.currentCallbacks?.onComplete,
-          onError: this.currentCallbacks?.onError,
-          token: newToken,
-        });
+      // EventSource의 readyState를 확인하여 연결 상태 체크
+      if (this.eventSource?.readyState === EventSourcePolyfill.CLOSED) {
+        console.log('EventSource 연결이 종료됨');
+
+        // 401 에러 발생 시 토큰 갱신 후 재연결
+        const newToken = await this.refreshToken();
+        console.log('SSE 토큰 갱신');
+
+        if (this.url) {
+          this.connect({
+            url: this.url,
+            onConnect: this.currentCallbacks?.onConnect,
+            onStart: this.currentCallbacks?.onStart,
+            onProgress: this.currentCallbacks?.onProgress,
+            onResult: this.currentCallbacks?.onResult,
+            onComplete: this.currentCallbacks?.onComplete,
+            onError: this.currentCallbacks?.onError,
+            token: newToken,
+          });
+        }
       }
     };
 
