@@ -73,11 +73,24 @@ const Expert = () => {
           </button>
         </div>
       )}
-      <div className='mx-auto grid w-full max-w-[1000px] grid-cols-3 gap-1 px-1 sm:gap-2 sm:px-2 md:gap-4 md:px-6'>
-        {experts.map((expert) => (
-          <ExpertCard key={expert.expertSeq} expert={expert} />
-        ))}
-      </div>
+      {experts.length > 0 ? (
+        <div className='mx-auto grid w-full max-w-[1000px] grid-cols-3 gap-1 px-1 sm:gap-2 sm:px-2 md:gap-4 md:px-6'>
+          {experts.map((expert) => (
+            <ExpertCard key={expert.expertSeq} expert={expert} />
+          ))}
+        </div>
+      ) : (
+        <div className='pt-5'>
+          <div
+            className='relative w-full overflow-hidden rounded-lg border border-gray-200 bg-blue-50'
+            style={{ aspectRatio: '16/4.5' }}
+          >
+            <div className='flex h-full items-center justify-center text-center text-gray-500'>
+              현재는 관련 전문가가 없습니다.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

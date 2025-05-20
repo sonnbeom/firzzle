@@ -35,7 +35,7 @@ const TutorialContainer = () => {
           {step.title}
         </button>
       )),
-    []
+    [],
   );
 
   const renderContent = useMemo(
@@ -45,7 +45,7 @@ const TutorialContainer = () => {
           <Component />
         </div>
       )),
-    []
+    [],
   );
 
   return (
