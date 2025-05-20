@@ -16,7 +16,7 @@ const Summary = async ({ params, searchParams }: PageProps) => {
   const summaryData = await getSummary(id);
 
   return (
-    <div className='flex w-full flex-col gap-4 lg:gap-7'>
+    <div className='flex w-full flex-col gap-4 px-2 lg:gap-7'>
       <LevelTab initialTab={tab} />
       <SummaryContent
         level={tab}

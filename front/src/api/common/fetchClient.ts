@@ -120,8 +120,6 @@ export class FetchClient {
 
       return dataResponse;
     } catch (error) {
-      console.log('error: ', retryCount);
-
       // 재시도
       if (retryCount < this.MAX_RETRIES) {
         await new Promise((resolve) =>
@@ -131,16 +129,19 @@ export class FetchClient {
         if (error.message === 'Unauthorized') {
           console.log('토큰 갱신');
           // 토큰 갱신 API
-          const response = await fetch('/api/auth/refresh', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`,
+            {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                retryCount: retryCount + 1,
+              }),
             },
-            body: JSON.stringify({
-              retryCount: retryCount + 1,
-            }),
-          });
+          );
 
           if (response.status === 200) {
             return this.request(url, {
