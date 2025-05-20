@@ -25,25 +25,22 @@ const ProgressBar = ({
   }, []);
 
   // 완료 토스트 표시 핸들러
-  const showCompleteToast = useCallback(
-    (message: string, seq: string, title: string) => {
-      BasicToaster.success(message, {
-        id: 'sse youtube',
-        persistent: true,
-        closeButton: true,
-        children: (
-          <Link
-            href={`/content/${seq}`}
-            className='bg-opacity-20 hover:bg-opacity-30 mt-2 rounded-md bg-white px-4 py-2 transition-all'
-            onClick={() => toast.dismiss('sse youtube')}
-          >
-            {title} 요약 보러가기
-          </Link>
-        ),
-      });
-    },
-    [],
-  );
+  const showCompleteToast = useCallback((message: string, seq: string) => {
+    BasicToaster.success(message, {
+      id: 'sse youtube',
+      persistent: true,
+      closeButton: true,
+      children: (
+        <Link
+          href={`/content/${seq}`}
+          className='bg-opacity-20 hover:bg-opacity-30 mt-2 rounded-md bg-white px-4 py-2 transition-all'
+          onClick={() => toast.dismiss('sse youtube')}
+        >
+          요약 보러가기
+        </Link>
+      ),
+    });
+  }, []);
 
   useEffect(() => {
     if (!taskId) return;
@@ -64,11 +61,7 @@ const ProgressBar = ({
       },
       onComplete: (data) => {
         if (currentContentSeq) {
-          showCompleteToast(
-            data.message,
-            currentContentSeq,
-            data.blocks[data.blocks.length - 1].title,
-          );
+          showCompleteToast(data.message, currentContentSeq);
         }
       },
       onError: (error: SSEEventData) => {

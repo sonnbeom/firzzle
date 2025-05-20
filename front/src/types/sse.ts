@@ -8,8 +8,4 @@ export interface SSEEventData {
   currentIndex?: number;
   totalTopics?: number;
   blockCount?: number;
-  blocks?: Array<{
-    title: string;
-    time: string;
-  }>;
 }
