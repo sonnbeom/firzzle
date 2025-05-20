@@ -55,9 +55,7 @@ const ProgressBar = ({
     try {
       sseManager.connect({
         url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
-        onConnect: () => {
-          setIsSubmitted(true);
-        },
+        onConnect: handleMessage,
         onStart: handleMessage,
         onProgress: handleMessage,
         onResult: (data) => {
