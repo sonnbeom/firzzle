@@ -1,6 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { getCookie } from '@/actions/auth';
 import { logout } from '@/api/auth';
 import OAuthButton from '../home/OAuthButton';
 
@@ -9,9 +12,20 @@ interface HeaderButtonProps {
 }
 
 const HeaderButton = ({ accessToken }: HeaderButtonProps) => {
+  const [token, setToken] = useState(accessToken);
+
+  useEffect(() => {
+    const checkAccessToken = async () => {
+      const newToken = await getCookie('accessToken');
+      setToken(newToken);
+    };
+
+    checkAccessToken();
+  }, [token]);
+
   return (
     <>
-      {!accessToken ? (
+      {!token ? (
         <OAuthButton
           url='https://kauth.kakao.com/oauth/authorize'
           oauth='kakao'
