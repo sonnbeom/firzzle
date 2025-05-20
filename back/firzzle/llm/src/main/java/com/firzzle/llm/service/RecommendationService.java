@@ -67,7 +67,7 @@ public class RecommendationService {
                         QdrantCollections.CONTENT,
                         vector,
                         18,
-                        0.25,
+                        0.22,
                         contentSeq
                 ).map(results -> Map.of(
                     "results", results,
