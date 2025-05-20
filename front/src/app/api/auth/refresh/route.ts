@@ -5,7 +5,6 @@ import { TokenResponse } from '@/types/auth';
 
 // 토큰 갱신
 export async function POST(request: NextRequest) {
-  console.log('토큰 갱신 API 라우트');
   try {
     const { retryCount } = await request.json();
 
@@ -20,17 +19,16 @@ export async function POST(request: NextRequest) {
       const accessToken = response.data.accessToken;
       setCookie('accessToken', accessToken);
 
-      return NextResponse.json({ message: response.message }, { status: 200 });
+      return NextResponse.json(
+        { message: response.message, data: accessToken },
+        { status: 200 },
+      );
     }
 
     removeCookie('accessToken');
-    request.cookies.delete('accessToken');
-
     return NextResponse.json({ message: response.message }, { status: 400 });
   } catch (error) {
     removeCookie('accessToken');
-    request.cookies.delete('accessToken');
-
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
