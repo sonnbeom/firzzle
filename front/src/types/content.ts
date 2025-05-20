@@ -30,10 +30,10 @@ export type ContentListResponse = InfiniteScrollResponse<Content>;
 // 학습 컨텐츠 등록 요청 타입
 export type ContentRegisterRequest = {
   youtubeUrl: string;
-  title?: string | null;
-  description?: string | null;
-  category?: string | null;
-  tags?: string | null;
+  title: string | null;
+  description: string | null;
+  category: string | null;
+  tags: string | null;
 };
 
 // 학습 컨텐츠 등록 응답 타입
