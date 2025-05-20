@@ -47,13 +47,28 @@ class SSEManager {
 
     const accessToken = await getCookie('accessToken');
 
+    console.log('[SSE] Attempting to connect:', {
+      url,
+      hasAccessToken: !!accessToken,
+      timestamp: new Date().toISOString(),
+    });
+
     this.eventSource = new EventSourcePolyfill(url, {
       headers: {
         Accept: 'text/event-stream',
         Authorization: `Bearer ${accessToken}`,
       },
+      heartbeatTimeout: 60000, // 60초로 타임아웃 시간 증가
     });
     this.url = url;
+
+    // 연결 시도 시점 로깅
+    this.eventSource.onopen = () => {
+      console.log('[SSE] Connection opened successfully:', {
+        url,
+        timestamp: new Date().toISOString(),
+      });
+    };
 
     // 하트비트 이벤트 처리
     this.eventSource.addEventListener('heartbeat', () => {
