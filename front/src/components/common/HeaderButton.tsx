@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { getCookie } from '@/actions/auth';
@@ -13,6 +14,7 @@ interface HeaderButtonProps {
 
 const HeaderButton = ({ accessToken }: HeaderButtonProps) => {
   const [token, setToken] = useState(accessToken);
+  const pathname = usePathname();
 
   useEffect(() => {
     const checkAccessToken = async () => {
@@ -21,7 +23,7 @@ const HeaderButton = ({ accessToken }: HeaderButtonProps) => {
     };
 
     checkAccessToken();
-  }, [token]);
+  }, [token, pathname]);
 
   return (
     <>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { sseManager } from '@/services/connectSSE';
@@ -16,6 +17,7 @@ const ProgressBar = ({
 }) => {
   const [contentSeq, setContentSeq] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   // 메시지 업데이트 핸들러
   const handleMessage = useCallback((data: SSEEventData) => {
@@ -50,31 +52,44 @@ const ProgressBar = ({
     console.log('SSE 연결 시작');
 
     // SSE 연결
-    sseManager.connect({
-      url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
-      onConnect: handleMessage,
-      onStart: handleMessage,
-      onProgress: handleMessage,
-      onResult: (data) => {
-        if (data.contentSeq) {
-          currentContentSeq = data.contentSeq;
-          setContentSeq(data.contentSeq);
-        }
-      },
-      onComplete: (data) => {
-        setIsSubmitted(false);
-        if (currentContentSeq) {
-          showCompleteToast(data.message, currentContentSeq);
-        }
-      },
-      onError: (error: SSEEventData) => {
-        BasicToaster.error(error.message, {
+    try {
+      sseManager.connect({
+        url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
+        onConnect: () => {
+          setIsSubmitted(true);
+        },
+        onStart: handleMessage,
+        onProgress: handleMessage,
+        onResult: (data) => {
+          if (data.contentSeq) {
+            currentContentSeq = data.contentSeq;
+            setContentSeq(data.contentSeq);
+          }
+        },
+        onComplete: (data) => {
+          setIsSubmitted(false);
+          if (currentContentSeq) {
+            showCompleteToast(data.message, currentContentSeq);
+          }
+        },
+        onError: (error: SSEEventData) => {
+          BasicToaster.error(error.message, {
+            id: 'sse youtube',
+            duration: 2000,
+          });
+          setIsSubmitted(false);
+        },
+      });
+    } catch (error) {
+      if (error.message === 'UnAuthorized') {
+        BasicToaster.error('로그인이 만료되었습니다.', {
           id: 'sse youtube',
           duration: 2000,
         });
+        router.push('/');
         setIsSubmitted(false);
-      },
-    });
+      }
+    }
 
     return () => {
       sseManager.disconnect();
