@@ -235,23 +235,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-/* Sonner Toast Close Button Styles */
-[data-sonner-toast] {
-  position: relative;
-}
-
-[data-sonner-toast] [data-close-button] {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-[data-sonner-toast] [data-close-button] svg {
-  width: 14px;
-  height: 14px;
-}
