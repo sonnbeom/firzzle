@@ -71,27 +71,28 @@ public class ScriptUtils {
     }
 
     // LLM 응답 텍스트에서 JSON 배열만 추출 (```json ... ``` 또는 [ ... ] 형태)
-    public static String extractJsonOnly(String raw) {
+    public static String extractJsonObject(String raw) {
+        raw = raw.trim();
+
         if (raw.contains("```")) {
             int start = raw.indexOf("```") + 3;
             int end = raw.lastIndexOf("```");
             String block = raw.substring(start, end).trim();
-
-            if (block.startsWith("json")) {
-                block = block.substring(4).trim();
-            }
-
+            if (block.startsWith("json")) block = block.substring(4).trim();
             return block;
         }
 
-        // 일반 JSON 배열 처리
-        int start = raw.indexOf("[");
-        int end = raw.lastIndexOf("]") + 1;
+        int objStart = raw.indexOf('{');
+        int arrStart = raw.indexOf('[');
+        if (objStart == -1 && arrStart == -1)
+            throw new IllegalArgumentException("JSON 블록이 없습니다");
 
-        if (start == -1 || end <= start) {
-            throw new IllegalArgumentException("JSON 배열을 찾을 수 없음");
+        if (objStart != -1 && (arrStart == -1 || objStart < arrStart)) {
+            int objEnd = raw.lastIndexOf('}');
+            return raw.substring(objStart, objEnd + 1).trim();
+        } else {
+            int arrEnd = raw.lastIndexOf(']');
+            return raw.substring(arrStart, arrEnd + 1).trim();
         }
-
-        return raw.substring(start, end).trim();
     }
 }
