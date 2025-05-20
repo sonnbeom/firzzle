@@ -25,6 +25,7 @@ import com.firzzle.llm.dto.ExamHistoryResponseDTO;
 import com.firzzle.llm.dto.ExamHistoryWrapperDTO;
 import com.firzzle.llm.dto.ExamProgressDTO;
 import com.firzzle.llm.dto.ExamsDTO;
+import com.firzzle.llm.dto.InfoDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
 import com.firzzle.llm.dto.NextExamResponseDTO;
@@ -393,10 +394,13 @@ public class LearningChatService {
             if (answerDto != null) result.add(answerDto);
             if (questionDto != null) result.add(questionDto);
         }
-        
+        InfoDTO info = new InfoDTO();
+        info.setCurrentExamSeq(progress != null ? progress.getExamSeq() : null);
+        info.setSolvedCount(progress != null ? progress.getSolvedCount() : 0);
+
         return CompletableFuture.completedFuture(
         	    ExamHistoryWrapperDTO.builder()
-        	        .currentExamSeq(progress != null ? progress.getExamSeq() : null)
+        	        .info(info)
         	        .historyList(result)
         	        .build()
         	);

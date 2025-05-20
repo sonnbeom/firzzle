@@ -18,11 +18,9 @@ import com.firzzle.common.response.Status;
 import com.firzzle.llm.dto.ChatHistoryResponseDTO;
 import com.firzzle.llm.dto.ExamAnswerRequestDTO;
 import com.firzzle.llm.dto.ExamAnswerResponseDTO;
-import com.firzzle.llm.dto.ExamsDTO;
 import com.firzzle.llm.dto.LearningChatRequestDTO;
 import com.firzzle.llm.dto.LearningChatResponseDTO;
 import com.firzzle.llm.dto.NextExamResponseDTO;
-import com.firzzle.llm.dto.ExamHistoryResponseDTO;
 import com.firzzle.llm.service.LearningChatService;
 import com.firzzle.llm.dto.ExamHistoryWrapperDTO;
 

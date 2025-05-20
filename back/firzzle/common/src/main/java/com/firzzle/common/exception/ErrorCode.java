@@ -88,6 +88,7 @@ public enum ErrorCode {
     OPENAI_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "MSG_0000070710", "OpenAI 응답 생성 중 오류가 발생했습니다"),
     ANSWER_ALREADY_COMPLETED(HttpStatus.CONFLICT, "MSG_0000070711", "모든 시험 문제를 이미 완료했습니다"),
     VECTOR_EMBEDDING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070712", "질문 임베딩 처리 중 오류가 발생했습니다"),
+    KAFKA_REQUEST_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "MSG_0000070713", "카프카 요청 처리 중 오류가 발생했습니다"),
     
 
     // =========== STT Module ===========
