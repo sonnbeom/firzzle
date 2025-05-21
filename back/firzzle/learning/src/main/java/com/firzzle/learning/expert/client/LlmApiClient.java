@@ -82,7 +82,7 @@ public class LlmApiClient {
 
             // API URL 구성
             String url = UriComponentsBuilder.fromHttpUrl(llmServiceUrl)
-                    .path("/api/v1/llm/expert/embeddings/linkedin/similar")
+                    .path("/service/api/v1/llm/expert/embeddings/linkedin/similar")
                     .queryParam("contentSeq", contentSeq)
                     .queryParam("tags", tags)
                     .queryParam("minScore", minScore)
