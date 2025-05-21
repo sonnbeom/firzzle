@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
 import { sseManager } from '@/services/connectSSE';
 import { SSEEventData } from '@/types/sse';
 import BasicToaster from '../common/BasicToaster';
@@ -16,6 +17,7 @@ const ProgressBar = ({
 }) => {
   const [contentSeq, setContentSeq] = useState<string | null>(null);
   const [message, setMessage] = useState('');
+  const [progress, setProgress] = useState(0);
 
   // 메시지 업데이트 핸들러
   const handleMessage = useCallback((data: SSEEventData) => {
@@ -53,19 +55,33 @@ const ProgressBar = ({
     try {
       sseManager.connect({
         url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
-        onConnect: handleMessage,
-        onStart: handleMessage,
-        onProgress: handleMessage,
+        onConnect: (data) => {
+          handleMessage(data);
+          setProgress(3);
+        },
+        onStart: (data) => {
+          handleMessage(data);
+          setProgress(10);
+        },
+        onProgress: (data) => {
+          handleMessage(data);
+          setProgress((prev) => Math.min(prev + 5, 95));
+        },
+        onHeartbeat: () => {
+          setProgress((prev) => Math.min(prev + 1, 95));
+        },
         onResult: (data) => {
           if (data.contentSeq) {
             currentContentSeq = data.contentSeq;
             setContentSeq(data.contentSeq);
           }
+          setProgress(85);
         },
         onComplete: (data) => {
           if (currentContentSeq) {
             showCompleteToast(data.message, currentContentSeq);
           }
+          setProgress(100);
           setIsSubmitted(false);
           sseManager.disconnect();
         },
@@ -108,8 +124,8 @@ const ProgressBar = ({
   return (
     <div className='flex flex-col items-center text-lg font-medium text-gray-900'>
       <p>입력하신 영상을 학습 자료로 분석 중이에요</p>
-      <p>약 10분 정도 소요될 수 있어요</p>
       <p className='py-2 text-base text-gray-950'>{message}</p>
+      <Progress value={progress} className='w-full max-w-md' />
     </div>
   );
 };

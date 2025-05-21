@@ -56,7 +56,7 @@ BasicToaster.error = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    closeButton: options?.closeButton ?? true,
+    closeButton: options?.closeButton ?? false,
   });
 
 BasicToaster.warning = (message: string, options?: ToastOptions) =>
@@ -66,7 +66,7 @@ BasicToaster.warning = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    closeButton: options?.closeButton ?? true,
+    closeButton: options?.closeButton ?? false,
   });
 
 BasicToaster.default = (message: string, options?: ToastOptions) =>
