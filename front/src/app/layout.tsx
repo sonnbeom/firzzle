@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: 'Firzzle',
     images: [
       {
-        url: '/logo-512.png',
+        url: 'https://firzzle.site/logo-512.png',
         width: 512,
         height: 512,
         alt: 'Firzzle Logo',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Firzzle',
     description: 'AI 영상 분석으로 빠르고 간편하게 학습하세요!',
-    images: ['/logo-512.png'],
+    images: ['https://firzzle.site/logo-512.png'],
   },
   appleWebApp: {
     capable: true,
@@ -53,11 +53,25 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/logo-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/logo-512.png', sizes: '512x512', type: 'image/png' },
+      {
+        url: 'https://firzzle.site/logo-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+      },
+      {
+        url: 'https://firzzle.site/logo-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+      },
     ],
-    apple: [{ url: '/logo-192.png', sizes: '180x180', type: 'image/png' }],
-    shortcut: '/logo-192.png',
+    apple: [
+      {
+        url: 'https://firzzle.site/logo-192.png',
+        sizes: '180x180',
+        type: 'image/png',
+      },
+    ],
+    shortcut: 'https://firzzle.site/logo-192.png',
   },
   other: {
     'apple-mobile-web-app-capable': 'yes',
@@ -69,6 +83,7 @@ export const metadata: Metadata = {
     'msapplication-TileImage': '/logo-192.png',
   },
 };
+<link rel='manifest' href='/manifest.json'></link>;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
