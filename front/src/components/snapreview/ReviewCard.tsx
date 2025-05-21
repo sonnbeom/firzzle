@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { getContentSnapReview, updateFrameComments } from '@/api/snap';
 import { UpdateFrameCommentsRequest, Frame } from '@/types/snapReview';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
-import Icons from '../common/Icons';
 import TimeStamp from '../common/TimeStamp';
 import ReviewLoading from './ReviewLoading';
-
+import ReviewTextField from './ReviewTextField';
+import ReviewWriteButton from './ReviewWriteButton';
 interface ReviewCardProps {
   contentId: string;
 }
@@ -32,6 +32,7 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
     setEditingId(id);
   };
 
+  // 작성한 내용 저장
   const handleSaveClick = async (id: string, description: string) => {
     try {
       const request: UpdateFrameCommentsRequest = {
@@ -54,6 +55,7 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
     }
   };
 
+  // 읽기 모드로 전환
   const handleDescriptionChange = (id: string, newDescription: string) => {
     const truncatedDescription = newDescription.slice(
       0,
@@ -69,7 +71,7 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
   };
 
   return (
-    <div className='space-y-4 p-4 lg:p-6'>
+    <div className='flex flex-col gap-4 p-4 lg:p-6'>
       {localReviews === null || localReviews.length === 0 ? (
         <ReviewLoading />
       ) : (
@@ -78,126 +80,37 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
         </div>
       )}
       {localReviews && localReviews.length > 0 && (
-        <div className='flex gap-4'>
-          {/* 이미지 그룹 */}
-          <div className='w-1/2 bg-blue-50 p-4 md:w-2/5'>
-            <div className='space-y-8'>
-              {localReviews.map((item) => (
-                <div
-                  key={`image-${item.frameSeq}`}
-                  className='relative aspect-video w-full'
-                >
+        <div className='flex flex-col justify-around'>
+          {localReviews.map((item) => (
+            <div key={`image-${item.frameSeq}`} className='flex gap-4'>
+              {/* 이미지 그룹 */}
+              <div className='flex w-1/2 bg-blue-50 p-4 md:w-2/5 md:justify-start md:gap-4'>
+                <div className='relative aspect-video w-full'>
                   <TimeStamp
                     time={item.timestamp}
                     type='image'
                     imageUrl={item.imageUrl}
-                    width={600}
-                    height={400}
                   />
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* 텍스트 그룹 */}
-          <div className='min-w-0 flex-1'>
-            <div className='space-y-8'>
-              {localReviews.map((item) => (
-                <div
-                  key={`text-${item.frameSeq}`}
-                  className='relative h-[180px] p-4'
-                >
-                  <div className='absolute right-0 bottom-[-16px] left-0 border-b border-blue-50'></div>
-                  {editingId === String(item.frameSeq) ? (
-                    <textarea
-                      className='lg:text-md text-md mt-2 h-[140px] w-full resize-none border border-blue-50 text-gray-700 focus:border-blue-400'
-                      value={item.comment || ''}
-                      placeholder='내용을 작성해 주세요.'
-                      onChange={(e) =>
-                        handleDescriptionChange(
-                          String(item.frameSeq),
-                          e.target.value,
-                        )
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSaveClick(
-                            String(item.frameSeq),
-                            item.comment || '',
-                          );
-                        }
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className={`h-full overflow-hidden ${!item.comment ? 'flex items-center justify-center' : ''}`}
-                    >
-                      <p
-                        className={`mt-2 line-clamp-5 text-sm whitespace-pre-line text-gray-700 md:text-base lg:line-clamp-none ${!item.comment ? 'text-center' : ''}`}
-                      >
-                        {item.comment ||
-                          '우측 하단의 버튼을 눌러 내용을 작성해주세요.'}
-                      </p>
-                    </div>
-                  )}
-                  <div className='-mt-2 -mr-4 flex items-center justify-end'>
-                    <span className='text-sm text-gray-500 md:text-base'>
-                      ({item.comment?.length || 0}/{MAX_SNAP_REVIEW_LENGTH})
-                    </span>
-                    <button
-                      className='mr-2 p-2'
-                      onClick={() =>
-                        editingId === String(item.frameSeq)
-                          ? handleSaveClick(
-                              String(item.frameSeq),
-                              item.comment || '',
-                            )
-                          : handleEditClick(String(item.frameSeq))
-                      }
-                      aria-label={
-                        editingId === String(item.frameSeq) ? 'Save' : 'Edit'
-                      }
-                    >
-                      <div className='hidden md:block lg:hidden'>
-                        <Icons
-                          id={
-                            editingId === String(item.frameSeq)
-                              ? 'upload'
-                              : 'write'
-                          }
-                          size={20}
-                          color={'text-gray-900'}
-                        />
-                      </div>
-                      <div className='hidden lg:block'>
-                        <Icons
-                          id={
-                            editingId === String(item.frameSeq)
-                              ? 'upload'
-                              : 'write'
-                          }
-                          size={24}
-                          color={'text-gray-900'}
-                        />
-                      </div>
-                      <div className='block md:hidden'>
-                        <Icons
-                          id={
-                            editingId === String(item.frameSeq)
-                              ? 'upload'
-                              : 'write'
-                          }
-                          size={18}
-                          color={'text-gray-900'}
-                        />
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <div className='flex min-w-0 flex-1 flex-col justify-around border-b border-blue-50 py-4'>
+                <ReviewTextField
+                  isEditing={editingId === String(item.frameSeq)}
+                  item={item}
+                  handleDescriptionChange={handleDescriptionChange}
+                  handleSaveClick={handleSaveClick}
+                />
+                <ReviewWriteButton
+                  isEditing={editingId === String(item.frameSeq)}
+                  item={item}
+                  handleSaveClick={handleSaveClick}
+                  handleEditClick={handleEditClick}
+                />
+              </div>
             </div>
-          </div>
+          ))}
+          {/* 텍스트 그룹 */}
         </div>
       )}
     </div>

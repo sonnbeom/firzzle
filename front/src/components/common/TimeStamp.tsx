@@ -27,8 +27,6 @@ interface ReviewLinkProps extends TimeStampBaseProps {
 interface ImageProps extends TimeStampBaseProps {
   type: 'image';
   imageUrl: string;
-  width: number;
-  height: number;
 }
 
 type TimeStampProps = TimeTextProps | ReviewLinkProps | ImageProps;
