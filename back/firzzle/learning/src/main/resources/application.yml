@@ -116,6 +116,11 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+# Eureka 통해 LLM 서비스 접근
+llm:
+  service:
+    url: ENC(NQsmH0zVL+P7Qu6ZXWKj7sVJl3M41m6Tie1ckIHrlc9g+QDdhZxtqK7v8azKRLyO)  # 로드 밸런싱 URI 사용
+
 # MyBatis 설정
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
@@ -183,6 +188,11 @@ eureka:
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
+# Eureka 통해 LLM 서비스 접근
+llm:
+  service:
+    url: ENC(YhTAJN3mQXf0+gtUjJoJUT1IY+WzFMfUcuYfjk7ejC8=)  # 로드 밸런싱 URI 사용
+
 # MyBatis 설정
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
@@ -249,6 +259,11 @@ eureka:
       defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
   instance:
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Eureka 통해 LLM 서비스 접근
+llm:
+  service:
+    url: ENC(YhTAJN3mQXf0+gtUjJoJUT1IY+WzFMfUcuYfjk7ejC8=)  # 로드 밸런싱 URI 사용
 
 # MyBatis 설정.
 mybatis:
