@@ -71,7 +71,10 @@ const ProgressBar = ({
           }
         },
         onError: (error: SSEEventData) => {
-          BasicToaster.error(error.message, {
+          console.error('SSE 에러 발생:', error);
+          const errorMessage =
+            error.message || '처리 중 오류가 발생했습니다. 다시 시도해주세요.';
+          BasicToaster.error(errorMessage, {
             id: 'sse youtube',
             duration: 2000,
           });
@@ -79,7 +82,12 @@ const ProgressBar = ({
         },
       });
     } catch (error) {
-      BasicToaster.error(error.message, {
+      console.error('SSE 연결 시도 중 에러 발생:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : '연결 중 오류가 발생했습니다. 다시 시도해주세요.';
+      BasicToaster.error(errorMessage, {
         id: 'sse youtube',
         duration: 2000,
       });
