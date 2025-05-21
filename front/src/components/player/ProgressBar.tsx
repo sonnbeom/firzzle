@@ -76,17 +76,20 @@ const ProgressBar = ({
               duration: 2000,
             });
           } else {
-            BasicToaster.error(error.message, {
-              id: 'sse youtube',
-              duration: 2000,
-            });
+            BasicToaster.error(
+              error.message || '처리 중 오류가 발생했습니다.',
+              {
+                id: 'sse youtube',
+                duration: 2000,
+              },
+            );
           }
           setIsSubmitted(false);
         },
       });
     } catch (error) {
       console.error('SSE 연결 시도 중 에러 발생:', error);
-      BasicToaster.error(error.message, {
+      BasicToaster.error(error.message || '연결 중 오류가 발생했습니다.', {
         id: 'sse youtube',
         duration: 2000,
       });

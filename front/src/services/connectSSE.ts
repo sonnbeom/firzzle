@@ -100,10 +100,10 @@ class SSEManager {
       console.log('EventSource 상태:', this.eventSource?.readyState);
 
       try {
-        // refresh 시도
-        if (event.target.status === 401) {
+        // EventSource의 에러 이벤트에서 status 확인
+        const target = event.target as EventSourcePolyfill;
+        if (target.readyState === EventSourcePolyfill.CLOSED) {
           console.log('refresh를 시도합니다.');
-          // accessToken이 없는 경우 refresh 시도
           const refreshToken = await getCookie('refresh_token');
 
           const response = await fetch('/api/auth/refresh', {
@@ -151,6 +151,7 @@ class SSEManager {
     // 연결 성공
     this.eventSource.addEventListener('connect', (event: MessageEvent) => {
       try {
+        if (!event.data) return;
         const data = JSON.parse(event.data) as SSEEventData;
         onConnect?.(data);
       } catch (error) {
@@ -162,6 +163,7 @@ class SSEManager {
     // 시작
     this.eventSource.addEventListener('start', (event: MessageEvent) => {
       try {
+        if (!event.data) return;
         const data = JSON.parse(event.data) as SSEEventData;
         onStart?.(data);
       } catch (error) {
@@ -173,6 +175,7 @@ class SSEManager {
     // 진행 상황
     this.eventSource.addEventListener('progress', (event: MessageEvent) => {
       try {
+        if (!event.data) return;
         const data = JSON.parse(event.data) as SSEEventData;
         onProgress?.(data);
       } catch (error) {
@@ -184,6 +187,7 @@ class SSEManager {
     // 결과
     this.eventSource.addEventListener('result', (event: MessageEvent) => {
       try {
+        if (!event.data) return;
         const data = JSON.parse(event.data) as SSEEventData;
         onResult?.(data);
       } catch (error) {
@@ -195,6 +199,7 @@ class SSEManager {
     // 완료
     this.eventSource.addEventListener('complete', (event: MessageEvent) => {
       try {
+        if (!event.data) return;
         const data = JSON.parse(event.data) as SSEEventData;
         onComplete?.(data);
       } catch (error) {
@@ -206,6 +211,7 @@ class SSEManager {
     // 오류 발생
     this.eventSource.addEventListener('error', (event: MessageEvent) => {
       try {
+        if (!event.data) return;
         const data = JSON.parse(event.data) as SSEEventData;
         onError?.(data);
       } catch (error) {
