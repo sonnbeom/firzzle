@@ -1,7 +1,6 @@
 export type Mode = '학습모드' | '시험모드';
 
 export interface LearningChat {
-  chatSeq: number;
   chatText: string;
   indate: string;
   type: '0' | '1'; // 0은 사용자, 1은 챗봇
