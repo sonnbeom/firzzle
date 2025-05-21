@@ -21,6 +21,28 @@ export const metadata: Metadata = {
   themeColor: '#ffffff',
   viewport:
     'minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover',
+  openGraph: {
+    title: 'Firzzle',
+    description: 'AI 영상 분석으로 빠르고 간편하게 학습하세요!',
+    url: 'https://firzzle.site',
+    siteName: 'Firzzle',
+    images: [
+      {
+        url: '/logo-512.png',
+        width: 512,
+        height: 512,
+        alt: 'Firzzle Logo',
+      },
+    ],
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Firzzle',
+    description: 'AI 영상 분석으로 빠르고 간편하게 학습하세요!',
+    images: ['/logo-512.png'],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
