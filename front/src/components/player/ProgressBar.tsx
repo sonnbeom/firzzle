@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { sseManager } from '@/services/connectSSE';
@@ -17,7 +16,6 @@ const ProgressBar = ({
 }) => {
   const [contentSeq, setContentSeq] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const router = useRouter();
 
   // 메시지 업데이트 핸들러
   const handleMessage = useCallback((data: SSEEventData) => {
@@ -55,10 +53,7 @@ const ProgressBar = ({
     try {
       sseManager.connect({
         url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
-        onConnect: () => {
-          console.log('SSE 연결 성공');
-          setIsSubmitted(true);
-        },
+        onConnect: handleMessage,
         onStart: handleMessage,
         onProgress: handleMessage,
         onResult: (data) => {
@@ -102,7 +97,7 @@ const ProgressBar = ({
       setIsSubmitted(false);
       sseManager.disconnect();
     };
-  }, [taskId, handleMessage, showCompleteToast]);
+  }, [taskId, handleMessage, showCompleteToast, setIsSubmitted]);
 
   return (
     <div className='flex flex-col items-center text-lg font-medium text-gray-900'>
