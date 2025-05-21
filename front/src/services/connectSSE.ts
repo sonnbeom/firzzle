@@ -84,30 +84,27 @@ class SSEManager {
     // Visibility API 핸들러 설정 (탭 전환 시 재연결)
     this.setupVisibilityHandler();
 
-    try {
-      const accessToken = await getCookie('accessToken');
+    const accessToken = await getCookie('accessToken');
 
-      this.eventSource = new EventSourcePolyfill(url, {
-        headers: {
-          Accept: 'text/event-stream',
-          Authorization: `Bearer ${accessToken}`,
-        },
-        withCredentials: true,
-      });
-      this.url = url;
+    this.eventSource = new EventSourcePolyfill(url, {
+      headers: {
+        Accept: 'text/event-stream',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      withCredentials: true,
+    });
+    this.url = url;
 
-      this.eventSource.onerror = async (event: Event) => {
-        console.log('SSE 연결 오류', event);
-        console.log('EventSource 상태:', this.eventSource?.readyState);
+    this.eventSource.onerror = async (event: Event) => {
+      console.log('SSE 연결 오류', event);
+      console.log('EventSource 상태:', this.eventSource?.readyState);
 
-        try {
+      try {
+        // refresh 시도
+        if (event.target.status === 401) {
+          console.log('refresh를 시도합니다.');
           // accessToken이 없는 경우 refresh 시도
-          const currentAccessToken = await getCookie('accessToken');
           const refreshToken = await getCookie('refresh_token');
-
-          if (!currentAccessToken) {
-            console.log('accessToken이 없어 refresh를 시도합니다.');
-          }
 
           const response = await fetch('/api/auth/refresh', {
             method: 'POST',
@@ -117,14 +114,14 @@ class SSEManager {
             }),
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${currentAccessToken || ''}`,
-              Cookie: `accessToken=${currentAccessToken || ''}; refresh_token=${refreshToken}`,
+              Authorization: `Bearer ${accessToken}`,
+              Cookie: `accessToken=${accessToken}; refresh_token=${refreshToken}`,
             },
           });
 
           if (response.status !== 200) {
             console.error('토큰 갱신 실패');
-            throw new Error('Unauthorized');
+            throw new Error(response.statusText);
           }
 
           const data = await response.json();
@@ -138,15 +135,15 @@ class SSEManager {
             },
             withCredentials: true,
           });
-        } catch (error) {
-          console.error('SSE 에러 처리 중 발생한 오류:', error);
-          throw error;
+        } else {
+          console.log('refresh 오류 외 오류', event);
+          onError?.(event);
         }
-      };
-    } catch (error) {
-      console.error('SSE 연결 생성 중 발생한 오류:', error);
-      throw error;
-    }
+      } catch (error) {
+        console.log('refresh 오류', error);
+        throw error;
+      }
+    };
 
     // 하트비트 이벤트 처리
     this.eventSource.addEventListener('heartbeat', () => {});
@@ -157,6 +154,7 @@ class SSEManager {
         const data = JSON.parse(event.data) as SSEEventData;
         onConnect?.(data);
       } catch (error) {
+        console.log('연결 성공 오류', error);
         throw error;
       }
     });
@@ -167,6 +165,7 @@ class SSEManager {
         const data = JSON.parse(event.data) as SSEEventData;
         onStart?.(data);
       } catch (error) {
+        console.log('시작 오류', error);
         throw error;
       }
     });
@@ -177,6 +176,7 @@ class SSEManager {
         const data = JSON.parse(event.data) as SSEEventData;
         onProgress?.(data);
       } catch (error) {
+        console.log('진행 상황 오류', error);
         throw error;
       }
     });
@@ -187,6 +187,7 @@ class SSEManager {
         const data = JSON.parse(event.data) as SSEEventData;
         onResult?.(data);
       } catch (error) {
+        console.log('결과 오류', error);
         throw error;
       }
     });
@@ -197,6 +198,7 @@ class SSEManager {
         const data = JSON.parse(event.data) as SSEEventData;
         onComplete?.(data);
       } catch (error) {
+        console.log('완료 오류', error);
         throw error;
       }
     });
@@ -207,6 +209,7 @@ class SSEManager {
         const data = JSON.parse(event.data) as SSEEventData;
         onError?.(data);
       } catch (error) {
+        console.log('오류 발생 오류', error);
         throw error;
       }
     });
