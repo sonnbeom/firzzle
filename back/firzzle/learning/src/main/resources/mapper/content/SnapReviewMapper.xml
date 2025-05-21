@@ -250,6 +250,7 @@
         WHERE
         UC.user_seq = get_user_seq_by_uuid(#{uuid})
         AND C.delete_yn = 'N'
+        AND C.process_status = 'C'
         <if test="keyword != null and keyword != ''">
             AND (
             C.title LIKE CONCAT('%', #{keyword}, '%')
@@ -271,6 +272,7 @@
         WHERE
         UC.user_seq = get_user_seq_by_uuid(#{uuid})
         AND C.delete_yn = 'N'
+        AND C.process_status = 'C'
         <if test="keyword != null and keyword != ''">
             AND (
             C.title LIKE CONCAT('%', #{keyword}, '%')

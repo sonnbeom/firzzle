@@ -1,6 +1,7 @@
 package com.firzzle.llm.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,10 @@ public class ExamAnswerResponseDTO {
 
     @Schema(description = "생성 시간", example = "20250519165647", required = true)
     private String indate;
+
+    @Schema(description = "문제 번호", example = "12")
+    private Long exam_seq;
+
+    @Schema(description = "다음 문제 질문", example = "DDD에서의 Aggregate는 어떤 역할을 하나요?")
+    private String NextQuestion;
 }

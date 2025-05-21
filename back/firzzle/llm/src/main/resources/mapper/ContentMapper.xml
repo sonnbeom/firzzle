@@ -70,7 +70,7 @@
 	</select>
 
 	<delete id="deleteUserContent" parameterType="long">
-		DELETE FROM fb_user_contents
+		DELETE FROM fb_ai_user_contents
 		WHERE user_content_seq = #{userContentSeq}
 	</delete>
 
@@ -82,7 +82,7 @@
 
 	<select id="selectUserContentSeqsByContentSeq" parameterType="long" resultType="long">
 		SELECT user_content_seq
-		FROM fb_user_contents
+		FROM fb_ai_user_contents
 		WHERE content_seq = #{contentSeq}
 	</select>
 </mapper>
