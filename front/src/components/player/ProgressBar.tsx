@@ -63,10 +63,11 @@ const ProgressBar = ({
           }
         },
         onComplete: (data) => {
-          setIsSubmitted(false);
           if (currentContentSeq) {
             showCompleteToast(data.message, currentContentSeq);
           }
+          setIsSubmitted(false);
+          sseManager.disconnect();
         },
         onError: (error: SSEEventData | Event) => {
           console.error('SSE 에러 발생:', error);
@@ -85,6 +86,7 @@ const ProgressBar = ({
             );
           }
           setIsSubmitted(false);
+          sseManager.disconnect();
         },
       });
     } catch (error) {
@@ -94,6 +96,7 @@ const ProgressBar = ({
         duration: 2000,
       });
       setIsSubmitted(false);
+      sseManager.disconnect();
     }
 
     return () => {
