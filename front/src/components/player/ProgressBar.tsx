@@ -16,15 +16,7 @@ const ProgressBar = ({
   setIsSubmitted: (isSubmitted: boolean) => void;
 }) => {
   const [contentSeq, setContentSeq] = useState<string | null>(null);
-  const [message, setMessage] = useState('');
   const [progress, setProgress] = useState(0);
-
-  // 메시지 업데이트 핸들러
-  const handleMessage = useCallback((data: SSEEventData) => {
-    if (data.message) {
-      setMessage(data.message);
-    }
-  }, []);
 
   // 완료 토스트 표시 핸들러
   const showCompleteToast = useCallback((message: string, seq: string) => {
@@ -55,33 +47,29 @@ const ProgressBar = ({
     try {
       sseManager.connect({
         url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
-        onConnect: (data) => {
-          handleMessage(data);
+        onConnect: () => {
           setProgress(3);
         },
-        onStart: (data) => {
-          handleMessage(data);
+        onStart: () => {
           setProgress(10);
         },
-        onProgress: (data) => {
-          handleMessage(data);
+        onProgress: () => {
           setProgress((prev) => Math.min(prev + 5, 95));
         },
         onHeartbeat: () => {
-          setProgress((prev) => Math.min(prev + 1, 95));
+          setProgress((prev) => Math.min(prev + 3, 95));
         },
         onResult: (data) => {
           if (data.contentSeq) {
             currentContentSeq = data.contentSeq;
             setContentSeq(data.contentSeq);
           }
-          setProgress(85);
+          setProgress(100);
         },
         onComplete: (data) => {
           if (currentContentSeq) {
             showCompleteToast(data.message, currentContentSeq);
           }
-          setProgress(100);
           setIsSubmitted(false);
           sseManager.disconnect();
         },
@@ -119,13 +107,19 @@ const ProgressBar = ({
       setIsSubmitted(false);
       sseManager.disconnect();
     };
-  }, [taskId, handleMessage, showCompleteToast]);
+  }, [taskId, showCompleteToast]);
 
   return (
     <div className='flex flex-col items-center text-lg font-medium text-gray-900'>
       <p>입력하신 영상을 학습 자료로 분석 중이에요</p>
-      <p className='py-2 text-base text-gray-950'>{message}</p>
-      <Progress value={progress} className='w-full max-w-md' />
+      <p>최대 10분 정도 소요될 수 있어요</p>
+      <div className='flex w-full max-w-md items-center gap-2'>
+        <Progress
+          value={progress}
+          className='[&>div]:animate-shimmer w-full bg-blue-50 text-blue-400 [&>div]:bg-gradient-to-r [&>div]:from-blue-200 [&>div]:via-blue-400 [&>div]:to-blue-200 [&>div]:bg-[length:200%_100%]'
+        />
+        <span className='min-w-[3rem] text-blue-400'>{progress}%</span>
+      </div>
     </div>
   );
 };
