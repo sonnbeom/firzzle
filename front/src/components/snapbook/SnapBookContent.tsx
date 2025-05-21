@@ -54,17 +54,18 @@ const SnapBookContent = ({ contentSeq }: SnapBookContentProps) => {
       <div className='flex items-center justify-between'>
         <button
           onClick={() => router.back()}
-          className='flex items-center gap-2'
+          className='flex items-center gap-2 text-left'
         >
-          <Icons id='arrow-left' className='h-8 w-8' />
-          <h1 className='text-sm font-semibold text-gray-950 sm:text-lg'>
+          <Icons id='arrow-left' className='h-6 w-6 shrink-0' />
+          <h1 className='line-clamp-2 text-sm font-semibold break-words text-gray-950 sm:text-lg md:line-clamp-1'>
             {snapData.contentTitle}
           </h1>
         </button>
-        <div className='mt-4'>
+        <div className='self-center'>
           <ShareButton shareUrl={shareData.shareUrl} />
         </div>
       </div>
+
       <Review {...snapData} />
     </div>
   );
