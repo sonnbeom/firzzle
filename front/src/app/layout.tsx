@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     apple: [
       {
         url: 'https://firzzle.site/logo-192.png',
-        sizes: '180x180',
+        sizes: '192x192',
         type: 'image/png',
       },
     ],
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
     'application-name': 'Firzzle',
     'msapplication-TileColor': '#ffffff',
-    'msapplication-TileImage': '/logo-192.png',
+    'msapplication-TileImage': 'https://firzzle.site/logo-192.png',
   },
 };
 <link rel='manifest' href='/manifest.json'></link>;
@@ -89,7 +89,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
       <head>
-        <link rel='apple-touch-icon' href='/logo-192.png' />
+        <link rel='apple-touch-icon' href='https://firzzle.site/logo-192.png' />
         <meta name='apple-mobile-web-app-capable' content='yes' />
         <meta name='apple-mobile-web-app-status-bar-style' content='default' />
         <meta name='theme-color' content='#ffffff' />
