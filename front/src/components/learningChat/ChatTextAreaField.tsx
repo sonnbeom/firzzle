@@ -53,9 +53,11 @@ const ChatTextAreaField = ({
 
     setValue('');
 
+    const currentTime = new Date().toISOString();
     const optimisticChat: LearningChat = {
+      chatSeq: Date.now().toString(),
       chatText: value,
-      indate: new Date(Date.now() - 1000).toISOString(),
+      indate: currentTime,
       type: '0', // 사용자 메시지
     };
 

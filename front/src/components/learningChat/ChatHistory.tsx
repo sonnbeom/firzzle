@@ -49,7 +49,9 @@ const ChatHistory = ({
       {[...chats]
         .sort((a, b) => {
           if (currentMode === '학습모드') {
-            return a.indate.localeCompare(b.indate);
+            const seqA = parseInt(a.chatSeq);
+            const seqB = parseInt(b.chatSeq);
+            return seqA - seqB;
           }
           return 0;
         })
