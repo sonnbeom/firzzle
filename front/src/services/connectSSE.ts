@@ -10,6 +10,7 @@ interface ConnectSSEProps {
   onResult?: (data: SSEEventData) => void;
   onComplete?: (data: SSEEventData) => void;
   onError?: (error: SSEEventData | Event) => void;
+  onHeartbeat?: (data: SSEEventData) => void;
   token?: string;
 }
 
@@ -67,7 +68,15 @@ class SSEManager {
       });
     };
 
-    this.eventSource.addEventListener('heartbeat', () => {});
+    this.eventSource.addEventListener('heartbeat', (event: MessageEvent) => {
+      try {
+        if (!event.data) return;
+        const data = JSON.parse(event.data) as SSEEventData;
+        this.currentCallbacks?.onHeartbeat?.(data);
+      } catch (error) {
+        throw new Error('heartbeat 이벤트 처리 중 오류:', error);
+      }
+    });
     handleEvent('connect', this.currentCallbacks.onConnect);
     handleEvent('start', this.currentCallbacks.onStart);
     handleEvent('progress', this.currentCallbacks.onProgress);
@@ -126,6 +135,7 @@ class SSEManager {
     onResult,
     onComplete,
     onError,
+    onHeartbeat,
   }: ConnectSSEProps): Promise<EventSourcePolyfill> {
     this.currentCallbacks = {
       url,
@@ -135,6 +145,7 @@ class SSEManager {
       onResult,
       onComplete,
       onError,
+      onHeartbeat,
     };
 
     if (this.eventSource && this.url === url) {
