@@ -21,7 +21,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "com.firzzle.llm",  // 현재 모듈의 패키지
         "com.firzzle.common",  // common 모듈의 설정 패키지
 })
-@MapperScan("com.firzzle.llm.mapper")
+@MapperScan({
+		"com.firzzle.llm.mapper"
+		, "com.firzzle.llm.expert.mapper"
+})
 @EnableDiscoveryClient
 public class LlmApplication {
 
