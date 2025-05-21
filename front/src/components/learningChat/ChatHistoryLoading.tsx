@@ -11,6 +11,7 @@ const ChatHistoryLoading = () => {
         <div className='flex w-full flex-col gap-4 py-4'>
           <BasicSkeleton className='ml-auto h-10 w-full max-w-[80%] rounded-sm' />
           <BasicSkeleton className='h-10 max-w-[80%] rounded-sm' />
+          <BasicSkeleton className='ml-auto h-10 w-full max-w-[80%] rounded-sm' />
         </div>
       </div>
 
