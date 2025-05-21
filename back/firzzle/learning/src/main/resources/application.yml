@@ -119,7 +119,7 @@ eureka:
 # Eureka 통해 LLM 서비스 접근
 llm:
   service:
-    url: ENC(NQsmH0zVL+P7Qu6ZXWKj7sVJl3M41m6Tie1ckIHrlc9g+QDdhZxtqK7v8azKRLyO)  # 로드 밸런싱 URI 사용
+    url: ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)  # 
 
 # MyBatis 설정
 mybatis:
@@ -191,7 +191,7 @@ eureka:
 # Eureka 통해 LLM 서비스 접근
 llm:
   service:
-    url: ENC(YhTAJN3mQXf0+gtUjJoJUT1IY+WzFMfUcuYfjk7ejC8=)  # 로드 밸런싱 URI 사용
+    url: ENC(v54bCDm3EFz+yF5tkeRzvAM/TuCC99wOlv7k0o78ctf3ygtKXOzM6IHspd24WN6z)  # 
 
 # MyBatis 설정
 mybatis:
@@ -263,7 +263,7 @@ eureka:
 # Eureka 통해 LLM 서비스 접근
 llm:
   service:
-    url: ENC(YhTAJN3mQXf0+gtUjJoJUT1IY+WzFMfUcuYfjk7ejC8=)  # 로드 밸런싱 URI 사용
+    url: ENC(v54bCDm3EFz+yF5tkeRzvAM/TuCC99wOlv7k0o78ctf3ygtKXOzM6IHspd24WN6z)  # 
 
 # MyBatis 설정.
 mybatis:
