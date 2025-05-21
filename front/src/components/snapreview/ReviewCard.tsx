@@ -90,7 +90,7 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
               {localReviews.map((item) => (
                 <div
                   key={`image-${item.frameSeq}`}
-                  className='relative h-[180px] w-full'
+                  className='relative aspect-video w-full'
                 >
                   <TimeStamp
                     time={item.timestamp}
@@ -115,7 +115,7 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
                   <div className='absolute right-0 bottom-[-16px] left-0 border-b border-blue-50'></div>
                   {editingId === String(item.frameSeq) ? (
                     <textarea
-                      className='lg:text-md mt-2 h-[140px] w-full resize-none border border-blue-50 text-sm text-gray-700 focus:border-blue-400'
+                      className='lg:text-md text-md mt-2 h-[140px] w-full resize-none border border-blue-50 text-gray-700 focus:border-blue-400'
                       value={item.comment || ''}
                       placeholder='내용을 작성해 주세요.'
                       onChange={(e) =>
@@ -124,20 +124,29 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
                           e.target.value,
                         )
                       }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveClick(
+                            String(item.frameSeq),
+                            item.comment || '',
+                          );
+                        }
+                      }}
                     />
                   ) : (
                     <div
                       className={`h-full overflow-hidden ${!item.comment ? 'flex items-center justify-center' : ''}`}
                     >
                       <p
-                        className={`lg:text-md mt-2 line-clamp-5 text-sm text-gray-700 md:line-clamp-6 md:text-sm lg:line-clamp-none ${!item.comment ? 'text-center' : ''}`}
+                        className={`mt-2 line-clamp-5 text-sm whitespace-pre-line text-gray-700 md:text-base lg:line-clamp-none ${!item.comment ? 'text-center' : ''}`}
                       >
                         {item.comment || '내용을 작성해 주세요.'}
                       </p>
                     </div>
                   )}
                   <div className='-mt-2 -mr-4 flex items-center justify-end'>
-                    <span className='lg:text-md text-xs text-gray-500 md:text-sm'>
+                    <span className='text-sm text-gray-500 md:text-base'>
                       ({item.comment?.length || 0}/{MAX_SNAP_REVIEW_LENGTH})
                     </span>
                     <button
