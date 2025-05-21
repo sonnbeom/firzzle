@@ -3,7 +3,7 @@
 import { getContentList } from '@/api/content';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { Content } from '@/types/content';
-import ContentsLoading from '../common/loading/ContentsLoading';
+import ContentsLoading from './ContentsLoading';
 import MyContentCard from './MyContentCard';
 
 const MyContentContainer = () => {
