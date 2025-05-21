@@ -68,5 +68,21 @@
 	        #{seq}
 	    </foreach>
 	</select>
-	
+
+	<delete id="deleteUserContent" parameterType="long">
+		DELETE FROM fb_user_contents
+		WHERE user_content_seq = #{userContentSeq}
+	</delete>
+
+	<update id="updateDeleteYnByContentSeq" parameterType="map">
+		UPDATE fb_ai_contents
+		SET delete_yn = #{deleteYn}
+		WHERE content_seq = #{contentSeq}
+	</update>
+
+	<select id="selectUserContentSeqsByContentSeq" parameterType="long" resultType="long">
+		SELECT user_content_seq
+		FROM fb_user_contents
+		WHERE content_seq = #{contentSeq}
+	</select>
 </mapper>

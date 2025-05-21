@@ -32,11 +32,6 @@ public class ContentService {
     private final ContentMapper contentMapper;
     // private final KafkaTemplate<String, String> kafkaTemplate;
 
-
-    // YouTube ID 추출 정규식 패턴
-    private static final Pattern YOUTUBE_ID_PATTERN =
-            Pattern.compile("(?:youtube\\.com/watch\\?v=|youtu\\.be/)([a-zA-Z0-9_-]{11})");
-
     /**
      * 콘텐츠 등록
      * YouTube URL로부터 콘텐츠를 등록하고 분석 큐에 추가합니다.
@@ -92,45 +87,5 @@ public class ContentService {
             return true; // 중복 시 조용히 리턴
         }
         return false;
-    }
-
-    /**
-     * YouTube URL에서 ID 추출
-     *
-     * @param youtubeUrl - YouTube URL
-     * @return String - YouTube ID
-     */
-    public String extractYoutubeId(String youtubeUrl) {
-        if (!StringUtils.hasText(youtubeUrl)) {
-            return null;
-        }
-
-        Matcher matcher = YOUTUBE_ID_PATTERN.matcher(youtubeUrl);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-
-        return null;
-    }
-
-    /**
-     * YouTube 썸네일 URL 생성
-     *
-     * @param videoId - YouTube ID
-     * @return String - 썸네일 URL
-     */
-    private String generateThumbnailUrl(String videoId) {
-        return "https://img.youtube.com/vi/" + videoId + "/mqdefault.jpg";
-    }
-
-    /**
-     * 분석 상태 코드 유효성 검사
-     *
-     * @param status - 분석 상태 코드
-     * @return boolean - 유효 여부
-     */
-    private boolean isValidStatus(String status) {
-        return status != null && (status.equals("Q") || status.equals("P") ||
-                status.equals("C") || status.equals("F"));
     }
 }

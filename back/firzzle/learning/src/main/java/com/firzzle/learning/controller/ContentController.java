@@ -24,7 +24,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,12 +32,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import static com.firzzle.common.logging.dto.UserActionLog.*;
 import static com.firzzle.common.logging.service.LoggingService.*;
@@ -173,7 +169,7 @@ public class ContentController {
             RequestBox box = RequestManager.getBox(request);
             box.put("userContentSeq", userContentSeq);
 
-            DataBox dataBox = contentService.selectContent(box);
+            DataBox dataBox = contentService.selectContentByUserContentSeq(box);
             ContentResponseDTO contentResponseDTO = convertToContentResponseDTO(dataBox);
 
             Response<ContentResponseDTO> response = Response.<ContentResponseDTO>builder()
@@ -224,7 +220,7 @@ public class ContentController {
 //            box.put("status", searchDTO.getStatus());
 
             List<DataBox> contentListDataBox = contentService.selectContentList(box);
-            int totalCount = contentService.selectContentCount(box);
+            int totalCount = contentService.selectContentCountByUuid(box);
 
             List<ContentResponseDTO> contentList = convertToContentResponseDTOList(contentListDataBox);
 

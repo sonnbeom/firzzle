@@ -27,4 +27,10 @@ public class LlmRequestDTO {
 
     @Schema(description = "작업 ID (SSE 연결용)", example = "a1b2c3d4-5678-90ab-cdef-123456789012")
     private String taskId;
+
+    @Schema(description = "STT 에러여부", example = "false")
+    private boolean isError;
+
+    @Schema(description = "에러", example = "null")
+    private Exception e;
 }

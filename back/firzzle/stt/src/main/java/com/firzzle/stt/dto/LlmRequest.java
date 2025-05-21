@@ -12,4 +12,6 @@ public class LlmRequest {
     private Long contentSeq;
     private String script;
     private String taskId;
+    private boolean isError;
+    private Exception e;
 }

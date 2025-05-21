@@ -5,11 +5,9 @@ import com.firzzle.common.exception.ErrorCode;
 import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.logging.dto.UserActionLog;
-import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
-import com.firzzle.learning.dto.ExpertRecommendationResponseDTO;
+import com.firzzle.learning.dto.ExpertRecommendationResponseDTO2;
 import com.firzzle.learning.dto.ExpertRecommendationSearchDTO;
 import com.firzzle.learning.dto.ExpertResponseDTO;
 import com.firzzle.learning.service.ContentService;
@@ -28,15 +26,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.firzzle.common.logging.dto.UserActionLog.*;
-import static com.firzzle.common.logging.service.LoggingService.*;
 
 /**
  * @Class Name : ExpertRecommendationController.java
@@ -44,7 +38,7 @@ import static com.firzzle.common.logging.service.LoggingService.*;
  * @author Firzzle
  * @since 2025. 5. 3.
  */
-@RestController
+//@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/contents")
 @Tag(name = "전문가 추천 API (AI)", description = "콘텐츠 관련 전문가 추천 API")
@@ -66,7 +60,7 @@ public class ExpertRecommendationController {
             @ApiResponse(responseCode = "404", description = "콘텐츠를 찾을 수 없음"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public ResponseEntity<Response<ExpertRecommendationResponseDTO>> getExpertRecommendations(
+    public ResponseEntity<Response<ExpertRecommendationResponseDTO2>> getExpertRecommendations(
             @Parameter(description = "조회할 콘텐츠 일련번호", required = true) @PathVariable("contentSeq") Long userContentSeq,
             @Parameter(description = "검색 및 페이지 요청 정보") ExpertRecommendationSearchDTO searchDTO,
             HttpServletRequest request) {
@@ -97,7 +91,7 @@ public class ExpertRecommendationController {
             }
 
             // 원본 콘텐츠 태그 조회
-            DataBox originContent = contentService.selectContent(box);
+            DataBox originContent = contentService.selectContentByUserContentSeq(box);
             String originTags = originContent.getString("d_tags");
 
             // 태그를 쉼표 + 공백으로 구분하고 최대 3개만 유지
@@ -140,7 +134,7 @@ public class ExpertRecommendationController {
             }
 
             // 새로운 응답 DTO 생성 (페이지네이션 포함)
-            ExpertRecommendationResponseDTO responseDTO = ExpertRecommendationResponseDTO
+            ExpertRecommendationResponseDTO2 responseDTO = ExpertRecommendationResponseDTO2
                     .recommendationBuilder()
                     .content(experts)
                     .p_pageno(searchDTO.getP_pageno())
@@ -149,7 +143,7 @@ public class ExpertRecommendationController {
                     .originTags(formattedTags)
                     .build();
 
-            Response<ExpertRecommendationResponseDTO> response = Response.<ExpertRecommendationResponseDTO>builder()
+            Response<ExpertRecommendationResponseDTO2> response = Response.<ExpertRecommendationResponseDTO2>builder()
                     .status(Status.OK)
                     .data(responseDTO)
                     .build();

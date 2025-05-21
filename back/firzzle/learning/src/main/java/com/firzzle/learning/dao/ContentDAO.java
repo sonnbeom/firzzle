@@ -73,9 +73,9 @@ public class ContentDAO extends MyBatisSupport {
      * @param box - 요청 정보가 담긴 RequestBox
      * @return DataBox - 조회된 콘텐츠 정보
      */
-    public DataBox selectContentDataBox(RequestBox box) {
+    public DataBox selectContentDataBoxByUuidContentSeq(RequestBox box) {
         logger.debug("콘텐츠 정보 DataBox 조회 DAO - 콘텐츠일련번호: {}", box.get("contentSeq"));
-        return sqlSession.selectDataBox(NAMESPACE + ".selectContentDataBox", box);
+        return sqlSession.selectDataBox(NAMESPACE + ".selectContentDataBoxByUuidContentSeq", box);
     }
 
     /**
@@ -132,7 +132,7 @@ public class ContentDAO extends MyBatisSupport {
      * @param box - 요청 정보가 담긴 RequestBox
      * @return int - 콘텐츠 총 개수
      */
-    public int selectContentCount(RequestBox box) {
+    public int selectContentCountByUuid(RequestBox box) {
         logger.debug("콘텐츠 개수 조회 DAO (RequestBox)");
         return (int) sqlSession.selectOne(NAMESPACE + ".selectContentCount", box);
     }

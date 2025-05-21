@@ -1,6 +1,13 @@
 package com.firzzle.stt.kafka.consumer;
 
+import com.firzzle.common.exception.BusinessException;
+import com.firzzle.common.exception.ErrorCode;
+import com.firzzle.common.library.DataBox;
+import com.firzzle.common.library.RequestBox;
+import com.firzzle.common.library.StringManager;
+import com.firzzle.stt.dto.LlmRequest;
 import com.firzzle.stt.kafka.producer.SttConvertedProducer;
+import com.firzzle.stt.service.ContentService;
 import com.firzzle.stt.service.SttService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +20,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SttConsumer {
     private final SttService sttService;
+    private final ContentService contentService;
+    private final SttConvertedProducer sttConvertedProducer;
 
     @KafkaListener(topics = "to-stt", groupId = "stt-group")
     public void consumeFromLearning(String message) {
@@ -35,6 +44,22 @@ public class SttConsumer {
             String uuid = parts[0];
             String url = parts[1];
             String taskId = parts[2];
+
+            // 1. YouTube ID 추출
+            String videoId = StringManager.extractYoutubeId(url);
+            if (videoId == null) {
+                LlmRequest req = new LlmRequest(null, null, null, taskId, true, new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 YouTube URL입니다."));
+                sttConvertedProducer.sendSttResult(req);
+            }
+
+            // 2. 중복 체크 (이미 Complete 상태의 동영상 존재하는가?)
+            boolean existingContent = contentService.isContentExistsByVideoId(videoId);
+            log.info("existingContent : {}", existingContent);
+
+            if(existingContent){
+                LlmRequest req = new LlmRequest(null, null, null, taskId, true, new BusinessException(ErrorCode.DUPLICATE_RESOURCE, "컨텐츠 등록 중복입니다. 재등록해주세요."));
+                sttConvertedProducer.sendSttResult(req);
+            }
 
             log.info("🔍 Parsed uuid: {}, url: {}", uuid, url);
 
