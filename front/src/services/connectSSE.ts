@@ -90,51 +90,63 @@ class SSEManager {
       throw new Error('UnAuthorized');
     }
 
-    this.eventSource = new EventSourcePolyfill(url, {
-      headers: {
-        Accept: 'text/event-stream',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      withCredentials: true,
-    });
-    this.url = url;
+    try {
+      this.eventSource = new EventSourcePolyfill(url, {
+        headers: {
+          Accept: 'text/event-stream',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      });
+      this.url = url;
 
-    this.eventSource.onerror = async (event: MessageEvent) => {
-      console.log('SSE 연결 오류', event);
-      if (event.data === 'UnAuthorized') {
-        const refreshToken = await getCookie('refresh_token');
+      this.eventSource.onerror = async (event: Event) => {
+        console.log('SSE 연결 오류', event);
+        console.log('EventSource 상태:', this.eventSource?.readyState);
 
-        const response = await fetch('/api/auth/refresh', {
-          method: 'POST',
-          credentials: 'include',
-          body: JSON.stringify({
-            retryCount: 1,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-            Cookie: `accessToken=${accessToken}; refresh_token=${refreshToken}`,
-          },
-        });
+        try {
+          // EventSource의 readyState 확인
+          if (this.eventSource?.readyState === EventSourcePolyfill.CLOSED) {
+            const refreshToken = await getCookie('refresh_token');
 
-        if (response.status !== 200) {
-          throw new Error(event.data);
+            const response = await fetch('/api/auth/refresh', {
+              method: 'POST',
+              credentials: 'include',
+              body: JSON.stringify({
+                retryCount: 1,
+              }),
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+                Cookie: `accessToken=${accessToken}; refresh_token=${refreshToken}`,
+              },
+            });
+
+            if (response.status !== 200) {
+              throw new Error('Unauthorized');
+            }
+
+            const data = await response.json();
+            const newAccessToken = data.data;
+
+            this.eventSource.close();
+            this.eventSource = new EventSourcePolyfill(url, {
+              headers: {
+                Authorization: `Bearer ${newAccessToken}`,
+              },
+            });
+          } else {
+            throw new Error('SSE connection error', event.target.statusText);
+          }
+        } catch (error) {
+          console.error('SSE 에러 처리 중 발생한 오류:', error);
+          throw error;
         }
-
-        const data = await response.json();
-
-        const newAccessToken = data.data;
-
-        this.eventSource.close();
-        this.eventSource = new EventSourcePolyfill(url, {
-          headers: {
-            Authorization: `Bearer ${newAccessToken}`,
-          },
-        });
-      } else {
-        throw event.data;
-      }
-    };
+      };
+    } catch (error) {
+      console.error('SSE 연결 생성 중 발생한 오류:', error);
+      throw error;
+    }
 
     // 하트비트 이벤트 처리
     this.eventSource.addEventListener('heartbeat', () => {});
