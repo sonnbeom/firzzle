@@ -215,6 +215,7 @@ class SSEManager {
   }
 
   public disconnect(): void {
+    console.log('SSE 연결 종료');
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
