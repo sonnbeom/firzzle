@@ -34,6 +34,7 @@ const NewChatButton = ({
 
       const currentTime = new Date().toISOString();
       const optimisticChat: LearningChat = {
+        chatSeq: Date.now().toString(),
         chatText: response.question,
         indate: currentTime,
         type: '1', // 시스템 메시지
