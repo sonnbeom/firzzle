@@ -1,4 +1,4 @@
-import { InfiniteData, useSuspenseInfiniteQuery } from '@tanstack/react-query';
+import { InfiniteData, useInfiniteQuery } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { LearningChat } from '@/types/learningChat';
 import { queryClient } from '@/utils/queryClient';
@@ -22,7 +22,7 @@ export function useChatHistory<T extends LearningChat>({
     isLoading,
     error,
     refetch,
-  } = useSuspenseInfiniteQuery({
+  } = useInfiniteQuery({
     queryKey,
     queryFn: async ({ pageParam }) => {
       const response = await queryFn(pageParam);

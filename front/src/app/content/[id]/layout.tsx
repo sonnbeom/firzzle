@@ -21,12 +21,7 @@ const DetailLayout = async ({ params, children }: PageProps) => {
         {/* 영상 */}
         <PlayerFrame playerId={data.videoId} />
         {/* 러닝챗 */}
-        <CustomSuspense
-          props={{
-            fallback: <ChatHistoryLoading />,
-            children: <LearningChatContent contentId={id} />,
-          }}
-        />
+        <LearningChatContent contentId={id} />
       </div>
       <div className='flex flex-3 flex-col items-center gap-2 lg:gap-4 xl:flex-7'>
         <DetailHeader />
