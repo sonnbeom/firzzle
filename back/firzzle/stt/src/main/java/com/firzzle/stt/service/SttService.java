@@ -142,23 +142,36 @@ public class SttService {
     @Transactional
     public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId, boolean isError, Exception e) {
         if(isError) {
-            LlmRequest req = new LlmRequest(null, null, null, taskId, isError, e);
+            LlmRequest req = new LlmRequest(null, null, null, taskId, true, e);
             sttConvertedProducer.sendSttResult(req);
             return req;
         }
-        contentService.insertContent(contentDTO);
-        UserContentDTO dto = new UserContentDTO();
 
-        // ✅ 여기서 userContentSeq가 자동으로 채워짐
-        Long userContentSeq = saveUserContent(userSeq, contentDTO.getContentSeq());
-        if (script != null && !script.isBlank()) {
-            LlmRequest req = new LlmRequest(userContentSeq, contentDTO.getContentSeq(), script, taskId, isError, e);
+        try {
+            contentService.insertContent(contentDTO);
+
+            LlmRequest req;
+            // ✅ 여기서 userContentSeq가 자동으로 채워짐
+            Long userContentSeq = saveUserContent(userSeq, contentDTO.getContentSeq());
+            if (script != null && !script.isBlank()) {
+                req = new LlmRequest(userContentSeq, contentDTO.getContentSeq(), script, taskId, false, e);
+                sttConvertedProducer.sendSttResult(req);
+            } else {
+                throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+            }
+            return req;
+        } catch (BusinessException ex) {
+            logger.error("[STT] Content 저장 중 오류 발생", ex);
+            LlmRequest req = new LlmRequest(null, null, null, taskId, true, ex);
             sttConvertedProducer.sendSttResult(req);
-        } else {
-            LlmRequest req = new LlmRequest(null, null, null, taskId, isError, new BusinessException(ErrorCode.SCRIPT_NOT_FOUND));
+            throw ex;
+        } catch (Exception ex) {
+            logger.error("[STT] Content 저장 중 오류 발생", ex);
+            BusinessException be = new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출에 실패했습니다.");
+            LlmRequest req = new LlmRequest(null, null, null, taskId, true, be);
             sttConvertedProducer.sendSttResult(req);
+            throw be;
         }
-        return new LlmRequest(userSeq, contentDTO.getContentSeq(), script, taskId, isError, e);
     }
 
     private Long saveUserContent(Long userSeq, Long contentSeq) {
