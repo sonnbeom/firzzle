@@ -35,6 +35,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // PWA configuration
+  pwa: {
+    dest: 'public',
+    register: true,
+    skipWaiting: true,
+  },
 };
 
 export default nextConfig;

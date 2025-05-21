@@ -3,10 +3,60 @@ import BasicToaster from '@/components/common/BasicToaster';
 import Header from '@/components/common/Header';
 import './global.css';
 import { QueryProvider } from '@/utils/queryProvider';
+import type { Metadata } from 'next';
+
+export const viewport = {
+  themeColor: '#ffffff',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
+export const metadata: Metadata = {
+  title: 'Firzzle',
+  description: 'AI 영상 분석으로 빠르고 간편하게 학습하세요!',
+  manifest: '/manifest.json',
+  themeColor: '#ffffff',
+  viewport:
+    'minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Firzzle',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: '/logo-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/logo-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/logo-192.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: '/logo-192.png',
+  },
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title': 'Firzzle',
+    'mobile-web-app-capable': 'yes',
+    'application-name': 'Firzzle',
+    'msapplication-TileColor': '#ffffff',
+    'msapplication-TileImage': '/logo-192.png',
+  },
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang='en'>
+      <head>
+        <link rel='apple-touch-icon' href='/logo-192.png' />
+        <meta name='apple-mobile-web-app-capable' content='yes' />
+        <meta name='apple-mobile-web-app-status-bar-style' content='default' />
+        <meta name='theme-color' content='#ffffff' />
+      </head>
       <body>
         <QueryProvider>
           <div className='!important relative flex h-[100dvh] w-full min-w-[320px] flex-col'>
