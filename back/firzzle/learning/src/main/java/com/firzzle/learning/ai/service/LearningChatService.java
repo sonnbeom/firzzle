@@ -353,7 +353,7 @@ public class LearningChatService {
         contentBox.put("userContentSeq", userContentSeq);
         contentBox.put("uuid", uuid);
 
-        DataBox userContentInfo = contentService.selectContent(contentBox);
+        DataBox userContentInfo = contentService.selectContentByUserContentSeq(contentBox);
 
         if (userContentInfo == null) {
             logger.error("콘텐츠 정보를 찾을 수 없음 - 사용자 콘텐츠 일련번호: {}, UUID: {}", userContentSeq, uuid);

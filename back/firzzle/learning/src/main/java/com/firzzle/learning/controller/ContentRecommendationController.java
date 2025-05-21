@@ -6,8 +6,6 @@ import com.firzzle.common.library.DataBox;
 import com.firzzle.common.library.FormatDate;
 import com.firzzle.common.library.RequestBox;
 import com.firzzle.common.library.RequestManager;
-import com.firzzle.common.logging.dto.UserActionLog;
-import com.firzzle.common.logging.service.LoggingService;
 import com.firzzle.common.response.Response;
 import com.firzzle.common.response.Status;
 import com.firzzle.learning.dto.ContentRecommendationResponseDTO;
@@ -79,7 +77,7 @@ public class ContentRecommendationController {
             box.put("userContentSeq", userContentSeq);
 
             // 원본 콘텐츠 태그 조회
-            DataBox originContent = contentService.selectContent(box);
+            DataBox originContent = contentService.selectContentByUserContentSeq(box);
             String originTags = originContent.getString("d_tags");
 
             // 태그를 쉼표 + 공백으로 구분하고 최대 3개만 유지

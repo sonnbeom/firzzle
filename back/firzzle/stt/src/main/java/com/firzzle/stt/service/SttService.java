@@ -2,6 +2,7 @@ package com.firzzle.stt.service;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
+import com.firzzle.common.library.StringManager;
 import com.firzzle.stt.dto.ContentDTO;
 import com.firzzle.stt.dto.LlmRequest;
 import com.firzzle.stt.dto.UserContentDTO;
@@ -57,10 +58,10 @@ public class SttService {
     @Async
     public CompletableFuture<LlmRequest> transcribeFromYoutube(String uuid, String url, String taskId) {
         logger.debug("[STT] transcribeFromYoutube called: uuid={}, url={}, taskId={}", uuid, url, taskId);
-        return CompletableFuture.supplyAsync(() -> contentService.extractYoutubeId(url))
+        return CompletableFuture.supplyAsync(() -> StringManager.extractYoutubeId(url))
                 .thenCompose(videoId -> DEV_MODE
-                        ? extractSubtitleViaLocalProxy(uuid, url, videoId, taskId)
-                        : extractSubtitleDirect(uuid, url, videoId, taskId))
+                        ? extractSubtitleViaLocalProxy(uuid, url, videoId, taskId, false, null)
+                        : extractSubtitleDirect(uuid, url, videoId, taskId, false, null))
                 .exceptionally(e -> {
                     logger.error("[STT] transcribeFromYoutube pipeline error", e);
                     throw new BusinessException(ErrorCode.STT_PROCESS_FAILED, "STT 처리 중 오류 발생", e);
@@ -68,44 +69,46 @@ public class SttService {
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId) {
-        return CompletableFuture.supplyAsync(() -> userMapper.selectUserSeqByUuid(uuid))
-                .thenCompose(userSeq -> {
-                    try {
-                        HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
+    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {
+        // 타입 변환 문제 해결을 위한 수정
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Long userSeq = userMapper.selectUserSeqByUuid(uuid);
+                HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
 
-                        WebClient webClient = WebClient.builder()
-                                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                                .baseUrl(externalUrl)
-                                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                                .defaultHeader("X-API-KEY", secretKey)
-                                .build();
+                WebClient webClient = WebClient.builder()
+                        .clientConnector(new ReactorClientHttpConnector(httpClient))
+                        .baseUrl(externalUrl)
+                        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .defaultHeader("X-API-KEY", secretKey)
+                        .build();
 
-                        Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+                Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
 
-                        return webClient.post()
-                                .uri("/api/v1/extract")
-                                .bodyValue(requestBody)
-                                .retrieve()
-                                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                                .doOnError(e -> logger.error("[STT] external extract API error", e))
-                                .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
-                                .toFuture()
-                                .thenApply(response -> {
-                                    if (!response.containsKey("script"))
-                                        throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+                return webClient.post()
+                        .uri("/api/v1/extract")
+                        .bodyValue(requestBody)
+                        .retrieve()
+                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                        .doOnError(ex -> logger.error("[STT] external extract API error", ex))
+                        .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
+                        .toFuture()
+                        .thenApply(response -> {
+                            if (!response.containsKey("script"))
+                                throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
 
-                                    ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-                                    return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId);
-                                });
-                    } catch (Exception e) {
-                        throw new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출 중 오류 발생", e);
-                    }
-                });
+                            ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+                            return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId, false, null);
+                        }).join(); // CompletableFuture를 블로킹하여 결과를 반환
+            } catch (Exception ex) {
+                return processFinalResult(null, null, null, taskId, true, new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출 중 오류 발생", ex));
+            }
+        });
     }
 
     @Async
-    public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId, String taskId) {
+    public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {
+        // 타입 변환 문제 해결을 위한 수정
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Long userSeq = userMapper.selectUserSeqByUuid(uuid);
@@ -127,28 +130,35 @@ public class SttService {
 
                 List<String> lines = readProcessOutput(metadataExtractor.start());
                 ContentDTO contentDTO = parseMetadata(videoId, url, lines);
-                return processFinalResult(userSeq, contentDTO, scripts, taskId);
-            } catch (BusinessException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new BusinessException(ErrorCode.YTDLP_EXECUTION_FAILED, "yt-dlp 처리 중 오류 발생", e);
+                return processFinalResult(userSeq, contentDTO, scripts, taskId, false, null);
+            } catch (BusinessException ex) {
+                return processFinalResult(null, null, null, taskId, true, ex);
+            } catch (Exception ex) {
+                return processFinalResult(null, null, null, taskId, true, new BusinessException(ErrorCode.YTDLP_EXECUTION_FAILED, "yt-dlp 처리 중 오류 발생", ex));
             }
         });
     }
 
     @Transactional
-    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId) {
+    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId, boolean isError, Exception e) {
+        if(isError) {
+            LlmRequest req = new LlmRequest(null, null, null, taskId, isError, e);
+            sttConvertedProducer.sendSttResult(req);
+            return req;
+        }
         contentService.insertContent(contentDTO);
         UserContentDTO dto = new UserContentDTO();
 
         // ✅ 여기서 userContentSeq가 자동으로 채워짐
         Long userContentSeq = saveUserContent(userSeq, contentDTO.getContentSeq());
         if (script != null && !script.isBlank()) {
-            sttConvertedProducer.sendSttResult(userContentSeq, contentDTO.getContentSeq(), script, taskId);
+            LlmRequest req = new LlmRequest(userContentSeq, contentDTO.getContentSeq(), script, taskId, isError, e);
+            sttConvertedProducer.sendSttResult(req);
         } else {
-            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+            LlmRequest req = new LlmRequest(null, null, null, taskId, isError, new BusinessException(ErrorCode.SCRIPT_NOT_FOUND));
+            sttConvertedProducer.sendSttResult(req);
         }
-        return new LlmRequest(userSeq, contentDTO.getContentSeq(), script, taskId);
+        return new LlmRequest(userSeq, contentDTO.getContentSeq(), script, taskId, isError, e);
     }
 
     private Long saveUserContent(Long userSeq, Long contentSeq) {

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firzzle.stt.dto.LlmRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SttConvertedProducer {
@@ -16,13 +18,12 @@ public class SttConvertedProducer {
 
     private static final String TOPIC_NAME = "stt-converted";
 
-    public void sendSttResult(Long userContentSeq,Long contentSeq, String script, String taskId) {
+    public void sendSttResult(LlmRequest request) {
         try {
-            LlmRequest request = new LlmRequest(userContentSeq, contentSeq, script, taskId);
             String json = objectMapper.writeValueAsString(request);
-            System.out.println(json);
+            log.info(json);
             kafkaTemplate.send(TOPIC_NAME, json);
-            System.out.println("✅ STT 결과 Kafka 전송 완료");
+            log.info("✅ STT 결과 Kafka 전송 완료");
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Kafka 전송용 JSON 직렬화 실패", e);
         }

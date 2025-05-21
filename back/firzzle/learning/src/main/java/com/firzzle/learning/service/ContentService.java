@@ -2,28 +2,17 @@ package com.firzzle.learning.service;
 
 import com.firzzle.common.exception.BusinessException;
 import com.firzzle.common.exception.ErrorCode;
-import com.firzzle.common.library.DataBox;
-import com.firzzle.common.library.FormatDate;
-import com.firzzle.common.library.MyBatisSupport;
-import com.firzzle.common.library.MyBatisTransactionManager;
-import com.firzzle.common.library.RequestBox;
+import com.firzzle.common.library.*;
 import com.firzzle.learning.dao.ContentDAO;
 import com.firzzle.learning.kafka.producer.LearningProducer;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @Class Name : ContentService.java
@@ -39,15 +28,6 @@ public class ContentService {
 
     private final ContentDAO contentDAO;
     private final LearningProducer learningProducer;
-    private final MyBatisSupport myBatisSupport;
-
-    @Value("${app.kafka.topic.content-analysis}")
-    private String contentAnalysisTopic;
-
-    // YouTube ID 추출 정규식 패턴
-    private static final Pattern YOUTUBE_ID_PATTERN =
-            Pattern.compile("(?:youtube\\.com/watch\\?v=|youtu\\.be/)([a-zA-Z0-9_-]{11})");
-//            Pattern.compile(".*");  // 모든 문자열 패턴 매칭
 
     /**
      * 콘텐츠 등록
@@ -64,7 +44,7 @@ public class ContentService {
 
         try {
             // 1. YouTube ID 추출
-            String videoId = extractYoutubeId(box.getString("youtubeUrl"));
+            String videoId = StringManager.extractYoutubeId(box.getString("youtubeUrl"));
             if (videoId == null) {
                 throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 YouTube URL입니다.");
             }
@@ -97,7 +77,7 @@ public class ContentService {
                     RequestBox selectBox = new RequestBox("selectBox");
                     selectBox.put("contentSeq", contentSeq);
                     selectBox.put("uuid", box.getString("uuid"));
-                    result = contentDAO.selectContentDataBox(selectBox);
+                    result = contentDAO.selectContentDataBoxByUuidContentSeq(selectBox); // 여기
 
                     // 이미 분석 완료된 콘텐츠는 taskId를 포함하지 않음
                     return result;
@@ -113,7 +93,7 @@ public class ContentService {
                     RequestBox selectBox = new RequestBox("selectBox");
                     selectBox.put("contentSeq", contentSeq);
                     selectBox.put("uuid", box.getString("uuid"));
-                    result = contentDAO.selectContentDataBox(selectBox);
+                    result = contentDAO.selectContentDataBoxByUuidContentSeq(selectBox); // 여기
 
                     // 이미 분석 완료된 콘텐츠는 taskId를 포함하지 않고 반환
                     return result;
@@ -154,7 +134,7 @@ public class ContentService {
      * @param box - 조회할 콘텐츠 일련번호, UUID
      * @return DataBox - 조회된 콘텐츠 정보
      */
-    public DataBox selectContent(RequestBox box) {
+    public DataBox selectContentByUserContentSeq(RequestBox box) {
         logger.debug("콘텐츠 정보 조회 요청 - UserContentSeq: {}, UUID: {}",
                 box.getLong("userContentSeq"), box.getString("uuid"));
 
@@ -191,9 +171,9 @@ public class ContentService {
      * @param box - 조건이 포함된 RequestBox
      * @return int - 조회된 콘텐츠 개수
      */
-    public int selectContentCount(RequestBox box) {
+    public int selectContentCountByUuid(RequestBox box) {
         logger.debug("콘텐츠 개수 조회 요청 - UUID: {}", box.getString("uuid"));
-        return contentDAO.selectContentCount(box);
+        return contentDAO.selectContentCountByUuid(box);
     }
 
     /**
@@ -204,193 +184,6 @@ public class ContentService {
      */
     public int selectContentCountByTag(RequestBox box) {
         return contentDAO.selectContentCountByTag(box);
-    }
-
-    /**
-     * 콘텐츠 정보 수정
-     * 콘텐츠의 기본 정보를 수정합니다.
-     *
-     * @param box - 수정할 콘텐츠 정보
-     * @return DataBox - 수정된 콘텐츠 정보
-     */
-    public DataBox updateContent(RequestBox box) {
-        logger.debug("콘텐츠 정보 수정 요청 - ContentSeq: {}", box.getLong("contentSeq"));
-
-        MyBatisTransactionManager transaction = myBatisSupport.getTransactionManager();
-        DataBox result = null;
-
-        try {
-            // 트랜잭션 시작
-            transaction.start();
-
-            // 1. 기존 콘텐츠 조회
-            RequestBox selectBox = new RequestBox("selectBox");
-            selectBox.put("contentSeq", box.getLong("contentSeq"));
-            DataBox existingContent = contentDAO.selectContentDataBox(selectBox);
-
-            if (existingContent == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "수정할 콘텐츠를 찾을 수 없습니다.");
-            }
-
-            // 2. 콘텐츠 업데이트
-            int updateResult = contentDAO.updateContent(box);
-            if (updateResult == 0) {
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 수정에 실패했습니다.");
-            }
-
-            // 3. 태그 처리 (기존 태그 삭제 후 새로 등록)
-            String tags = box.getString("tags");
-            if (StringUtils.hasText(tags)) {
-                // 기존 태그 삭제
-                RequestBox deleteTagBox = new RequestBox("deleteTagBox");
-                deleteTagBox.put("contentSeq", box.getLong("contentSeq"));
-                contentDAO.deleteContentTags(deleteTagBox);
-
-                // 새로운 태그 등록
-                List<String> tagList = Arrays.stream(tags.split(","))
-                        .map(String::trim)
-                        .filter(StringUtils::hasText)
-                        .collect(Collectors.toList());
-
-                if (!tagList.isEmpty()) {
-                    RequestBox tagBox = new RequestBox("tagBox");
-                    tagBox.put("contentSeq", box.getLong("contentSeq"));
-                    tagBox.put("tags", tagList);
-                    contentDAO.insertContentTags(tagBox);
-                }
-            }
-
-            logger.info("콘텐츠 정보 수정 완료 - ContentSeq: {}", box.getLong("contentSeq"));
-
-            // 4. 수정된 콘텐츠 정보 조회 및 반환
-            result = contentDAO.selectContentDataBox(selectBox);
-
-            // 성공 시 커밋
-            transaction.commit();
-            return result;
-
-        } catch (BusinessException e) {
-            transaction.rollback();
-            throw e;
-        } catch (Exception e) {
-            transaction.rollback();
-            logger.error("콘텐츠 수정 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 수정 중 오류가 발생했습니다.");
-        } finally {
-            // 트랜잭션 종료
-            transaction.end();
-        }
-    }
-
-    /**
-     * 콘텐츠 삭제
-     * 콘텐츠를 논리적으로 삭제합니다. (delete_yn = 'Y')
-     *
-     * @param box - 삭제할 콘텐츠 정보
-     * @return boolean - 삭제 성공 여부
-     */
-    public boolean deleteContent(RequestBox box) {
-        logger.debug("콘텐츠 삭제 요청 - ContentSeq: {}", box.getLong("contentSeq"));
-
-        MyBatisTransactionManager transaction = myBatisSupport.getTransactionManager();
-        boolean result = false;
-
-        try {
-            // 트랜잭션 시작
-            transaction.start();
-
-            // 1. 기존 콘텐츠 조회
-            RequestBox selectBox = new RequestBox("selectBox");
-            selectBox.put("contentSeq", box.getLong("contentSeq"));
-            DataBox existingContent = contentDAO.selectContentDataBox(selectBox);
-
-            if (existingContent == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "삭제할 콘텐츠를 찾을 수 없습니다.");
-            }
-
-            // 2. 콘텐츠 삭제 (논리적 삭제)
-            int deleteResult = contentDAO.deleteContent(box);
-            result = deleteResult > 0;
-
-            // 성공 시 커밋
-            transaction.commit();
-
-            logger.info("콘텐츠 삭제 완료 - ContentSeq: {}, 결과: {}", box.getLong("contentSeq"), result);
-            return result;
-
-        } catch (BusinessException e) {
-            transaction.rollback();
-            throw e;
-        } catch (Exception e) {
-            transaction.rollback();
-            logger.error("콘텐츠 삭제 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 삭제 중 오류가 발생했습니다.");
-        } finally {
-            // 트랜잭션 종료
-            transaction.end();
-        }
-    }
-
-    /**
-     * 콘텐츠 분석 상태 업데이트
-     * 콘텐츠의 분석 상태 및 관련 데이터를 업데이트합니다.
-     *
-     * @param box - 업데이트할 콘텐츠 정보
-     * @return DataBox - 업데이트된 콘텐츠 정보
-     */
-    public DataBox updateAnalysisStatus(RequestBox box) {
-        logger.debug("콘텐츠 분석 상태 업데이트 요청 - ContentSeq: {}, Status: {}",
-                box.getLong("contentSeq"), box.getString("status"));
-
-        MyBatisTransactionManager transaction = myBatisSupport.getTransactionManager();
-        DataBox result = null;
-
-        try {
-            // 트랜잭션 시작
-            transaction.start();
-
-            // 1. 기존 콘텐츠 조회
-            RequestBox selectBox = new RequestBox("selectBox");
-            selectBox.put("contentSeq", box.getLong("contentSeq"));
-            DataBox existingContent = contentDAO.selectContentDataBox(selectBox);
-
-            if (existingContent == null) {
-                throw new BusinessException(ErrorCode.CONTENT_NOT_FOUND, "업데이트할 콘텐츠를 찾을 수 없습니다.");
-            }
-
-            // 2. 상태 검증
-            String status = box.getString("status");
-            if (!isValidStatus(status)) {
-                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 분석 상태 코드입니다.");
-            }
-
-            // 3. 상태 업데이트
-            int updateResult = contentDAO.updateAnalysisStatus(box);
-            if (updateResult == 0) {
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 분석 상태 업데이트에 실패했습니다.");
-            }
-
-            logger.info("콘텐츠 분석 상태 업데이트 완료 - ContentSeq: {}, Status: {}",
-                    box.getLong("contentSeq"), box.getString("status"));
-
-            // 4. 업데이트된 콘텐츠 정보 조회 및 반환
-            result = contentDAO.selectContentDataBox(selectBox);
-
-            // 성공 시 커밋
-            transaction.commit();
-            return result;
-
-        } catch (BusinessException e) {
-            transaction.rollback();
-            throw e;
-        } catch (Exception e) {
-            transaction.rollback();
-            logger.error("콘텐츠 분석 상태 업데이트 중 오류 발생: {}", e.getMessage(), e);
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "콘텐츠 분석 상태 업데이트 중 오류가 발생했습니다.");
-        } finally {
-            // 트랜잭션 종료
-            transaction.end();
-        }
     }
 
     /**
@@ -409,46 +202,6 @@ public class ContentService {
                 box.getString("tag"), contentList.size());
 
         return contentList;
-    }
-
-    /**
-     * YouTube URL에서 ID 추출
-     *
-     * @param youtubeUrl - YouTube URL
-     * @return String - YouTube ID
-     */
-    private String extractYoutubeId(String youtubeUrl) {
-        if (!StringUtils.hasText(youtubeUrl)) {
-            return null;
-        }
-
-        Matcher matcher = YOUTUBE_ID_PATTERN.matcher(youtubeUrl);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-
-        return null;
-    }
-
-    /**
-     * YouTube 썸네일 URL 생성
-     *
-     * @param videoId - YouTube ID
-     * @return String - 썸네일 URL
-     */
-    private String generateThumbnailUrl(String videoId) {
-        return "https://img.youtube.com/vi/" + videoId + "/mqdefault.jpg";
-    }
-
-    /**
-     * 분석 상태 코드 유효성 검사
-     *
-     * @param status - 분석 상태 코드
-     * @return boolean - 유효 여부
-     */
-    private boolean isValidStatus(String status) {
-        return status != null && (status.equals("Q") || status.equals("P") ||
-                status.equals("C") || status.equals("F"));
     }
 
     /**
