@@ -55,7 +55,10 @@ const ProgressBar = ({
     try {
       sseManager.connect({
         url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/llm/sse/summary/${taskId}`,
-        onConnect: handleMessage,
+        onConnect: () => {
+          console.log('SSE 연결 성공');
+          setIsSubmitted(true);
+        },
         onStart: handleMessage,
         onProgress: handleMessage,
         onResult: (data) => {
@@ -70,24 +73,25 @@ const ProgressBar = ({
             showCompleteToast(data.message, currentContentSeq);
           }
         },
-        onError: (error: SSEEventData) => {
+        onError: (error: SSEEventData | Event) => {
           console.error('SSE 에러 발생:', error);
-          const errorMessage =
-            error.message || '처리 중 오류가 발생했습니다. 다시 시도해주세요.';
-          BasicToaster.error(errorMessage, {
-            id: 'sse youtube',
-            duration: 2000,
-          });
+          if (error instanceof Event) {
+            BasicToaster.error(error.type, {
+              id: 'sse youtube',
+              duration: 2000,
+            });
+          } else {
+            BasicToaster.error(error.message, {
+              id: 'sse youtube',
+              duration: 2000,
+            });
+          }
           setIsSubmitted(false);
         },
       });
     } catch (error) {
       console.error('SSE 연결 시도 중 에러 발생:', error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : '연결 중 오류가 발생했습니다. 다시 시도해주세요.';
-      BasicToaster.error(errorMessage, {
+      BasicToaster.error(error.message, {
         id: 'sse youtube',
         duration: 2000,
       });
