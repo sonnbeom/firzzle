@@ -99,6 +99,43 @@ class SSEManager {
     });
     this.url = url;
 
+    this.eventSource.onerror = async (event: MessageEvent) => {
+      console.log('SSE 연결 오류', event);
+      if (event.data === 'UnAuthorized') {
+        const refreshToken = await getCookie('refresh_token');
+
+        const response = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify({
+            retryCount: 1,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+            Cookie: `accessToken=${accessToken}; refresh_token=${refreshToken}`,
+          },
+        });
+
+        if (response.status !== 200) {
+          throw new Error(event.data);
+        }
+
+        const data = await response.json();
+
+        const newAccessToken = data.data;
+
+        this.eventSource.close();
+        this.eventSource = new EventSourcePolyfill(url, {
+          headers: {
+            Authorization: `Bearer ${newAccessToken}`,
+          },
+        });
+      } else {
+        throw event.data;
+      }
+    };
+
     // 하트비트 이벤트 처리
     this.eventSource.addEventListener('heartbeat', () => {});
 

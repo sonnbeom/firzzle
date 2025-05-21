@@ -79,14 +79,11 @@ const ProgressBar = ({
         },
       });
     } catch (error) {
-      if (error.message === 'UnAuthorized') {
-        BasicToaster.error('로그인이 만료되었습니다.', {
-          id: 'sse youtube',
-          duration: 2000,
-        });
-        router.push('/');
-        setIsSubmitted(false);
-      }
+      BasicToaster.error(error.message, {
+        id: 'sse youtube',
+        duration: 2000,
+      });
+      setIsSubmitted(false);
     }
 
     return () => {
