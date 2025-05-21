@@ -168,6 +168,28 @@
         </if>
     </select>
 
+    <!-- LinkedIn 프로필 정보 조회 -->
+    <select id="selectProfileByProfileSeq" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            profile_seq,
+            linkedin_url,
+            name,
+            headline,
+            company,
+            location,
+            summary,
+            profile_image_url,
+            relevance,
+            indate,
+            ldate,
+            delete_yn
+        FROM
+            fb_ai_linkedin_profiles
+        WHERE
+            profile_seq = #{profileSeq}
+            AND delete_yn = 'N'
+    </select>
+
     <!-- LinkedIn 프로필 경력 정보 목록 조회 -->
     <select id="selectExperiencesByProfileSeq" parameterType="RequestBox" resultType="DataBox">
         SELECT
