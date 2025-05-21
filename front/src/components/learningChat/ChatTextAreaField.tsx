@@ -96,7 +96,9 @@ const ChatTextAreaField = ({
         const response = await getNewExamChat(contentId);
         setCurrentExamSeq(response.exam_seq);
 
-        refetch();
+        setTimeout(() => {
+          refetch();
+        }, 500);
       }
     } catch (error) {
       BasicToaster.error(error.message);
