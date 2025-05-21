@@ -110,8 +110,10 @@ const ChatTextAreaField = ({
         onChange={onChange}
         onKeyDown={onKeyDown}
         placeholder={
-          mode === '시험모드' && solvedCount >= MAX_NEW_EXAM_COUNT
-            ? '질문 횟수 초과로 시험모드가 종료되었습니다.'
+          mode === '시험모드'
+            ? solvedCount >= MAX_NEW_EXAM_COUNT
+              ? '질문 횟수 초과로 시험모드가 종료되었습니다.'
+              : '영상 내용을 바탕으로 질문에 답해보세요.'
             : '어떤 정보가 궁금하신가요?'
         }
         className='w-full flex-1 resize-none rounded-md border border-none border-gray-300 px-2 text-gray-900 focus:outline-none'
