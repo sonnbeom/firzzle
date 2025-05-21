@@ -1,10 +1,8 @@
 import { ReactNode } from 'react';
 import { getContent } from '@/api/content';
 import DetailHeader from '@/components/common/DetailHeader';
-import ChatHistoryLoading from '@/components/learningChat/ChatHistoryLoading';
 import LearningChatContent from '@/components/learningChat/LearningChatContent';
 import PlayerFrame from '@/components/player/PlayerFrame';
-import CustomSuspense from '@/services/CutstomSuspense';
 
 interface PageProps {
   params: Promise<{ id: string }>;
