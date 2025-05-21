@@ -142,7 +142,7 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
                         className={`mt-2 line-clamp-5 text-sm whitespace-pre-line text-gray-700 md:text-base lg:line-clamp-none ${!item.comment ? 'text-center' : ''}`}
                       >
                         {item.comment ||
-                          '우측 하단의 버튼을 눌러 내용을 작성해보세요.'}
+                          '우측 하단의 버튼을 눌러 내용을 작성해주세요.'}
                       </p>
                     </div>
                   )}
