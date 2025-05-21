@@ -6,6 +6,11 @@ import { LearningChat } from '@/types/learningChat';
 import { MAX_NEW_EXAM_COUNT } from '@/utils/const';
 import BasicToaster from '../common/BasicToaster';
 import Icons from '../common/Icons';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '../ui/hover-card';
 
 interface NewChatButtonProps {
   contentId: string;
@@ -49,19 +54,25 @@ const NewChatButton = ({
   };
 
   return (
-    <div className='flex flex-col items-end'>
-      <button
-        className='flex cursor-pointer items-center gap-2'
-        aria-label='새 질문 생성'
-        onClick={handleNewChat}
-      >
-        <Icons id='new-chat' size={20} />
-        <p className='text-gray-950'>새 질문 생성</p>
-      </button>
-      <p className='text-sm text-gray-700'>
-        {solvedCount} / {MAX_NEW_EXAM_COUNT}
-      </p>
-    </div>
+    <HoverCard openDelay={0} closeDelay={0}>
+      <HoverCardTrigger>
+        <div className='flex items-center gap-2'>
+          <button
+            className='flex cursor-pointer items-start gap-1'
+            aria-label='새 질문 생성'
+            onClick={handleNewChat}
+          >
+            <Icons id='new-chat' size={22} />
+            <p className='text-gray-950'>새 질문 생성</p>
+          </button>
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent className='h-fit w-fit'>
+        <p className='text-center text-gray-950'>
+          질문 횟수: {solvedCount} / {MAX_NEW_EXAM_COUNT}
+        </p>
+      </HoverCardContent>
+    </HoverCard>
   );
 };
 

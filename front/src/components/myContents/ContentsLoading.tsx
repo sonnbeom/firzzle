@@ -1,4 +1,4 @@
-import BasicSkeleton from '../BasicSkeleton';
+import BasicSkeleton from '../common/BasicSkeleton';
 
 const ContentsLoading = () => {
   return (

@@ -3,8 +3,8 @@
 import { getSnapReviews } from '@/api/snap';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { SnapReviewListResponse } from '@/types/snapReview';
-import SnapBookLoading from '../common/loading/SnapBookLoading';
 import LoadingSpinner from '../common/LoadingSpinner';
+import SnapBookLoading from './SnapBookLoading';
 import SnapDateGroup from './SnapDateGroup';
 
 const SnapList = () => {
