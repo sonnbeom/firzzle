@@ -70,7 +70,7 @@ public class ExpertRecommendationController {
             RequestBox contentBox = new RequestBox("contentBox");
             contentBox.put("userContentSeq", userContentSeq);
             contentBox.put("uuid", uuid);
-            DataBox contentData = contentService.selectContent(contentBox);
+            DataBox contentData = contentService.selectContentByUserContentSeq(contentBox);
 
             if (contentData == null) {
                 throw new BusinessException(ErrorCode.DATA_NOT_FOUND, "콘텐츠를 찾을 수 없습니다: " + userContentSeq);

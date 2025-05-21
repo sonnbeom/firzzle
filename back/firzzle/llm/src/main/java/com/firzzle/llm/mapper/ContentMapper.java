@@ -34,4 +34,20 @@ public interface ContentMapper {
     int updateProcessStatusAndCompletedAtByContentSeq(@Param("contentSeq") Long contentSeq,
                                                        @Param("processStatus") String processStatus,
                                                        @Param("completedAt") String completedAt);
+
+    /**
+     * userContentSeq에 해당하는 데이터를 삭제합니다.
+     */
+    int deleteUserContent(@Param("userContentSeq") Long userContentSeq);
+
+    /**
+     * contentSeq에 해당하는 레코드의 delete_yn 값을 업데이트합니다.
+     */
+    int updateDeleteYnByContentSeq(@Param("contentSeq") Long contentSeq, @Param("deleteYn") String deleteYn);
+
+    /**
+     * contentSeq에 해당하는 userContentSeq 목록을 조회합니다.
+     */
+    List<Long> selectUserContentSeqsByContentSeq(@Param("contentSeq") Long contentSeq);
+
 }

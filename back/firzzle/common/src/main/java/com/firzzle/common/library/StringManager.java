@@ -28,6 +28,29 @@ public class StringManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(StringManager.class);
 
+	// YouTube ID 추출 정규식 패턴
+	private static final Pattern YOUTUBE_ID_PATTERN =
+			Pattern.compile("(?:youtube\\.com/watch\\?v=|youtu\\.be/)([a-zA-Z0-9_-]{11})");
+
+	/**
+	 * YouTube URL에서 ID 추출
+	 *
+	 * @param youtubeUrl - YouTube URL
+	 * @return String - YouTube ID
+	 */
+	public static String extractYoutubeId(String youtubeUrl) {
+		if (!org.springframework.util.StringUtils.hasText(youtubeUrl)) {
+			return null;
+		}
+
+		Matcher matcher = YOUTUBE_ID_PATTERN.matcher(youtubeUrl);
+		if (matcher.find()) {
+			return matcher.group(1);
+		}
+
+		return null;
+	}
+
 	/**
 	 * 해당 문자열에서 older String 을 newer String 으로 교체한다.
 	 *

@@ -55,7 +55,7 @@ public class RegistrationService {
      * 전체 자막 콘텐츠를 기반으로 대주제를 추출하고
      * 각 대주제 구간을 요약 및 벡터화하여 저장하는 메서드입니다.
      */
-    
+
     @Async
     public CompletableFuture<String> summarizeContents(LlmRequestDTO request) {
         String taskId = getOrGenerateTaskId(request);
@@ -68,60 +68,85 @@ public class RegistrationService {
         sendProgress(taskId, "대주제 추출 중...");
 
         return extractTimeLines(content)
-            .thenCompose(wrapper -> {
-                List<TimeLine> timelines = wrapper.getTimeline();
-                List<String> keywords = wrapper.getKeywords();
-                sendTimelineProgress(taskId, timelines);
+                .thenCompose(wrapper -> {
+                    List<TimeLine> timelines = wrapper.getTimeline();
+                    List<String> keywords = wrapper.getKeywords();
+                    sendTimelineProgress(taskId, timelines);
 
-                try {
-                    List<String> formattedTimeline = timelines.stream()
-                        .map(TimeLine::getTime)
-                        .map(TimeUtil::formatSecondsToHHMMSS)
-                        .toList();
+                    try {
+                        List<String> formattedTimeline = timelines.stream()
+                                .map(TimeLine::getTime)
+                                .map(TimeUtil::formatSecondsToHHMMSS)
+                                .toList();
 
-                    snapReviewProducer.sendSnapReviewRequest(request.getContentSeq(), formattedTimeline);
-                    logger.info("📤 SnapReview Kafka 전송 완료: {}", formattedTimeline);
-                } catch (Exception e) {
-                    logger.error("❌ SnapReview Kafka 전송 실패: {}", e.getMessage(), e);
-                    throw new BusinessException(ErrorCode.SNAP_REVIEW_SEND_FAILED);
-                }
+                        snapReviewProducer.sendSnapReviewRequest(request.getContentSeq(), formattedTimeline);
+                        logger.info("📤 SnapReview Kafka 전송 완료: {}", formattedTimeline);
+                    } catch (Exception e) {
+                        logger.error("❌ SnapReview Kafka 전송 실패: {}", e.getMessage(), e);
+                        handleError(request);
+                        throw new BusinessException(ErrorCode.SNAP_REVIEW_SEND_FAILED);
+                    }
 
-                return summarizeByChunksWithTaskId(taskId, timelines, scriptLines)
-                        .thenApply(blocks -> Map.of("blocks", blocks, "keywords", keywords));
-            })
-            .thenApply(map -> {
-                List<ContentBlock> blocks = (List<ContentBlock>) map.get("blocks");
-                List<String> keywords = (List<String>) map.get("keywords");
+                    return summarizeByChunksWithTaskId(taskId, timelines, scriptLines)
+                            .thenApply(blocks -> Map.of("blocks", blocks, "keywords", keywords));
+                })
+                .thenApply(map -> {
+                    List<ContentBlock> blocks = (List<ContentBlock>) map.get("blocks");
+                    List<String> keywords = (List<String>) map.get("keywords");
 
-                sendProgress(taskId, "요약 완료. 데이터 저장 중...", "blockCount", blocks.size());
-                blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
+                    sendProgress(taskId, "요약 완료. 데이터 저장 중...", "blockCount", blocks.size());
+                    blocks.forEach(block -> logger.info("🎯 요약 블록: {}", block.getTitle()));
 
-                try {
-                    logger.info("💾 블록 저장 시작 - contentSeq={}, blockCount={}", request.getContentSeq(), blocks.size());
-                    saveBlock(request.getContentSeq(), blocks, scriptLines, keywords);
-                    logger.info("✅ 블록 저장 완료");
+                    try {
+                        logger.info("💾 블록 저장 시작 - contentSeq={}, blockCount={}", request.getContentSeq(), blocks.size());
+                        saveBlock(request.getContentSeq(), blocks, scriptLines, keywords);
+                        logger.info("✅ 블록 저장 완료");
 
-                    logger.info("⏱️ 처리 상태 및 완료일시 업데이트 시작");
-                    contentMapper.updateProcessStatusAndCompletedAtByContentSeq(
-                            request.getContentSeq(),
-                            "C",
-                            now().format(ofPattern("yyyyMMddHHmmss"))
-                    );
-                    logger.info("✅ 처리 상태 및 완료일시 업데이트 완료");
-                    sendResult(taskId, request.getUserContentSeq(), blocks);
-                    sendComplete(taskId);
+                        logger.info("⏱️ 처리 상태 및 완료일시 업데이트 시작");
+                        contentMapper.updateProcessStatusAndCompletedAtByContentSeq(
+                                request.getContentSeq(),
+                                "C",
+                                now().format(ofPattern("yyyyMMddHHmmss"))
+                        );
+                        logger.info("✅ 처리 상태 및 완료일시 업데이트 완료");
+                        sendResult(taskId, request.getContentSeq(), blocks);
+                        sendComplete(taskId);
 
-                    return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
-                } catch (Exception e) {
-                    logger.error("❌ 저장 처리 중 예외 발생 - contentSeq={}, error={}", request.getContentSeq(), e.getMessage(), e);
-                    throw new BusinessException(ErrorCode.SUMMARY_SAVE_FAILED);
-                }
-            })
-            .exceptionally(e -> {
-                logger.error("❌ 전체 요약 처리 중 오류: taskId={}", taskId, e);
-                sendError(taskId, "요약 처리 중 오류가 발생했습니다: " + e.getMessage());
-                return "GPT 응답 중 오류가 발생했습니다: " + e.getMessage();
-            });
+                        return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
+                    } catch (Exception e) {
+                        logger.error("❌ 저장 처리 중 예외 발생 - contentSeq={}, error={}", request.getContentSeq(), e.getMessage(), e);
+                        handleError(request);
+                        throw new BusinessException(ErrorCode.SUMMARY_SAVE_FAILED);
+                    }
+                })
+                .exceptionally(e -> {
+                    logger.error("❌ 전체 요약 처리 중 오류: taskId={}", taskId, e);
+                    sendError(taskId, "요약 처리 중 오류가 발생했습니다: " + e.getMessage());
+                    handleError(request);
+                    return "GPT 응답 중 오류가 발생했습니다: " + e.getMessage();
+                });
+    }
+
+    /**
+     * 오류 발생 시 userContentSeq 테이블에서 데이터를 삭제하고
+     * contentSeq에 해당하는 레코드의 delete_yn 값을 'Y'로 변경합니다.
+     */
+    private void handleError(LlmRequestDTO request) {
+        try {
+            // 1. userContentSeq 테이블에서 데이터 삭제
+            if (request.getUserContentSeq() != null) {
+                contentMapper.deleteUserContent(request.getUserContentSeq());
+                logger.info("🗑️ 사용자 콘텐츠 삭제 완료: userContentSeq={}", request.getUserContentSeq());
+            }
+
+            // 2. contentSeq에 해당하는 레코드의 delete_yn 값을 'Y'로 변경
+            if (request.getContentSeq() != null) {
+                contentMapper.updateDeleteYnByContentSeq(request.getContentSeq(), "Y");
+                logger.info("🗑️ 콘텐츠 삭제 처리 완료: contentSeq={}", request.getContentSeq());
+            }
+        } catch (Exception ex) {
+            logger.error("❌ 오류 처리 중 추가 예외 발생: {}", ex.getMessage(), ex);
+        }
     }
 
     
@@ -145,8 +170,8 @@ public class RegistrationService {
                 int startTime = Integer.parseInt(startTimeStr);
 
                 String endTimeStr = (i < blocks.size() - 1 && blocks.get(i + 1).getTime() != null)
-                    ? blocks.get(i + 1).getTime()
-                    : "99999";
+                        ? blocks.get(i + 1).getTime()
+                        : "99999";
 
                 handleSummary(block, startTime, endTimeStr, contentSeq, scriptLines, levelToSections);
                 handleOxQuiz(block, startTime, contentSeq, oxQuizList);
@@ -156,24 +181,32 @@ public class RegistrationService {
             try {
                 saveSummaries(contentSeq, levelToSections);
             } catch (Exception e) {
+                // saveBlock 실패 시 오류 처리 로직 추가
+                handleSaveBlockError(contentSeq);
                 throw new BusinessException(ErrorCode.SUMMARY_INSERT_FAILED, e);
             }
 
             try {
                 if (!oxQuizList.isEmpty()) oxQuizService.saveOxQuizzes(contentSeq, oxQuizList);
             } catch (Exception e) {
+                // saveBlock 실패 시 오류 처리 로직 추가
+                handleSaveBlockError(contentSeq);
                 throw new BusinessException(ErrorCode.OXQUIZ_SAVE_FAILED, e);
             }
 
             try {
                 if (!examList.isEmpty()) examsService.saveExams(contentSeq, examList);
             } catch (Exception e) {
+                // saveBlock 실패 시 오류 처리 로직 추가
+                handleSaveBlockError(contentSeq);
                 throw new BusinessException(ErrorCode.EXAM_SAVE_FAILED, e);
             }
 
             try {
                 saveTitleSummaryVector(contentSeq, blocks, keywords);
             } catch (Exception e) {
+                // saveBlock 실패 시 오류 처리 로직 추가
+                handleSaveBlockError(contentSeq);
                 throw new BusinessException(ErrorCode.VECTOR_SAVE_FAILED, e);
             }
 
@@ -188,6 +221,8 @@ public class RegistrationService {
                         contentMapper.insertContentTags(contentSeq, uniqueTags);
                         logger.info("🏷️ 콘텐츠 태그 저장 완료: {}", uniqueTags);
                     } catch (Exception e) {
+                        // saveBlock 실패 시 오류 처리 로직 추가
+                        handleSaveBlockError(contentSeq);
                         throw new BusinessException(ErrorCode.CONTENT_TAG_INSERT_FAILED, e);
                     }
                 }
@@ -196,9 +231,36 @@ public class RegistrationService {
             return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
             logger.error("❌ ContentBlock 저장 실패", e);
+            // saveBlock 실패 시 오류 처리 로직 추가
+            handleSaveBlockError(contentSeq);
             CompletableFuture<Void> failed = new CompletableFuture<>();
             failed.completeExceptionally(e);
             return failed;
+        }
+    }
+
+    /**
+     * saveBlock 실패 시 오류 처리 메서드
+     * 콘텐츠 관련 userContentSeq를 찾아 삭제하고 contentSeq의 delete_yn을 'Y'로 설정
+     */
+    private void handleSaveBlockError(long contentSeq) {
+        try {
+            // 1. contentSeq에 해당하는 userContentSeq 조회
+            List<Long> userContentSeqs = contentMapper.selectUserContentSeqsByContentSeq(contentSeq);
+
+            // 2. 조회된 userContentSeq 데이터 삭제
+            if (userContentSeqs != null && !userContentSeqs.isEmpty()) {
+                for (Long userContentSeq : userContentSeqs) {
+                    contentMapper.deleteUserContent(userContentSeq);
+                    logger.info("🗑️ 사용자 콘텐츠 삭제 완료: userContentSeq={}", userContentSeq);
+                }
+            }
+
+            // 3. contentSeq에 해당하는 레코드의 delete_yn 값을 'Y'로 변경
+            contentMapper.updateDeleteYnByContentSeq(contentSeq, "Y");
+            logger.info("🗑️ 콘텐츠 삭제 처리 완료: contentSeq={}", contentSeq);
+        } catch (Exception ex) {
+            logger.error("❌ saveBlock 오류 처리 중 추가 예외 발생: {}", ex.getMessage(), ex);
         }
     }
 

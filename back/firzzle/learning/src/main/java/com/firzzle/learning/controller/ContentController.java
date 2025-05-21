@@ -169,7 +169,7 @@ public class ContentController {
             RequestBox box = RequestManager.getBox(request);
             box.put("userContentSeq", userContentSeq);
 
-            DataBox dataBox = contentService.selectContent(box);
+            DataBox dataBox = contentService.selectContentByUserContentSeq(box);
             ContentResponseDTO contentResponseDTO = convertToContentResponseDTO(dataBox);
 
             Response<ContentResponseDTO> response = Response.<ContentResponseDTO>builder()
@@ -220,7 +220,7 @@ public class ContentController {
 //            box.put("status", searchDTO.getStatus());
 
             List<DataBox> contentListDataBox = contentService.selectContentList(box);
-            int totalCount = contentService.selectContentCount(box);
+            int totalCount = contentService.selectContentCountByUuid(box);
 
             List<ContentResponseDTO> contentList = convertToContentResponseDTOList(contentListDataBox);
 
