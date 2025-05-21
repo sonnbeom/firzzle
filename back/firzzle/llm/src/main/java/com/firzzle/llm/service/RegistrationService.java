@@ -109,7 +109,7 @@ public class RegistrationService {
                                 now().format(ofPattern("yyyyMMddHHmmss"))
                         );
                         logger.info("✅ 처리 상태 및 완료일시 업데이트 완료");
-                        sendResult(taskId, request.getContentSeq(), blocks);
+                        sendResult(taskId, request.getUserContentSeq(), blocks);
                         sendComplete(taskId);
 
                         return "✅ 요약 및 저장 완료: " + blocks.size() + "개";
