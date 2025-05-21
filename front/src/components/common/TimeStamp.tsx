@@ -67,7 +67,7 @@ const TimeStamp = (props: TimeStampProps) => {
 
     case 'image':
       return (
-        <div className='relative w-full'>
+        <div className='relative h-[180px] w-full'>
           <button className='absolute inset-0 p-2' onClick={handleClick}>
             <div className='relative h-full w-full'>
               <Image
@@ -75,7 +75,7 @@ const TimeStamp = (props: TimeStampProps) => {
                 alt='스냅 이미지'
                 fill
                 sizes='33vw'
-                style={{ objectFit: 'contain' }}
+                style={{ objectFit: 'cover' }}
                 className='rounded-md'
               />
             </div>
