@@ -89,14 +89,14 @@ const ChatTextAreaField = ({
         });
       }
 
-      // 채팅 내역 갱신
-      await refetch();
-
       // 시험모드 새 질문 생성
       if (mode === '시험모드') {
         const response = await getNewExamChat(contentId);
         setCurrentExamSeq(response.exam_seq);
       }
+
+      // 채팅 내역 갱신
+      refetch();
     } catch (error) {
       BasicToaster.error(error.message);
       // 에러 발생 시 낙관적 업데이트 롤백
