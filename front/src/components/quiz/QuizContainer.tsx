@@ -9,6 +9,7 @@ import { useQuiz } from '@/hooks/useQuiz';
 import { QuizData } from '@/types/quiz';
 import QuizAnswer from './QuizAnswer';
 import QuizCard from './QuizCard';
+import QuizLoading from './QuizLoading';
 
 interface QuizContainerProps {
   contentSeq: string;
@@ -58,7 +59,7 @@ const QuizContainer = ({ contentSeq }: QuizContainerProps) => {
       {/* Quiz */}
       <div className='space-y-6 pb-28'>
         {!quizData ? (
-          <div>로딩 중...</div>
+          <QuizLoading />
         ) : (
           quizData.content.questions.map((question, index) => {
             if (showAnswer) {

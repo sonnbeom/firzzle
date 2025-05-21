@@ -6,6 +6,7 @@ import { UpdateFrameCommentsRequest, Frame } from '@/types/snapReview';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
 import Icons from '../common/Icons';
 import TimeStamp from '../common/TimeStamp';
+import ReviewLoading from './ReviewLoading';
 
 interface ReviewCardProps {
   contentId: string;
@@ -69,14 +70,8 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
 
   return (
     <div className='space-y-4 p-4 lg:p-6'>
-      {localReviews === null ? (
-        <div className='text-center text-gray-600'>
-          스냅리뷰를 생성 중입니다...
-        </div>
-      ) : localReviews.length === 0 ? (
-        <div className='text-center text-gray-600'>
-          스냅리뷰를 생성 중입니다...
-        </div>
+      {localReviews === null || localReviews.length === 0 ? (
+        <ReviewLoading />
       ) : (
         <div className='text-xs text-gray-600 md:text-sm'>
           사진을 클릭하면 영상 해당 부분이 재생됩니다.
