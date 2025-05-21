@@ -1,13 +1,35 @@
 'use client';
 
-import { toast, ToasterProps } from 'sonner';
-import { Toaster } from '../ui/sonner';
+import { ReactNode } from 'react';
+import { toast, Toaster, ToasterProps } from 'sonner';
+
+const commonStyles = {
+  color: 'white',
+  alignItems: 'center',
+  textAlign: 'center',
+  justifyContent: 'center',
+  fontSize: '14px',
+  minHeight: 'auto',
+  height: 'auto',
+} as const;
 
 const styles = {
-  default: { background: 'rgba(26, 26, 26, 0.8)', color: '#fff' },
-  success: { background: 'rgba(50, 78, 239, 0.8)', color: '#fff' },
-  warning: { background: 'rgba(146, 64, 14, 0.8)', color: '#fff' },
-  error: { background: 'rgba(185, 28, 28, 0.8)', color: '#fff' },
+  default: {
+    ...commonStyles,
+    background: 'rgba(52, 52, 55, 0.8)',
+  },
+  success: {
+    ...commonStyles,
+    background: 'rgba(50, 78, 239, 0.8)',
+  },
+  warning: {
+    ...commonStyles,
+    background: 'rgba(236, 178, 6, 0.8)',
+  },
+  error: {
+    ...commonStyles,
+    background: 'rgba(237, 21, 21, 0.8)',
+  },
 } as const;
 
 type BasicToasterProps = Omit<ToasterProps, 'theme' | 'duration'> & {
@@ -18,7 +40,7 @@ interface ToastOptions {
   duration?: number;
   id?: string;
   persistent?: boolean; // 사용자가 토스트를 직접 닫을 수 있는지 여부
-  children?: React.ReactNode;
+  children?: ReactNode;
   closeButton?: boolean; // 닫기 버튼 표시 여부
 }
 
@@ -37,9 +59,8 @@ BasicToaster.success = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.success,
-    className: 'font-medium text-md',
     duration: options?.persistent ? Infinity : options?.duration,
-    onDismiss: (toast) => {
+    onDismiss: () => {
       // 사용자가 직접 닫아야 함
       if (options?.persistent) {
         return false;
@@ -53,7 +74,6 @@ BasicToaster.error = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.error,
-    className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
     closeButton: options?.closeButton ?? false,
@@ -63,7 +83,6 @@ BasicToaster.warning = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.warning,
-    className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
     closeButton: options?.closeButton ?? false,
@@ -73,7 +92,6 @@ BasicToaster.default = (message: string, options?: ToastOptions) =>
   toast(message, {
     id: options?.id,
     style: styles.default,
-    className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
     closeButton: options?.closeButton ?? false,

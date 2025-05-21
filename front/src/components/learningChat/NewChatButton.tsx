@@ -22,10 +22,11 @@ const NewChatButton = ({
     if (solvedCount >= MAX_NEW_EXAM_COUNT) {
       BasicToaster.default('질문 횟수 초과로 시험모드가 종료되었습니다.', {
         id: 'new-chat',
+        duration: 2000,
       });
+
       return;
     }
-
     try {
       const response = await getNewExamChat(contentId);
 
@@ -53,7 +54,6 @@ const NewChatButton = ({
         className='flex cursor-pointer items-center gap-2'
         aria-label='새 질문 생성'
         onClick={handleNewChat}
-        disabled={solvedCount === MAX_NEW_EXAM_COUNT}
       >
         <Icons id='new-chat' size={20} />
         <p className='text-gray-950'>새 질문 생성</p>
