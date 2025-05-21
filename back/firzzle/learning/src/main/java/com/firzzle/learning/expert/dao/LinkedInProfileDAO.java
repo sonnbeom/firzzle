@@ -96,6 +96,17 @@ public class LinkedInProfileDAO extends MyBatisSupport {
     }
 
     /**
+     * LinkedIn 프로필 정보 목록 조회
+     *
+     * @param box - 요청 정보가 담긴 RequestBox
+     * @return 프로필 정보 목록
+     */
+    @SuppressWarnings("unchecked")
+    public DataBox selectProfileByProfileSeq(RequestBox box) {
+        return sqlSession.selectDataBox(NAMESPACE + ".selectProfileByProfileSeq", box);
+    }
+
+    /**
      * LinkedIn 프로필 경력 정보 목록 조회
      *
      * @param box - 요청 정보가 담긴 RequestBox

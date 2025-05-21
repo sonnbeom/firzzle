@@ -330,11 +330,22 @@ public class LearningChatService {
 
                 progress.setExamSeq(null); // 현재 진행 중 문제 초기화
                 progress.setSolvedCount(solvedCount);
-                progress.setIsCompleted(solvedCount >= 3 ? "Y" : "N");
+                progress.setIsCompleted(solvedCount >= totalCount ? "Y" : "N");
                 examsMapper.updateExamProgress(progress);
 
-                // 10. 응답 DTO 반환
-                return new ExamAnswerResponseDTO(aiExplanation, indate);
+                // 10. 다음 문제 조회
+                ExamsDTO nextExam = examsMapper.selectRandomUnansweredExam(contentSeq, userSeq);
+
+                String nextQuestion = (solvedCount >= totalCount || nextExam == null)
+                        ? "모든 문제를 이미 푼 상태입니다."
+                        : nextExam.getQuestionContent();
+
+                Long nextExamSeq = (solvedCount >= totalCount || nextExam == null)
+                        ? null
+                        : nextExam.getExamSeq();
+
+                // 11. 응답 DTO 반환
+                return new ExamAnswerResponseDTO(aiExplanation, indate, nextExamSeq, nextQuestion);
             })
             .exceptionally(e -> {
                 logger.error("❌ 시험 응답 처리 중 오류 발생", e);
