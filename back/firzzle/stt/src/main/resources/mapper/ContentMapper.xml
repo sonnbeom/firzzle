@@ -53,6 +53,7 @@
     FROM fb_ai_contents C
     WHERE C.video_id = #{videoId}
     AND C.delete_yn = 'N'
+	AND C.process_status = 'C'
     LIMIT 1
 	</select>
 	

@@ -91,7 +91,7 @@ public class ExpertRecommendationController {
             }
 
             // 원본 콘텐츠 태그 조회
-            DataBox originContent = contentService.selectContent(box);
+            DataBox originContent = contentService.selectContentByUserContentSeq(box);
             String originTags = originContent.getString("d_tags");
 
             // 태그를 쉼표 + 공백으로 구분하고 최대 3개만 유지

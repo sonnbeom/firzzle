@@ -146,7 +146,6 @@ logging:
 app:
   kafka:
     topic:
-      content-analysis: content-analysis-topic
       linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(7sOLzFedm3q4VS1FLRsa7YPZ7tB3IHHC7mNKqIB+Bbagkmux2AG+lUjUo0HNyd0U)
@@ -218,7 +217,6 @@ logging:
 app:
   kafka:
     topic:
-      content-analysis: content-analysis-topic
       linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
@@ -290,7 +288,6 @@ logging:
 app:
   kafka:
     topic:
-      content-analysis: content-analysis-topic
       linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
