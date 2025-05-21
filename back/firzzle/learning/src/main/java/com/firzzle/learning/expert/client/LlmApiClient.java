@@ -8,15 +8,19 @@ import com.firzzle.learning.expert.dto.ExpertRecommendationResponseDTO;
 import com.firzzle.learning.expert.dto.LinkedInEducationDTO;
 import com.firzzle.learning.expert.dto.LinkedInExperienceDTO;
 import com.firzzle.learning.expert.dto.LinkedInExpertDTO;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,7 +33,6 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class LlmApiClient {
 
     private final RestTemplate restTemplate;
@@ -37,6 +40,29 @@ public class LlmApiClient {
 
     @Value("${llm.service.url}")
     private String llmServiceUrl;
+
+    // 생성자 주입
+    public LlmApiClient(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
+    }
+
+    /**
+     * 현재 요청에서 Authorization 헤더를 가져옵니다.
+     * @return Authorization 헤더 값, 없으면 null
+     */
+    private String getAuthorizationHeader() {
+        try {
+            ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (requestAttributes != null) {
+                HttpServletRequest request = requestAttributes.getRequest();
+                return request.getHeader("Authorization");
+            }
+        } catch (Exception e) {
+            log.warn("요청에서 Authorization 헤더를 가져오는 중 오류 발생: {}", e.getMessage());
+        }
+        return null;
+    }
 
     /**
      * LLM 서비스에 태그 기반으로 유사한 LinkedIn 프로필 검색 요청
@@ -56,7 +82,7 @@ public class LlmApiClient {
 
             // API URL 구성
             String url = UriComponentsBuilder.fromHttpUrl(llmServiceUrl)
-                    .path("/api/v1/expert/embeddings/linkedin/similar")
+                    .path("/service/api/v1/llm/expert/embeddings/linkedin/similar")
                     .queryParam("contentSeq", contentSeq)
                     .queryParam("tags", tags)
                     .queryParam("minScore", minScore)
@@ -66,11 +92,26 @@ public class LlmApiClient {
                     .build()
                     .toUriString();
 
-            // 문자열로 응답 받기
+            log.debug("최종 요청 URL: {}", url);
+
+            // 헤더 설정 - Authorization 헤더 추가
+            HttpHeaders headers = new HttpHeaders();
+            String authHeader = getAuthorizationHeader();
+            if (authHeader != null && !authHeader.isEmpty()) {
+                headers.set("Authorization", authHeader);
+                log.debug("Authorization 헤더 추가: {}", authHeader);
+            } else {
+                log.warn("Authorization 헤더가 없습니다. 인증 없이 요청합니다.");
+            }
+
+            // HTTP 엔티티 생성
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            // 요청 실행
             ResponseEntity<String> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
-                    null,
+                    entity,
                     String.class
             );
 

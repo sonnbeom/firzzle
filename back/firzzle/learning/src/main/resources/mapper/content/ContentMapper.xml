@@ -73,7 +73,7 @@
     </insert>
 
     <!-- 콘텐츠 정보 조회 (DataBox 반환) -->
-    <select id="selectContentDataBox" resultType="DataBox" parameterType="RequestBox">
+    <select id="selectContentDataBoxByUuidContentSeq" resultType="DataBox" parameterType="RequestBox">
         SELECT
         <include refid="contentColumns" />
         , UC.user_content_seq
@@ -83,6 +83,7 @@
         fb_ai_user_contents UC ON C.content_seq = UC.content_seq
         WHERE
         C.content_seq = #{contentSeq}
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
         AND C.delete_yn = 'N'
     </select>
 
@@ -111,6 +112,7 @@
         fb_ai_contents C
         WHERE
         video_id = #{videoId}
+        AND process_status = 'C'
         AND delete_yn = 'N'
     </select>
 
@@ -172,9 +174,14 @@
         <if test="category != null and category != ''">
             AND C.category = #{category}
         </if>
-        <if test="status != null and status != ''">
-            AND C.process_status = #{status}
-        </if>
+        <choose>
+            <when test="status != null and status != ''">
+                AND C.process_status = #{status}
+            </when>
+            <otherwise>
+                AND C.process_status = 'C'
+            </otherwise>
+        </choose>
         <include refid="PageMapper.epage"/>
     </select>
 

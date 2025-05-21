@@ -119,7 +119,7 @@ eureka:
 # Eureka 통해 LLM 서비스 접근
 llm:
   service:
-    url: ENC(NQsmH0zVL+P7Qu6ZXWKj7sVJl3M41m6Tie1ckIHrlc9g+QDdhZxtqK7v8azKRLyO)  # 로드 밸런싱 URI 사용
+    url: ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)  # 
 
 # MyBatis 설정
 mybatis:
@@ -146,7 +146,6 @@ logging:
 app:
   kafka:
     topic:
-      content-analysis: content-analysis-topic
       linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(7sOLzFedm3q4VS1FLRsa7YPZ7tB3IHHC7mNKqIB+Bbagkmux2AG+lUjUo0HNyd0U)
@@ -191,7 +190,7 @@ eureka:
 # Eureka 통해 LLM 서비스 접근
 llm:
   service:
-    url: ENC(YhTAJN3mQXf0+gtUjJoJUT1IY+WzFMfUcuYfjk7ejC8=)  # 로드 밸런싱 URI 사용
+    url: ENC(v54bCDm3EFz+yF5tkeRzvAM/TuCC99wOlv7k0o78ctf3ygtKXOzM6IHspd24WN6z)  # 
 
 # MyBatis 설정
 mybatis:
@@ -218,7 +217,6 @@ logging:
 app:
   kafka:
     topic:
-      content-analysis: content-analysis-topic
       linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
@@ -263,7 +261,7 @@ eureka:
 # Eureka 통해 LLM 서비스 접근
 llm:
   service:
-    url: ENC(YhTAJN3mQXf0+gtUjJoJUT1IY+WzFMfUcuYfjk7ejC8=)  # 로드 밸런싱 URI 사용
+    url: ENC(v54bCDm3EFz+yF5tkeRzvAM/TuCC99wOlv7k0o78ctf3ygtKXOzM6IHspd24WN6z)  # 
 
 # MyBatis 설정.
 mybatis:
@@ -290,7 +288,6 @@ logging:
 app:
   kafka:
     topic:
-      content-analysis: content-analysis-topic
       linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
   url:
     base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
