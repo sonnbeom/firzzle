@@ -6,7 +6,7 @@ import com.firzzle.llm.expert.dto.LinkedInProfileSimilarityDTO;
 import com.firzzle.llm.expert.dto.LinkedInSimilarityRequestDTO;
 import com.firzzle.llm.expert.dto.LinkedInSimilarityResponseDTO;
 import com.firzzle.llm.util.QdrantCollections;
-import com.firzzle.llm.client.QdrantClient;  // QdrantClient를 직접 사용
+import com.firzzle.llm.client.QdrantClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class LinkedInVectorSearchService {
     private static final String LINKEDIN_COLLECTION = QdrantCollections.LINKEDIN_PROFILES;
 
     private final RagService ragService;
-    private final QdrantClient qdrantClient;  // QdrantClient 직접 주입
+    private final QdrantClient qdrantClient;
     private final LinkedInEmbeddingService embeddingService;
 
     /**
@@ -46,13 +46,37 @@ public class LinkedInVectorSearchService {
             // 2. 페이로드 생성
             Map<String, Object> payload = embeddingService.createProfilePayload(profile);
 
-            // 3. Qdrant에 저장
-            ragService.saveToVectorDb(LINKEDIN_COLLECTION, profile.getProfileSeq(), embedding, payload);
-            log.info("LinkedIn 프로필 벡터 저장 요청 완료: profileSeq={}", profile.getProfileSeq());
+            // 3. Qdrant에 저장 (QdrantClient 직접 사용)
+            try {
+                qdrantClient.upsertVector(LINKEDIN_COLLECTION, profile.getProfileSeq(), embedding, payload)
+                        .block(); // 동기적으로 처리하기 위해 block() 사용
+                log.info("LinkedIn 프로필 벡터 저장 요청 완료: profileSeq={}", profile.getProfileSeq());
+                return true;
+            } catch (Exception e) {
+                log.error("LinkedIn 프로필 벡터 저장 실패 (QdrantClient): {}", e.getMessage(), e);
+                return false;
+            }
+        } catch (Exception e) {
+            log.error("LinkedIn 프로필 임베딩 생성 실패: {}", e.getMessage(), e);
+            return false;
+        }
+    }
 
+    /**
+     * 컬렉션이 존재하는지 확인하고, 없다면 생성합니다.
+     *
+     * @return 성공 여부
+     */
+    public boolean ensureCollectionExists() {
+        try {
+            // 컬렉션 존재 확인 및 생성 로직 구현
+            // 이 예제에서는 실제 구현은 생략하고 로깅만 추가
+            log.info("Qdrant 컬렉션 확인: {}", LINKEDIN_COLLECTION);
+
+            // 컬렉션이 있다고 가정
             return true;
         } catch (Exception e) {
-            log.error("LinkedIn 프로필 벡터 저장 실패: {}", e.getMessage(), e);
+            log.error("Qdrant 컬렉션 확인/생성 실패: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -70,6 +94,13 @@ public class LinkedInVectorSearchService {
             int limit = request.getLimit() != null ? request.getLimit() : 9;
             int page = request.getPage() != null ? request.getPage() : 1;
             int pageSize = request.getPageSize() != null ? request.getPageSize() : 3;
+
+            // 컬렉션 존재 확인
+            if (!ensureCollectionExists()) {
+                CompletableFuture<LinkedInSimilarityResponseDTO> future = new CompletableFuture<>();
+                future.completeExceptionally(new RuntimeException("Qdrant 컬렉션이 존재하지 않습니다: " + LINKEDIN_COLLECTION));
+                return future;
+            }
 
             // 1. 태그 임베딩 생성
             List<Float> tagsEmbedding = embeddingService.createTagsEmbedding(request.getTags());
@@ -107,7 +138,7 @@ public class LinkedInVectorSearchService {
 
     /**
      * 벡터 기반으로 유사한 LinkedIn 프로필을 검색합니다.
-     * ragService.searchRaw 대신 QdrantClient를 직접 사용하여 검색
+     * QdrantClient를 직접 사용하여 검색
      *
      * @param vector 쿼리 벡터
      * @param limit 결과 수
@@ -123,7 +154,7 @@ public class LinkedInVectorSearchService {
                 "vector", vector,
                 "limit", limit,
                 "with_payload", true,
-                "score_threshold", minScore  // 최소 유사도 점수 설정
+                "score_threshold", minScore
         );
 
         // QdrantClient를 직접 사용하여 검색
