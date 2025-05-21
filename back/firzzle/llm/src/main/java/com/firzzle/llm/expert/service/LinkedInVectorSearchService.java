@@ -114,8 +114,7 @@ public class LinkedInVectorSearchService {
                         List<LinkedInProfileSimilarityDTO> pagedResults =
                                 start < results.size() ? results.subList(start, end) : new ArrayList<>();
 
-                        // 4. 응답 구성
-                        return LinkedInSimilarityResponseDTO.builder()
+                        LinkedInSimilarityResponseDTO responseDTO1 = LinkedInSimilarityResponseDTO.builder()
                                 .contentSeq(request.getContentSeq())
                                 .tags(request.getTags())
                                 .profiles(pagedResults)
@@ -126,6 +125,11 @@ public class LinkedInVectorSearchService {
                                 .last(page * pageSize >= results.size())
                                 .hasNext(page * pageSize < results.size())
                                 .build();
+
+                        log.debug(responseDTO1.toString());
+
+                        // 4. 응답 구성
+                        return responseDTO1;
                     })
                     .toFuture();
         } catch (Exception e) {

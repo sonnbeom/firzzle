@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Class Name : LinkedInProfileService.java
@@ -28,6 +29,95 @@ public class LinkedInProfileService {
     private final Logger logger = LoggerFactory.getLogger(LinkedInProfileService.class);
 
     private final LinkedInProfileDAO linkedInProfileDAO;
+
+    /**
+     * 프로필 상세 정보 보강 (경력, 학력, 스킬)
+     */
+    public void enrichProfileDetails(LinkedInExpertDTO profileDTO) {
+        Long profileSeq = profileDTO.getProfileSeq();
+
+        // 경력 정보 조회
+        RequestBox expBox = new RequestBox("expBox");
+        expBox.put("profileSeq", profileSeq);
+        List<DataBox> expDataBoxes = linkedInProfileDAO.selectExperiencesByProfileSeq(expBox);
+
+        List<LinkedInExperienceDTO> experiences = expDataBoxes.stream()
+                .map(this::createExperienceDTO)
+                .collect(Collectors.toList());
+
+        profileDTO.setExperiences(experiences);
+
+        // 학력 정보 조회
+        RequestBox eduBox = new RequestBox("eduBox");
+        eduBox.put("profileSeq", profileSeq);
+        List<DataBox> eduDataBoxes = linkedInProfileDAO.selectEducationsByProfileSeq(eduBox);
+
+        List<LinkedInEducationDTO> educations = eduDataBoxes.stream()
+                .map(this::createEducationDTO)
+                .collect(Collectors.toList());
+
+        profileDTO.setEducations(educations);
+
+        // 스킬 정보 조회
+        RequestBox skillBox = new RequestBox("skillBox");
+        skillBox.put("profileSeq", profileSeq);
+        List<DataBox> skillDataBoxes = linkedInProfileDAO.selectSkillsByProfileSeq(skillBox);
+
+        List<String> skills = skillDataBoxes.stream()
+                .map(box -> box.getString("d_skill_name"))
+                .collect(Collectors.toList());
+
+        profileDTO.setSkills(skills);
+    }
+
+    /**
+     * DataBox에서 프로필 DTO 생성
+     */
+    private LinkedInExpertDTO createProfileDTO(DataBox dataBox) {
+        return LinkedInExpertDTO.builder()
+                .profileSeq(dataBox.getLong2("d_profile_seq"))
+                .linkedinUrl(dataBox.getString("d_linkedin_url"))
+                .name(dataBox.getString("d_name"))
+                .headline(dataBox.getString("d_headline"))
+                .company(dataBox.getString("d_company"))
+                .location(dataBox.getString("d_location"))
+                .profileImageUrl(dataBox.getString("d_profile_image_url"))
+                .similarity(null) // 유사도는 LLM 서비스에서 설정
+                .experiences(new ArrayList<>())
+                .educations(new ArrayList<>())
+                .skills(new ArrayList<>())
+                .build();
+    }
+
+    /**
+     * DataBox에서 경력 DTO 생성
+     */
+    private LinkedInExperienceDTO createExperienceDTO(DataBox dataBox) {
+        return LinkedInExperienceDTO.builder()
+                .experienceSeq(dataBox.getLong2("d_experience_seq"))
+                .profileSeq(dataBox.getLong2("d_profile_seq"))
+                .title(dataBox.getString("d_title"))
+                .company(dataBox.getString("d_company"))
+                .duration(dataBox.getString("d_duration"))
+                .description(dataBox.getString("d_description"))
+                .indate(dataBox.getString("d_indate"))
+                .build();
+    }
+
+    /**
+     * DataBox에서 학력 DTO 생성
+     */
+    private LinkedInEducationDTO createEducationDTO(DataBox dataBox) {
+        return LinkedInEducationDTO.builder()
+                .educationSeq(dataBox.getLong2("d_education_seq"))
+                .profileSeq(dataBox.getLong2("d_profile_seq"))
+                .school(dataBox.getString("d_school"))
+                .degree(dataBox.getString("d_degree"))
+                .fieldOfStudy(dataBox.getString("d_field_of_study"))
+                .duration(dataBox.getString("d_duration"))
+                .indate(dataBox.getString("d_indate"))
+                .build();
+    }
 
     @Autowired
     public LinkedInProfileService(LinkedInProfileDAO linkedInProfileDAO) {

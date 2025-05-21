@@ -134,6 +134,7 @@ public class LinkedInEmbeddingController {
 
             return vectorSearchService.searchSimilarProfiles(request)
                     .thenApply(result -> {
+                        log.debug("result.toString() : " + result.toString());
                         Response<LinkedInSimilarityResponseDTO> response = Response.<LinkedInSimilarityResponseDTO>builder()
                                 .status(Status.OK)
                                 .data(result)
