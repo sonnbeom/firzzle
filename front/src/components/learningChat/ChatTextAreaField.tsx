@@ -1,7 +1,11 @@
 'use client';
 
 import { ChangeEvent, KeyboardEvent, useState } from 'react';
-import { postExamChat, postLearningChat } from '@/api/learningChat';
+import {
+  getNewExamChat,
+  postExamChat,
+  postLearningChat,
+} from '@/api/learningChat';
 import { useChatStore } from '@/stores/chatStore';
 import { LearningChat, Mode } from '@/types/learningChat';
 import { MAX_LEARNING_CHAT_LENGTH, MAX_NEW_EXAM_COUNT } from 'utils/const';
@@ -86,7 +90,13 @@ const ChatTextAreaField = ({
       }
 
       // 채팅 내역 갱신
-      refetch();
+      await refetch();
+
+      // 시험모드 새 질문 생성
+      if (mode === '시험모드') {
+        const response = await getNewExamChat(contentId);
+        setCurrentExamSeq(response.exam_seq);
+      }
     } catch (error) {
       BasicToaster.error(error.message);
       // 에러 발생 시 낙관적 업데이트 롤백
