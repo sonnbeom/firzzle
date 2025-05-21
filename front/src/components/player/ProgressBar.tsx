@@ -27,7 +27,7 @@ const ProgressBar = ({
       children: (
         <Link
           href={`/content/${seq}`}
-          className='border-b border-white px-2 font-semibold text-white'
+          className='mx-auto mt-2 block w-fit rounded-sm bg-white px-2 py-1 font-bold text-blue-400'
           onClick={() => toast.dismiss('sse youtube')}
         >
           요약 보러가기
@@ -95,12 +95,13 @@ const ProgressBar = ({
       });
     } catch (error) {
       console.error('SSE 연결 시도 중 에러 발생:', error);
+      setIsSubmitted(false);
+      sseManager.disconnect();
+
       BasicToaster.error(error.message || '연결 중 오류가 발생했습니다.', {
         id: 'sse youtube',
         duration: 2000,
       });
-      setIsSubmitted(false);
-      sseManager.disconnect();
     }
 
     return () => {
