@@ -68,7 +68,7 @@ const SnapList = () => {
   }
 
   return (
-    <div className='container mx-auto px-4 py-8'>
+    <div className='container mx-auto'>
       {snapReviews?.map((response, responseIndex) => {
         const reviews = Object.values(
           response.content[0]?.dailySnapReviews || {},

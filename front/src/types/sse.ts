@@ -1,6 +1,11 @@
 export interface SSEEventData {
-  contentSeq?: string;
-  title?: string;
   message?: string;
-  timestamp?: string;
+  taskId?: string;
+  contentSeq?: string;
+  timestamp?: number;
+  timePoints?: string[];
+  currentTime?: string;
+  currentIndex?: number;
+  totalTopics?: number;
+  blockCount?: number;
 }

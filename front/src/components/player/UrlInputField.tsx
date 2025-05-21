@@ -43,12 +43,21 @@ const UrlInputField = ({
 
   // 영상 분석 시작
   const handleUrlConfirm = async () => {
-    setIsSubmitted(true);
     try {
-      const response = await postContent({ youtubeUrl: value });
+      const response = await postContent({
+        youtubeUrl: value,
+        title: null,
+        description: null,
+        category: null,
+        tags: null,
+      });
+
+      console.log('컨텐츠 등록 응답', response);
 
       if (response.taskId) {
+        console.log('컨텐츠 등록', response);
         setTaskId(response.taskId);
+        setIsSubmitted(true);
       } else {
         router.push(`/content/${response.contentSeq}`);
       }

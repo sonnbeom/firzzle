@@ -5,7 +5,7 @@ import { Toaster } from '../ui/sonner';
 
 const styles = {
   default: { background: 'rgba(26, 26, 26, 0.8)', color: '#fff' },
-  success: { background: 'rgba(22, 101, 52, 0.8)', color: '#fff' },
+  success: { background: 'rgba(50, 78, 239, 0.8)', color: '#fff' },
   warning: { background: 'rgba(146, 64, 14, 0.8)', color: '#fff' },
   error: { background: 'rgba(185, 28, 28, 0.8)', color: '#fff' },
 } as const;
@@ -25,7 +25,7 @@ interface ToastOptions {
 const BasicToaster = ({ duration = 1500, ...props }: BasicToasterProps) => {
   return (
     <Toaster
-      theme='dark'
+      theme='system'
       position='bottom-center'
       duration={duration}
       {...props}
@@ -46,7 +46,7 @@ BasicToaster.success = (message: string, options?: ToastOptions) =>
       }
     },
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? false,
   });
 
 BasicToaster.error = (message: string, options?: ToastOptions) =>
@@ -56,7 +56,7 @@ BasicToaster.error = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? false,
   });
 
 BasicToaster.warning = (message: string, options?: ToastOptions) =>
@@ -66,7 +66,7 @@ BasicToaster.warning = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? false,
   });
 
 BasicToaster.default = (message: string, options?: ToastOptions) =>
@@ -76,7 +76,7 @@ BasicToaster.default = (message: string, options?: ToastOptions) =>
     className: 'font-medium text-md',
     duration: options?.duration,
     description: options?.children,
-    dismissible: options?.closeButton ?? false,
+    closeButton: options?.closeButton ?? false,
   });
 
 export default BasicToaster;

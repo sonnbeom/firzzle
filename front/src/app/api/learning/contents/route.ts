@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { api } from '@/api/common/apiInstance';
-import { ContentRegisterRequest } from '@/types/content';
+import {
+  ContentRegisterRequest,
+  ContentRegisterResponse,
+} from '@/types/content';
 
 // 학습 컨텐츠 분석
 export async function POST(request: NextRequest) {
   try {
-    const body: ContentRegisterRequest = await request.json();
-    const response = await api.post('/learning/contents', {
+    const body = await request.json();
+    const response = await api.post<
+      ContentRegisterResponse,
+      ContentRegisterRequest
+    >('/learning/contents', {
       body,
     });
 

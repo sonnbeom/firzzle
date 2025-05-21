@@ -75,7 +75,8 @@ const TimeStamp = (props: TimeStampProps) => {
                 alt='스냅 이미지'
                 fill
                 sizes='33vw'
-                style={{ objectFit: 'fill' }}
+                style={{ objectFit: 'cover' }}
+                className='rounded-md'
               />
             </div>
           </button>

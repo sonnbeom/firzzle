@@ -60,6 +60,7 @@ export class FetchClient {
         {
           'Content-Type': contentType,
           Authorization: withAuth ? `Bearer ${accessToken}` : '',
+          credentials: 'include',
         },
         headers,
       ),
@@ -89,19 +90,8 @@ export class FetchClient {
 
       // 401 에러 처리
       if (response.status === 401) {
+        console.log('401 에러 처리', retryCount);
         throw new Error(response.statusText);
-      }
-
-      // 201 Created 응답 처리
-      if (response.status === 201) {
-        return {
-          status: 'OK',
-          message: '',
-          cause: '',
-          prevUrl: '',
-          redirectUrl: '',
-          data: null,
-        } as ApiResponseWithoutData;
       }
 
       // 204 No Content 응답 처리
@@ -132,8 +122,6 @@ export class FetchClient {
 
       return dataResponse;
     } catch (error) {
-      console.log('error: ', retryCount);
-
       // 재시도
       if (retryCount < this.MAX_RETRIES) {
         await new Promise((resolve) =>
@@ -142,26 +130,43 @@ export class FetchClient {
 
         if (error.message === 'Unauthorized') {
           console.log('토큰 갱신');
+
+          const accessToken = await getCookie('accessToken');
+          const refreshToken = await getCookie('refresh_token');
+
           // 토큰 갱신 API
-          const response = await fetch('/api/auth/refresh', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh`,
+            {
+              method: 'POST',
+              credentials: 'include',
+              body: JSON.stringify({
+                retryCount: retryCount + 1,
+              }),
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+                Cookie: `accessToken=${accessToken}; refresh_token=${refreshToken}`,
+              },
             },
-            body: JSON.stringify({
-              retryCount: retryCount + 1,
-            }),
-          });
+          );
 
           if (response.status === 200) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            const data = await response.json();
+
+            const newAccessToken = data.data;
+
             return this.request(url, {
               ...options,
               retryCount: retryCount + 1,
+              headers: {
+                ...options.headers,
+                Authorization: `Bearer ${newAccessToken}`,
+              },
             });
           } else {
             const data = await response.json();
-
             throw new Error(data.message);
           }
         }

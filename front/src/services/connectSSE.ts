@@ -10,12 +10,16 @@ interface ConnectSSEProps {
   onResult?: (data: SSEEventData) => void;
   onComplete?: (data: SSEEventData) => void;
   onError?: (error: SSEEventData | Event) => void;
+  onHeartbeat?: (data: SSEEventData) => void;
+  token?: string;
 }
 
 class SSEManager {
   private static instance: SSEManager;
   private eventSource: EventSourcePolyfill | null = null;
   private url: string | null = null;
+  private visibilityHandler: (() => void) | null = null; // 브라우저 탭 변경 시 재연결
+  private currentCallbacks: ConnectSSEProps | null = null;
 
   private constructor() {}
 
@@ -26,6 +30,103 @@ class SSEManager {
     return SSEManager.instance;
   }
 
+  // 브라우저 탭 변경 시 재연결
+  private setupVisibilityHandler(): void {
+    if (typeof document !== 'undefined') {
+      this.visibilityHandler = () => {
+        if (
+          document.visibilityState === 'visible' &&
+          !this.isConnected() &&
+          this.url
+        ) {
+          this.connect({
+            url: this.url,
+            ...this.currentCallbacks,
+          });
+        }
+      };
+      document.addEventListener('visibilitychange', this.visibilityHandler);
+    }
+  }
+
+  // 이벤트 리스너 설정
+  private setupEventListeners(): void {
+    if (!this.eventSource || !this.currentCallbacks) return;
+
+    const handleEvent = (
+      eventName: string,
+      callback?: (data: SSEEventData) => void,
+    ) => {
+      this.eventSource?.addEventListener(eventName, (event: MessageEvent) => {
+        try {
+          if (!event.data) return;
+          const data = JSON.parse(event.data) as SSEEventData;
+          callback?.(data);
+        } catch (error) {
+          throw new Error(`${eventName} 이벤트 처리 중 오류:`, error);
+        }
+      });
+    };
+
+    this.eventSource.addEventListener('heartbeat', (event: MessageEvent) => {
+      try {
+        if (!event.data) return;
+        const data = JSON.parse(event.data) as SSEEventData;
+        this.currentCallbacks?.onHeartbeat?.(data);
+      } catch (error) {
+        throw new Error('heartbeat 이벤트 처리 중 오류:', error);
+      }
+    });
+    handleEvent('connect', this.currentCallbacks.onConnect);
+    handleEvent('start', this.currentCallbacks.onStart);
+    handleEvent('progress', this.currentCallbacks.onProgress);
+    handleEvent('result', this.currentCallbacks.onResult);
+    handleEvent('complete', this.currentCallbacks.onComplete);
+    handleEvent('error', this.currentCallbacks.onError);
+  }
+
+  // 토큰 갱신
+  private async handleRefreshToken(
+    url: string,
+    accessToken: string,
+  ): Promise<void> {
+    // refresh_token 쿠키 가져오기
+    const refreshToken = await getCookie('refresh_token');
+
+    // 토큰 갱신 요청
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+      body: JSON.stringify({ retryCount: 1 }),
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        Cookie: `accessToken=${accessToken}; refresh_token=${refreshToken}`,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('토큰 갱신 실패');
+    }
+
+    const data = await response.json();
+    const newAccessToken = data.data;
+
+    this.eventSource?.close();
+
+    // 새로운 이벤트 소스 생성
+    this.eventSource = new EventSourcePolyfill(url, {
+      headers: {
+        Accept: 'text/event-stream',
+        Authorization: `Bearer ${newAccessToken}`,
+      },
+      withCredentials: true,
+    });
+
+    // 이벤트 리스너 설정
+    this.setupEventListeners();
+  }
+
   public async connect({
     url,
     onConnect,
@@ -34,98 +135,65 @@ class SSEManager {
     onResult,
     onComplete,
     onError,
+    onHeartbeat,
   }: ConnectSSEProps): Promise<EventSourcePolyfill> {
-    // 이미 연결된 SSE가 있고 같은 URL이면 기존 연결 반환
+    this.currentCallbacks = {
+      url,
+      onConnect,
+      onStart,
+      onProgress,
+      onResult,
+      onComplete,
+      onError,
+      onHeartbeat,
+    };
+
     if (this.eventSource && this.url === url) {
       return this.eventSource;
     }
 
-    // 이미 연결된 SSE가 있지만 다른 URL이면 기존 연결 종료
     if (this.eventSource) {
       this.disconnect();
     }
 
+    // 브라우저 탭 변경 시 재연결
+    this.setupVisibilityHandler();
+
+    // accessToken 가져오기
     const accessToken = await getCookie('accessToken');
 
-    this.eventSource = new EventSourcePolyfill(url, {
-      headers: {
-        Accept: 'text/event-stream',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      heartbeatTimeout: 45000, // 45초 타임아웃 설정
-    });
-    this.url = url;
+    try {
+      // 이벤트 소스 생성
+      this.eventSource = new EventSourcePolyfill(url, {
+        headers: {
+          Accept: 'text/event-stream',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        withCredentials: true,
+      });
+      this.url = url;
 
-    // 하트비트 이벤트 처리
-    this.eventSource.addEventListener('heartbeat', () => {
-      // 하트비트 수신 시 아무 작업도 하지 않음 (연결 유지 목적)
-      console.debug('Heartbeat received');
-    });
+      // 오류 처리
+      this.eventSource.onerror = async (event: Event) => {
+        const target = event.target as EventSourcePolyfill;
+        if (target.readyState === EventSourcePolyfill.CLOSED) {
+          try {
+            await this.handleRefreshToken(url, accessToken);
+          } catch (error) {
+            console.error('토큰 갱신 중 오류:', error);
+            onError?.(event);
+          }
+        } else {
+          onError?.(event);
+        }
+      };
 
-    // 연결 성공
-    this.eventSource.addEventListener('connect', (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data) as SSEEventData;
-        onConnect?.(data);
-      } catch (error) {
-        console.error('Connect event parsing error:', error);
-      }
-    });
-
-    // 시작
-    this.eventSource.addEventListener('start', (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data) as SSEEventData;
-        onStart?.(data);
-      } catch (error) {
-        console.error('Start event parsing error:', error);
-      }
-    });
-
-    // 진행 상황
-    this.eventSource.addEventListener('progress', (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data) as SSEEventData;
-        onProgress?.(data);
-      } catch (error) {
-        console.error('Progress event parsing error:', error);
-      }
-    });
-
-    // 결과
-    this.eventSource.addEventListener('result', (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data) as SSEEventData;
-        onResult?.(data);
-      } catch (error) {
-        console.error('Result event parsing error:', error);
-      }
-    });
-
-    // 완료
-    this.eventSource.addEventListener('complete', (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data) as SSEEventData;
-        onComplete?.(data);
-        this.disconnect();
-      } catch (error) {
-        console.error('Complete event parsing error:', error);
-      }
-    });
-
-    // 오류 발생
-    this.eventSource.addEventListener('error', (event: MessageEvent) => {
-      try {
-        const data = JSON.parse(event.data) as SSEEventData;
-        onError?.(data);
-      } catch (error) {
-        console.error('Error event parsing error:', error);
-        onError?.(error);
-      }
-      this.disconnect();
-    });
-
-    return this.eventSource;
+      this.setupEventListeners();
+      return this.eventSource;
+    } catch (error) {
+      console.error('SSE 연결 생성 중 오류:', error);
+      throw error;
+    }
   }
 
   public disconnect(): void {
@@ -133,6 +201,13 @@ class SSEManager {
       this.eventSource.close();
       this.eventSource = null;
       this.url = null;
+      this.currentCallbacks = null;
+    }
+
+    // 브라우저 탭 변경 시 재연결 해제
+    if (this.visibilityHandler && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
     }
   }
 

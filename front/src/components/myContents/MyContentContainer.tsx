@@ -43,6 +43,7 @@ const MyContentContainer = () => {
               title={item.title}
               completedAt={item.completedAt}
               thumbnailUrl={item.thumbnailUrl}
+              processStatus={item.processStatus}
             />
           ))}
       </div>

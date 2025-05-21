@@ -1,6 +1,6 @@
 const CopyrightInfo = () => {
   return (
-    <section className='flex flex-col text-center text-sm text-gray-500'>
+    <section className='flex flex-col text-center text-xs text-gray-500 md:text-sm'>
       <p>
         본 서비스는 유튜브 영상에서 자막을 추출하여 비상업적·학습 목적에 한해
         제공합니다.
