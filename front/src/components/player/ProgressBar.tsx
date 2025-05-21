@@ -103,7 +103,7 @@ const ProgressBar = ({
       setIsSubmitted(false);
       sseManager.disconnect();
     };
-  }, [taskId, handleMessage, showCompleteToast, setIsSubmitted]);
+  }, [taskId, handleMessage, showCompleteToast]);
 
   return (
     <div className='flex flex-col items-center text-lg font-medium text-gray-900'>
