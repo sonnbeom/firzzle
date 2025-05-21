@@ -84,13 +84,9 @@ class SSEManager {
     // Visibility API 핸들러 설정 (탭 전환 시 재연결)
     this.setupVisibilityHandler();
 
-    const accessToken = await getCookie('accessToken');
-
-    if (!accessToken) {
-      throw new Error('UnAuthorized');
-    }
-
     try {
+      const accessToken = await getCookie('accessToken');
+
       this.eventSource = new EventSourcePolyfill(url, {
         headers: {
           Accept: 'text/event-stream',
@@ -105,39 +101,43 @@ class SSEManager {
         console.log('EventSource 상태:', this.eventSource?.readyState);
 
         try {
-          // EventSource의 readyState 확인
-          if (this.eventSource?.readyState === EventSourcePolyfill.CLOSED) {
-            const refreshToken = await getCookie('refresh_token');
+          // accessToken이 없는 경우 refresh 시도
+          const currentAccessToken = await getCookie('accessToken');
+          const refreshToken = await getCookie('refresh_token');
 
-            const response = await fetch('/api/auth/refresh', {
-              method: 'POST',
-              credentials: 'include',
-              body: JSON.stringify({
-                retryCount: 1,
-              }),
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${accessToken}`,
-                Cookie: `accessToken=${accessToken}; refresh_token=${refreshToken}`,
-              },
-            });
-
-            if (response.status !== 200) {
-              throw new Error('Unauthorized');
-            }
-
-            const data = await response.json();
-            const newAccessToken = data.data;
-
-            this.eventSource.close();
-            this.eventSource = new EventSourcePolyfill(url, {
-              headers: {
-                Authorization: `Bearer ${newAccessToken}`,
-              },
-            });
-          } else {
-            throw new Error('SSE connection error', event.target.statusText);
+          if (!currentAccessToken) {
+            console.log('accessToken이 없어 refresh를 시도합니다.');
           }
+
+          const response = await fetch('/api/auth/refresh', {
+            method: 'POST',
+            credentials: 'include',
+            body: JSON.stringify({
+              retryCount: 1,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${currentAccessToken || ''}`,
+              Cookie: `accessToken=${currentAccessToken || ''}; refresh_token=${refreshToken}`,
+            },
+          });
+
+          if (response.status !== 200) {
+            console.error('토큰 갱신 실패');
+            throw new Error('Unauthorized');
+          }
+
+          const data = await response.json();
+          const newAccessToken = data.data;
+
+          this.eventSource?.close();
+          this.eventSource = new EventSourcePolyfill(url, {
+            headers: {
+              Accept: 'text/event-stream',
+              Authorization: `Bearer ${newAccessToken}`,
+            },
+            withCredentials: true,
+          });
         } catch (error) {
           console.error('SSE 에러 처리 중 발생한 오류:', error);
           throw error;
