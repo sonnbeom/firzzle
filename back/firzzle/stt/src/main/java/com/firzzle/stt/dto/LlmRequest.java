@@ -13,5 +13,5 @@ public class LlmRequest {
     private String script;
     private String taskId;
     private boolean isError;
-    private Exception e;
+    private String errorMessage;
 }

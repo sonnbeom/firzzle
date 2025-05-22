@@ -48,8 +48,9 @@ public class SttConsumer {
             // 1. YouTube ID 추출
             String videoId = StringManager.extractYoutubeId(url);
             if (videoId == null) {
-                LlmRequest req = new LlmRequest(null, null, null, taskId, true, new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 YouTube URL입니다."));
+                LlmRequest req = new LlmRequest(null, null, null, taskId, true, "유효하지 않은 YouTube URL입니다.");
                 sttConvertedProducer.sendSttResult(req);
+                return;
             }
 
             // 2. 중복 체크 (이미 Complete 상태의 동영상 존재하는가?)
@@ -57,8 +58,9 @@ public class SttConsumer {
             log.info("existingContent : {}", existingContent);
 
             if(existingContent){
-                LlmRequest req = new LlmRequest(null, null, null, taskId, true, new BusinessException(ErrorCode.DUPLICATE_RESOURCE, "컨텐츠 등록 중복입니다. 재등록해주세요."));
+                LlmRequest req = new LlmRequest(null, null, null, taskId, true, "컨텐츠 등록 중복입니다. 재등록해주세요.");
                 sttConvertedProducer.sendSttResult(req);
+                return;
             }
 
             log.info("🔍 Parsed uuid: {}, url: {}", uuid, url);
