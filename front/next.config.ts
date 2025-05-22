@@ -33,6 +33,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'firzzle.s3.ap-northeast-2.amazonaws.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'media.licdn.com',
+      },
     ],
   },
   // PWA configuration

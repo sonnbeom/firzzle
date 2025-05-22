@@ -14,14 +14,14 @@ const ExpertCard = ({ expert }: ExpertCardProps) => {
       : '/assets/images/Firzzle.png';
 
   return (
-    <div className='flex h-[240px] w-full flex-col items-center rounded-lg bg-white p-2 shadow-md sm:h-[280px] sm:rounded-xl sm:p-4'>
-      <div className='relative mb-2 h-12 w-12 overflow-hidden rounded-full border-2 border-blue-200 sm:h-16 sm:w-16 lg:h-20 lg:w-20'>
+    <div className='flex h-[300px] w-full flex-col items-center rounded-lg bg-white p-2 shadow-md'>
+      <div className='relative mb-2 aspect-square w-24 shrink-0 overflow-hidden rounded-full border-2 border-blue-400 bg-white'>
         <Image
           src={imageUrl}
           alt={expert.name}
           fill
-          sizes='(max-width: 768px) 64px, 80px'
-          className='object-contain'
+          sizes='96px'
+          className='object-cover'
         />
       </div>
       <div className='mb-1 text-sm font-bold sm:text-base lg:text-lg'>
