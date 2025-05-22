@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class JasyptConfig {
 
     @Value(value = "${jasypt.secret-key}")
-    String secretKey;
+    static String secretKey;
 
     @Bean("jasyptStringEncryptor")
     public StringEncryptor stringEncryptor() {
@@ -37,7 +37,7 @@ public class JasyptConfig {
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setProvider(new BouncyCastleProvider());
         encryptor.setPoolSize(2);
-        encryptor.setPassword("secretKey"); // 암호화 키
+        encryptor.setPassword(secretKey); // 암호화 키
         encryptor.setAlgorithm("PBEWITHSHA256AND128BITAES-CBC-BC");
         System.out.println("============암호화=============");
         for (String target : encryptList) {
