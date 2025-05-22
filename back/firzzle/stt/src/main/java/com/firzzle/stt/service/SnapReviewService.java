@@ -30,7 +30,7 @@ public class SnapReviewService {
 
     private static final Logger logger = LoggerFactory.getLogger(SnapReviewService.class);
 
-    @Value("${external.api.url:http://localhost:8085}")
+    @Value("${external.api.url}")
     private String externalUrl;
 
     @Value("${external.api.key}")
