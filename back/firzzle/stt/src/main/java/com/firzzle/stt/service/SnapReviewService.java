@@ -53,7 +53,7 @@ public class SnapReviewService {
             requestDTO.setTimelines(timeline);
 
             return webClientBuilder
-                    .baseUrl(externalUrl)
+                    .baseUrl(externalUrl.trim())
                     .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .defaultHeader("X-API-KEY", secretKey)
                     .build()
