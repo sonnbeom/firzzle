@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class JasyptConfig {
 
     @Value(value = "${jasypt.secret-key}")
-    static String secretKey;
+    String secretKey;
 
     @Bean("jasyptStringEncryptor")
     public StringEncryptor stringEncryptor() {
