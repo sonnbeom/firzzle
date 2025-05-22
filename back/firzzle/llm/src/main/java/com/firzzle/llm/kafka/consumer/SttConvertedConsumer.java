@@ -37,8 +37,8 @@ public class SttConvertedConsumer {
                 // taskId가 있다면 SSE로 오류 전송
                 if (requestObj.getTaskId() != null) {
                     String errorMessage = "STT 처리 중 오류가 발생했습니다.";
-                    if(requestObj.getE()!=null && requestObj.getE() instanceof BusinessException) {
-                        errorMessage = requestObj.getE().getMessage();
+                    if(requestObj.getErrorMessage()!=null && !requestObj.getErrorMessage().isEmpty()) {
+                        errorMessage = requestObj.getErrorMessage();
                     }
                     sseEmitterRepository.completeWithError(requestObj.getTaskId(), errorMessage);
                     log.error("❌ SSE 오류 전송 완료: taskId={}, message={}", requestObj.getTaskId(), errorMessage);
