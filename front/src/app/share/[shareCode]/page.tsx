@@ -1,4 +1,5 @@
 import { getShareReview } from '@/api/share';
+import BasicToaster from '@/components/common/BasicToaster';
 import Review from '@/components/snapbook/Review';
 
 interface PageProps {
@@ -25,8 +26,10 @@ const SharedSnapBookPage = async ({ params }: PageProps) => {
       </div>
     );
   } catch (error) {
-    console.error('Error fetching shared review:', error);
-    return <div>리뷰를 찾을 수 없습니다.</div>;
+    BasicToaster.error(error.message, {
+      id: 'share',
+      duration: 2000,
+    });
   }
 };
 

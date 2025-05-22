@@ -6,6 +6,7 @@ import {
   getLikeSnapReviewRate,
   getSummaryLevelRate,
 } from '@/api/chart';
+import BasicToaster from '@/components/common/BasicToaster';
 import { TransitionsResponse } from '@/types/chart';
 
 const useStrategyData = () => {
@@ -26,18 +27,27 @@ const useStrategyData = () => {
     try {
       // API 호출을 순차적으로 처리하여 서버 부하 감소
       const loginRate = await getLoginUserRate(formattedStart, formattedEnd);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const educationStart = await getEducateChangeRate(formattedStart, formattedEnd);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const functionChange = await getFunctionChangeRate(formattedStart, formattedEnd);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const educationStart = await getEducateChangeRate(
+        formattedStart,
+        formattedEnd,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const functionChange = await getFunctionChangeRate(
+        formattedStart,
+        formattedEnd,
+      );
 
       setLoginRateData(loginRate);
       setEducationStartData(educationStart);
       setFunctionChangeData(functionChange);
     } catch (error) {
-      console.error('데이터 불러오기 실패:', error);
+      BasicToaster.error(error.message, {
+        id: 'strategy',
+        duration: 2000,
+      });
       setLoginRateData(null);
       setEducationStartData(null);
       setFunctionChangeData(null);
@@ -54,24 +64,32 @@ const useStrategyData = () => {
     if (isSelectedLoading) return;
     setIsSelectedLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       const data =
         option === '요약노트'
           ? await getSummaryLevelRate(formattedStart, formattedEnd)
           : await getLikeSnapReviewRate(formattedStart, formattedEnd);
       setSelectedChartData(data);
     } catch (error) {
-      console.error('선택 차트 데이터 불러오기 실패:', error);
+      BasicToaster.error(error.message, {
+        id: 'strategy',
+        duration: 2000,
+      });
       setSelectedChartData(null);
     } finally {
       setIsSelectedLoading(false);
     }
   };
 
-  return { 
-    data: { loginRateData, educationStartData, functionChangeData, selectedChartData }, 
+  return {
+    data: {
+      loginRateData,
+      educationStartData,
+      functionChangeData,
+      selectedChartData,
+    },
     actions: { fetchData, fetchSelectedData },
-    isLoading: isMainLoading || isSelectedLoading
+    isLoading: isMainLoading || isSelectedLoading,
   };
 };
 

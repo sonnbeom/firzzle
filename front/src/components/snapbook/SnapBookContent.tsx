@@ -31,8 +31,7 @@ const SnapBookContent = ({ contentSeq }: SnapBookContentProps) => {
         setSnapData(snapResponse.data);
         setShareData(shareResponse as ShareCheck);
       } catch (err) {
-        setError('데이터를 불러오는데 실패했습니다.');
-        console.error('Error fetching data:', err);
+        setError(err.message);
       } finally {
         setIsLoading(false);
       }

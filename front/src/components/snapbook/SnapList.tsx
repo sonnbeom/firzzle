@@ -3,6 +3,7 @@
 import { getSnapReviews } from '@/api/snap';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { SnapReviewListResponse } from '@/types/snapReview';
+import BasicToaster from '../common/BasicToaster';
 import LoadingSpinner from '../common/LoadingSpinner';
 import SnapBookLoading from './SnapBookLoading';
 import SnapDateGroup from './SnapDateGroup';
@@ -43,7 +44,10 @@ const SnapList = () => {
           hasNextPage: !response.last,
         };
       } catch (error) {
-        console.error('Error fetching reviews:', error);
+        BasicToaster.error(error.message, {
+          id: 'snapbook',
+          duration: 2000,
+        });
         return {
           data: [EMPTY_SNAP_REVIEW],
           hasNextPage: false,

@@ -44,7 +44,6 @@ const SelectableText = ({ children }: SelectableTextProps) => {
 
   // 러닝챗 버튼 클릭 핸들러
   const handleGetDefinition = () => {
-    console.log(text);
     setDefinition(dummyData);
     setText('');
   };

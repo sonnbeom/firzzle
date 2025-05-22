@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getRecommendations } from '@/api/recommend';
 import { usePagination } from '@/hooks/usePagination';
 import { VideoProps } from '@/types/recommend';
+import BasicToaster from '../common/BasicToaster';
 import Icons from '../common/Icons';
 import LectureCard from './LectureCard';
 
@@ -33,7 +34,10 @@ const Lecture = () => {
         setTotalItems(response.totalElements);
         setKeyword(response.originTags);
       } catch (error) {
-        console.error('Failed to fetch lectures:', error);
+        BasicToaster.error(error.message, {
+          id: 'lecture',
+          duration: 2000,
+        });
       }
     },
     [contentId, itemsPerPage],

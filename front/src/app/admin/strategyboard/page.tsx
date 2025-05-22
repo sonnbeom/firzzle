@@ -21,7 +21,6 @@ const StrategyBoardPage = () => {
   useEffect(() => {
     const checkAdminRole = async () => {
       const userRole = (await getMyInfo()).role;
-      console.log('userRole:', userRole);
       if (userRole !== 'admin') {
         router.replace('/admin');
       }

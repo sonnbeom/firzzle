@@ -12,7 +12,6 @@ export const addVistiCount = async () => {
     return data;
   }
 
-  console.error('방문체크 실패:', data.message);
   throw new Error(data.message);
 };
 
