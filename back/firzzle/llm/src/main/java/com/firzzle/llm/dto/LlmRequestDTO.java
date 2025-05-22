@@ -32,5 +32,5 @@ public class LlmRequestDTO {
     private boolean isError;
 
     @Schema(description = "에러", example = "null")
-    private Exception e;
+    private String errorMessage;
 }

@@ -113,8 +113,7 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
 
         } catch (Exception ex) {
             logger.error("🔥 [STT] extractSubtitleViaLocalProxy 처리 중 예외 발생", ex);
-            return processFinalResult(null, null, null, taskId, true,
-                    new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출 중 오류 발생", ex));
+            return processFinalResult(null, null, null, taskId, true,"자막 추출 중 오류 발생");
         }
     });
 }
@@ -146,17 +145,17 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
                 ContentDTO contentDTO = parseMetadata(videoId, url, lines);
                 return processFinalResult(userSeq, contentDTO, scripts, taskId, false, null);
             } catch (BusinessException ex) {
-                return processFinalResult(null, null, null, taskId, true, ex);
+                return processFinalResult(null, null, null, taskId, true, "yt-dlp 처리 중 오류 발생");
             } catch (Exception ex) {
-                return processFinalResult(null, null, null, taskId, true, new BusinessException(ErrorCode.YTDLP_EXECUTION_FAILED, "yt-dlp 처리 중 오류 발생", ex));
+                return processFinalResult(null, null, null, taskId, true, "yt-dlp 처리 중 오류 발생");
             }
         });
     }
 
     @Transactional
-    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId, boolean isError, Exception e) {
+    public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId, boolean isError, String errorMessage) {
         if(isError) {
-            LlmRequest req = new LlmRequest(null, null, null, taskId, true, e);
+            LlmRequest req = new LlmRequest(null, null, null, taskId, true, errorMessage);
             sttConvertedProducer.sendSttResult(req);
             return req;
         }
@@ -168,7 +167,7 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
             // ✅ 여기서 userContentSeq가 자동으로 채워짐
             Long userContentSeq = saveUserContent(userSeq, contentDTO.getContentSeq());
             if (script != null && !script.isBlank()) {
-                req = new LlmRequest(userContentSeq, contentDTO.getContentSeq(), script, taskId, false, e);
+                req = new LlmRequest(userContentSeq, contentDTO.getContentSeq(), script, taskId, false, errorMessage);
                 sttConvertedProducer.sendSttResult(req);
             } else {
                 throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
@@ -176,13 +175,13 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
             return req;
         } catch (BusinessException ex) {
             logger.error("[STT] Content 저장 중 오류 발생", ex);
-            LlmRequest req = new LlmRequest(null, null, null, taskId, true, ex);
+            LlmRequest req = new LlmRequest(null, null, null, taskId, true, "[STT] Content 저장 중 오류 발생");
             sttConvertedProducer.sendSttResult(req);
             throw ex;
         } catch (Exception ex) {
             logger.error("[STT] Content 저장 중 오류 발생", ex);
             BusinessException be = new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출에 실패했습니다.");
-            LlmRequest req = new LlmRequest(null, null, null, taskId, true, be);
+            LlmRequest req = new LlmRequest(null, null, null, taskId, true, "자막 추출에 실패했습니다.");
             sttConvertedProducer.sendSttResult(req);
             throw be;
         }
