@@ -7,9 +7,7 @@ export async function GET(
 ) {
   try {
     const contentSeq = (await params).contentSeq;
-    const response = await api.get(
-      `/learning/contents/${contentSeq}/quiz`,
-    );
+    const response = await api.get(`/learning/contents/${contentSeq}/quiz`);
     if (response.status === 'OK') {
       return NextResponse.json(response, { status: 200 });
     }
@@ -29,11 +27,10 @@ export async function POST(
   try {
     const contentSeq = (await params).contentSeq;
     const body = await request.json();
-    console.log(body);
-    const response = await api.post(
-      `/learning/contents/${contentSeq}/quiz`,
-      { body },
-    );
+
+    const response = await api.post(`/learning/contents/${contentSeq}/quiz`, {
+      body,
+    });
 
     if (response.status === 'OK') {
       return NextResponse.json(response.data, { status: 200 });

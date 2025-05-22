@@ -90,7 +90,6 @@ export class FetchClient {
 
       // 401 에러 처리
       if (response.status === 401) {
-        console.log('401 에러 처리', retryCount);
         throw new Error(response.statusText);
       }
 
@@ -129,8 +128,6 @@ export class FetchClient {
         );
 
         if (error.message === 'Unauthorized') {
-          console.log('토큰 갱신');
-
           const accessToken = await getCookie('accessToken');
           const refreshToken = await getCookie('refresh_token');
 

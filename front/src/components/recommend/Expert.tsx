@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getExpertRecommendations } from '@/api/recommend';
 import { usePagination } from '@/hooks/usePagination';
 import { Expert as ExpertType } from '@/types/recommend';
+import BasicToaster from '../common/BasicToaster';
 import Icons from '../common/Icons';
 import ExpertCard from './ExpertCard';
 
@@ -27,7 +28,10 @@ const Expert = () => {
         setTotalItems(response.totalElements);
         setKeyword(response.originTags);
       } catch (error) {
-        console.error('Failed to fetch experts:', error);
+        BasicToaster.error(error.message, {
+          id: 'expert',
+          duration: 2000,
+        });
       }
     },
     [contentId, itemsPerPage],

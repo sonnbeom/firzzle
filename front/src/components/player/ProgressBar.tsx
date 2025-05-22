@@ -41,8 +41,6 @@ const ProgressBar = ({
 
     let currentContentSeq: string | null = null;
 
-    console.log('SSE 연결 시작');
-
     // SSE 연결
     try {
       sseManager.connect({
@@ -74,7 +72,6 @@ const ProgressBar = ({
           sseManager.disconnect();
         },
         onError: (error: SSEEventData | Event) => {
-          console.error('SSE 에러 발생:', error);
           if (error instanceof Event) {
             BasicToaster.error(error.type, {
               id: 'sse youtube',
@@ -94,7 +91,6 @@ const ProgressBar = ({
         },
       });
     } catch (error) {
-      console.error('SSE 연결 시도 중 에러 발생:', error);
       setIsSubmitted(false);
       sseManager.disconnect();
 

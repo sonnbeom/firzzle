@@ -52,10 +52,7 @@ const UrlInputField = ({
         tags: null,
       });
 
-      console.log('컨텐츠 등록 응답', response);
-
       if (response.taskId) {
-        console.log('컨텐츠 등록', response);
         setTaskId(response.taskId);
         setIsSubmitted(true);
       } else {

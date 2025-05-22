@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getContentSnapReview, updateFrameComments } from '@/api/snap';
 import { UpdateFrameCommentsRequest, Frame } from '@/types/snapReview';
 import { MAX_SNAP_REVIEW_LENGTH } from 'utils/const';
+import BasicToaster from '../common/BasicToaster';
 import TimeStamp from '../common/TimeStamp';
 import ReviewLoading from './ReviewLoading';
 import ReviewTextField from './ReviewTextField';
@@ -22,7 +23,10 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
         const response = await getContentSnapReview(contentId);
         setLocalReviews(response.data.frames);
       } catch (error) {
-        console.error('Error fetching reviews:', error);
+        BasicToaster.error(error.message, {
+          id: 'snapreview',
+          duration: 2000,
+        });
       }
     };
     fetchReviews();
@@ -51,7 +55,10 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
       setLocalReviews(response.data);
       setEditingId(null);
     } catch (error) {
-      console.error('수정 실패:', error);
+      BasicToaster.error(error.message, {
+        id: 'snapreview',
+        duration: 2000,
+      });
     }
   };
 
@@ -94,6 +101,7 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
                 </div>
               </div>
 
+              {/* 텍스트 그룹 */}
               <div className='flex min-w-0 flex-1 flex-col justify-around border-b border-blue-50 py-4'>
                 <ReviewTextField
                   isEditing={editingId === String(item.frameSeq)}
@@ -110,7 +118,6 @@ const ReviewCard = ({ contentId }: ReviewCardProps) => {
               </div>
             </div>
           ))}
-          {/* 텍스트 그룹 */}
         </div>
       )}
     </div>

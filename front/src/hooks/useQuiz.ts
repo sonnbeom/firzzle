@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { submitQuizAnswers } from '@/api/quiz';
+import BasicToaster from '@/components/common/BasicToaster';
 import {
   QuizData,
   QuizSubmitRequest,
@@ -169,7 +170,10 @@ export const useQuiz = (quizData: QuizData, contentSeq: string) => {
         throw new Error('퀴즈 결과를 받아올 수 없습니다.');
       }
     } catch (error) {
-      console.error('Error submitting quiz:', error);
+      BasicToaster.error(error.message, {
+        id: 'quiz',
+        duration: 2000,
+      });
     }
   };
 

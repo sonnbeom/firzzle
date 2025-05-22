@@ -180,7 +180,6 @@ class SSEManager {
           try {
             await this.handleRefreshToken(url, accessToken);
           } catch (error) {
-            console.error('토큰 갱신 중 오류:', error);
             onError?.(event);
           }
         } else {
@@ -191,7 +190,6 @@ class SSEManager {
       this.setupEventListeners();
       return this.eventSource;
     } catch (error) {
-      console.error('SSE 연결 생성 중 오류:', error);
       throw error;
     }
   }
