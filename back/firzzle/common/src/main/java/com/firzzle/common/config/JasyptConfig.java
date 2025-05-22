@@ -37,7 +37,7 @@ public class JasyptConfig {
         PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
         encryptor.setProvider(new BouncyCastleProvider());
         encryptor.setPoolSize(2);
-        encryptor.setPassword(secretKey); // 암호화 키
+        encryptor.setPassword("firzzle_new"); // 암호화 키
         encryptor.setAlgorithm("PBEWITHSHA256AND128BITAES-CBC-BC");
         System.out.println("============암호화=============");
         for (String target : encryptList) {
