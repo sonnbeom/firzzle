@@ -14,7 +14,7 @@ const ExpertCard = ({ expert }: ExpertCardProps) => {
       : '/assets/images/Firzzle.png';
 
   return (
-    <div className='flex h-[300px] w-full flex-col items-center rounded-lg bg-white p-2 shadow-md'>
+    <div className='flex min-h-[300px] w-full flex-col items-center rounded-lg bg-white p-2 shadow-md'>
       <div className='relative mb-2 aspect-square w-24 shrink-0 overflow-hidden rounded-full border-2 border-blue-400 bg-white'>
         <Image
           src={imageUrl}
@@ -24,7 +24,8 @@ const ExpertCard = ({ expert }: ExpertCardProps) => {
           className='object-cover'
         />
       </div>
-      <div className='mb-1 text-sm font-bold sm:text-base lg:text-lg'>
+
+      <div className='mb-1 text-center text-sm font-bold sm:text-base lg:text-lg'>
         {expert.name}
       </div>
       <div className='mb-1 text-center text-[10px] text-gray-700 sm:mb-2 sm:text-xs lg:text-sm'>
@@ -33,7 +34,8 @@ const ExpertCard = ({ expert }: ExpertCardProps) => {
       <div className='mb-1 text-center text-[10px] text-gray-700 sm:mb-2 sm:text-xs lg:text-sm'>
         {expert.title}
       </div>
-      <div className='mb-2 flex flex-wrap justify-center gap-1'>
+
+      <div className='mb-2 flex flex-wrap justify-center gap-1 px-2'>
         {expert.expertise.slice(0, 3).map((tag) => (
           <span
             key={tag}
@@ -43,6 +45,7 @@ const ExpertCard = ({ expert }: ExpertCardProps) => {
           </span>
         ))}
       </div>
+
       <div className='mt-auto'>
         <a
           href={expert.linkedinUrl}
