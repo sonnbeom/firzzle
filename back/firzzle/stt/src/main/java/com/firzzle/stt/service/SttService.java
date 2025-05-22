@@ -68,43 +68,57 @@ public class SttService {
                 });
     }
 
-    @Async
-    public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {
-        // 타입 변환 문제 해결을 위한 수정
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                Long userSeq = userMapper.selectUserSeqByUuid(uuid);
-                HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
+@Async
+public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {
+    return CompletableFuture.supplyAsync(() -> {
+        try {
+            logger.info("📌 [STT] extractSubtitleViaLocalProxy 시작: uuid={}, url={}, videoId={}, taskId={}", uuid, url, videoId, taskId);
 
-                WebClient webClient = WebClient.builder()
-                        .clientConnector(new ReactorClientHttpConnector(httpClient))
-                        .baseUrl(externalUrl)
-                        .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .defaultHeader("X-API-KEY", secretKey)
-                        .build();
+            Long userSeq = userMapper.selectUserSeqByUuid(uuid);
+            logger.info("🔍 [STT] 사용자 userSeq={}", userSeq);
 
-                Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+            logger.info("🔑 [STT] 외부 호출 URL (복호화된 externalUrl) = '{}'", externalUrl);
+            logger.info("🧾 [STT] API KEY: {}", secretKey != null ? "[SET]" : "[NOT SET]");
 
-                return webClient.post()
-                        .uri("/api/v1/extract")
-                        .bodyValue(requestBody)
-                        .retrieve()
-                        .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                        .doOnError(ex -> logger.error("[STT] external extract API error", ex))
-                        .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
-                        .toFuture()
-                        .thenApply(response -> {
-                            if (!response.containsKey("script"))
-                                throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+            Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+            logger.info("📦 [STT] 요청 바디: {}", requestBody);
 
-                            ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-                            return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId, false, null);
-                        }).join(); // CompletableFuture를 블로킹하여 결과를 반환
-            } catch (Exception ex) {
-                return processFinalResult(null, null, null, taskId, true, new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출 중 오류 발생", ex));
-            }
-        });
-    }
+            HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
+
+            WebClient webClient = WebClient.builder()
+                    .clientConnector(new ReactorClientHttpConnector(httpClient))
+                    .baseUrl(externalUrl.trim())
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .defaultHeader("X-API-KEY", secretKey)
+                    .build();
+
+            return webClient.post()
+                    .uri("/api/v1/extract")
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .doOnError(ex -> logger.error("❌ [STT] 외부 자막 추출 API 오류", ex))
+                    .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
+                    .toFuture()
+                    .thenApply(response -> {
+                        logger.info("✅ [STT] 외부 자막 응답 수신: keys = {}", response.keySet());
+
+                        if (!response.containsKey("script")) {
+                            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+                        }
+
+                        ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+                        return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId, false, null);
+                    }).join();
+
+        } catch (Exception ex) {
+            logger.error("🔥 [STT] extractSubtitleViaLocalProxy 처리 중 예외 발생", ex);
+            return processFinalResult(null, null, null, taskId, true,
+                    new BusinessException(ErrorCode.SUBTITLE_EXTRACTION_FAILED, "자막 추출 중 오류 발생", ex));
+        }
+    });
+}
+
 
     @Async
     public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {

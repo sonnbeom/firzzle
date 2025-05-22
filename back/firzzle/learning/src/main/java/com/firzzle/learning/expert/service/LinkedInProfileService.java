@@ -36,6 +36,13 @@ public class LinkedInProfileService {
     public void enrichProfileDetails(LinkedInExpertDTO profileDTO) {
         Long profileSeq = profileDTO.getProfileSeq();
 
+        // 프로필 정보 조회
+        RequestBox profBox = new RequestBox("profBox");
+        profBox.put("profileSeq", profileSeq);
+        DataBox profDataBoxe = linkedInProfileDAO.selectProfileByProfileSeq(profBox);
+        String profileImageUrl = profDataBoxe.getString("d_profile_image_url");
+        profileDTO.setProfileImageUrl(profileImageUrl==null?"":profileImageUrl);
+
         // 경력 정보 조회
         RequestBox expBox = new RequestBox("expBox");
         expBox.put("profileSeq", profileSeq);
