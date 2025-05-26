@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.firzzle.stt.dto.SttRequestDTO;
-import com.firzzle.stt.service.SttService;
+import com.firzzle.stt.service.ScriptProcessorService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class SttController {
     private static final Logger logger = LoggerFactory.getLogger(SttController.class);
 
-    private final SttService sttService;
+    private final ScriptProcessorService sttService;
 
     @PostMapping("/transcribeByUrl")
     @Operation(summary = "유튜브 영상 스크립트 추출", description = "userSeq와 유튜브 URL을 받아 스크립트를 추출합니다.")

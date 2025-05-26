@@ -35,10 +35,10 @@ import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
-public class SttService {
+public class ScriptProcessorService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SttService.class);
-    private static final boolean DEV_MODE = true;
+    private static final Logger logger = LoggerFactory.getLogger(ScriptProcessorService.class);
+    private static final boolean DEV_MODE = true; // 개발 환경에서 로컬 STT 실행 여부
 
     @Value("${app.file-storage.upload-dir}")
     private String uploadDir;
@@ -67,58 +67,64 @@ public class SttService {
                     throw new BusinessException(ErrorCode.STT_PROCESS_FAILED, "STT 처리 중 오류 발생", e);
                 });
     }
+    
+    
+    /**
+     * 로컬 프록시(내부 API) 방식으로 자막을 추출한다.
+     */
+	@Async
+	public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {
+	    return CompletableFuture.supplyAsync(() -> {
+	        try {
+	            logger.info("📌 [STT] extractSubtitleViaLocalProxy 시작: uuid={}, url={}, videoId={}, taskId={}", uuid, url, videoId, taskId);
+	
+	            Long userSeq = userMapper.selectUserSeqByUuid(uuid);
+	            logger.info("🔍 [STT] 사용자 userSeq={}", userSeq);
+	
+	            logger.info("🔑 [STT] 외부 호출 URL (복호화된 externalUrl) = '{}'", externalUrl);
+	            logger.info("🧾 [STT] API KEY: {}", secretKey != null ? "[SET]" : "[NOT SET]");
+	
+	            Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
+	            logger.info("📦 [STT] 요청 바디: {}", requestBody);
+	
+	            HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
+	
+	            WebClient webClient = WebClient.builder()
+	                    .clientConnector(new ReactorClientHttpConnector(httpClient))
+	                    .baseUrl(externalUrl.trim())
+	                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+	                    .defaultHeader("X-API-KEY", secretKey)
+	                    .build();
+	
+	            return webClient.post()
+	                    .uri("/api/v1/extract")
+	                    .bodyValue(requestBody)
+	                    .retrieve()
+	                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+	                    .doOnError(ex -> logger.error("❌ [STT] 외부 자막 추출 API 오류", ex))
+	                    .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
+	                    .toFuture()
+	                    .thenApply(response -> {
+	                        logger.info("✅ [STT] 외부 자막 응답 수신: keys = {}", response.keySet());
+	
+	                        if (!response.containsKey("script")) {
+	                            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
+	                        }
+	
+	                        ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
+	                        return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId, false, null);
+	                    }).join();
+	
+	        } catch (Exception ex) {
+	            logger.error("🔥 [STT] extractSubtitleViaLocalProxy 처리 중 예외 발생", ex);
+	            return processFinalResult(null, null, null, taskId, true,"자막 추출 중 오류 발생");
+	        }
+	    });
+	}
 
-@Async
-public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {
-    return CompletableFuture.supplyAsync(() -> {
-        try {
-            logger.info("📌 [STT] extractSubtitleViaLocalProxy 시작: uuid={}, url={}, videoId={}, taskId={}", uuid, url, videoId, taskId);
-
-            Long userSeq = userMapper.selectUserSeqByUuid(uuid);
-            logger.info("🔍 [STT] 사용자 userSeq={}", userSeq);
-
-            logger.info("🔑 [STT] 외부 호출 URL (복호화된 externalUrl) = '{}'", externalUrl);
-            logger.info("🧾 [STT] API KEY: {}", secretKey != null ? "[SET]" : "[NOT SET]");
-
-            Map<String, String> requestBody = Map.of("url", url, "videoId", videoId);
-            logger.info("📦 [STT] 요청 바디: {}", requestBody);
-
-            HttpClient httpClient = HttpClient.create().resolver(DefaultAddressResolverGroup.INSTANCE);
-
-            WebClient webClient = WebClient.builder()
-                    .clientConnector(new ReactorClientHttpConnector(httpClient))
-                    .baseUrl(externalUrl.trim())
-                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .defaultHeader("X-API-KEY", secretKey)
-                    .build();
-
-            return webClient.post()
-                    .uri("/api/v1/extract")
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                    .doOnError(ex -> logger.error("❌ [STT] 외부 자막 추출 API 오류", ex))
-                    .switchIfEmpty(Mono.error(new BusinessException(ErrorCode.SCRIPT_NOT_FOUND)))
-                    .toFuture()
-                    .thenApply(response -> {
-                        logger.info("✅ [STT] 외부 자막 응답 수신: keys = {}", response.keySet());
-
-                        if (!response.containsKey("script")) {
-                            throw new BusinessException(ErrorCode.SCRIPT_NOT_FOUND);
-                        }
-
-                        ContentDTO contentDTO = mapToContentDTO(videoId, url, response);
-                        return processFinalResult(userSeq, contentDTO, (String) response.get("script"), taskId, false, null);
-                    }).join();
-
-        } catch (Exception ex) {
-            logger.error("🔥 [STT] extractSubtitleViaLocalProxy 처리 중 예외 발생", ex);
-            return processFinalResult(null, null, null, taskId, true,"자막 추출 중 오류 발생");
-        }
-    });
-}
-
-
+    /**
+     * yt-dlp를 로컬에서 직접 실행하여 자막 및 메타데이터를 추출한다.
+     */
     @Async
     public CompletableFuture<LlmRequest> extractSubtitleDirect(String uuid, String url, String videoId, String taskId, boolean isError, Exception originalException) {
         // 타입 변환 문제 해결을 위한 수정
@@ -151,7 +157,11 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
             }
         });
     }
+    
 
+    /**
+     * 자막 추출 완료 후 Content + UserContent 저장 및 결과 메시지 전송
+     */
     @Transactional
     public LlmRequest processFinalResult(Long userSeq, ContentDTO contentDTO, String script, String taskId, boolean isError, String errorMessage) {
         if(isError) {
@@ -187,6 +197,9 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
         }
     }
 
+    /**
+     * 사용자와 콘텐츠 간 매핑을 저장
+     */
     private Long saveUserContent(Long userSeq, Long contentSeq) {
         UserContentDTO userContentDTO = new UserContentDTO();
         userContentDTO.setUserSeq(userSeq);
@@ -197,6 +210,10 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
         return userContentDTO.getUserContentSeq();
     }
 
+    
+    /**
+     * srt 파일을 텍스트로 변환하고 삭제
+     */
     public String printDownloadedFiles(String videoId) throws IOException {
         Path srtPath = Paths.get(uploadDir).resolve(videoId + ".ko.srt");
         if (Files.exists(srtPath)) {
@@ -206,7 +223,10 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
         }
         return null;
     }
-
+    
+    /**
+     * yt-dlp 실행 결과를 로그로 출력하고 에러 코드에 따라 예외 처리
+     */
     private void runAndPrint(ProcessBuilder pb) throws Exception {
         Process process = pb.start();
         List<String> outputLines = readProcessOutput(process);
@@ -223,6 +243,9 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
         }
     }
 
+    /**
+     * 프로세스 출력 스트림 읽기
+     */
     private List<String> readProcessOutput(Process process) throws IOException {
         List<String> lines = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
@@ -234,6 +257,9 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
         return lines;
     }
 
+    /**
+     * 외부 API 응답을 ContentDTO로 매핑
+     */
     private ContentDTO mapToContentDTO(String videoId, String url, Map<String, Object> response) {
         ContentDTO contentDTO = new ContentDTO();
         contentDTO.setVideoId(videoId);
@@ -257,6 +283,9 @@ public CompletableFuture<LlmRequest> extractSubtitleViaLocalProxy(String uuid, S
         return contentDTO;
     }
 
+    /**
+     * yt-dlp 출력으로부터 ContentDTO 생성
+     */
     private ContentDTO parseMetadata(String videoId, String url, List<String> lines) {
         String title = lines.size() > 0 ? lines.get(0) : "";
         StringBuilder descBuilder = new StringBuilder();

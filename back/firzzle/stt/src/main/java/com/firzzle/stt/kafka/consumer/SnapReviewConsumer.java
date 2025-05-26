@@ -3,7 +3,7 @@ package com.firzzle.stt.kafka.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.firzzle.stt.dto.SnapReviewRequestDTO;
 import com.firzzle.stt.service.SnapReviewService;
-import com.firzzle.stt.service.SttService;
+import com.firzzle.stt.service.ScriptProcessorService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 public class SnapReviewConsumer {
 
     private final ObjectMapper objectMapper;
-    private static final Logger logger = LoggerFactory.getLogger(SttService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptProcessorService.class);
     private final SnapReviewService snapReviewService;
 
     @KafkaListener(topics = "snap-review", groupId = "snap-review-group")
