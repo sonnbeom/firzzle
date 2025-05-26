@@ -70,6 +70,13 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     
     //implementation("io.netty:netty-resolver-dns:4.1.100.Final")
+    
+    // === S3 ===
+    implementation platform('software.amazon.awssdk:bom:2.25.7')
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:auth'
+    implementation 'software.amazon.awssdk:regions'
+    implementation 'software.amazon.awssdk:netty-nio-client'
 
     // === 테스트 ===
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

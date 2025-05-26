@@ -8,7 +8,7 @@ import com.firzzle.common.library.StringManager;
 import com.firzzle.stt.dto.LlmRequest;
 import com.firzzle.stt.kafka.producer.SttConvertedProducer;
 import com.firzzle.stt.service.ContentService;
-import com.firzzle.stt.service.SttService;
+import com.firzzle.stt.service.ScriptProcessorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class SttConsumer {
-    private final SttService sttService;
+    private final ScriptProcessorService sttService;
     private final ContentService contentService;
     private final SttConvertedProducer sttConvertedProducer;
 
