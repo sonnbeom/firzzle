@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="LinkedInProfileMapper">
+
+    <!-- LinkedIn 프로필 정보 저장 -->
+    <insert id="insertLinkedInProfile" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="profileSeq" keyColumn="profile_seq">
+        INSERT INTO fb_ai_linkedin_profiles (
+            linkedin_url,
+            name,
+            headline,
+            company,
+            location,
+            summary,
+            profile_image_url,
+            relevance,
+            indate,
+            ldate,
+            delete_yn
+        ) VALUES (
+                     #{linkedinUrl},
+                     #{name},
+                     #{headline},
+                     #{company},
+                     #{location},
+                     #{summary},
+                     #{profileImageUrl},
+                     #{relevance},
+                     #{indate},
+                     #{ldate},
+                     'N'
+                 )
+    </insert>
+
+    <!-- LinkedIn 프로필 경력 정보 저장 -->
+    <insert id="insertLinkedInExperience" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="experienceSeq" keyColumn="experience_seq">
+        INSERT INTO fb_ai_linkedin_experiences (
+            profile_seq,
+            title,
+            company,
+            duration,
+            description,
+            indate
+        ) VALUES (
+                     #{profileSeq},
+                     #{title},
+                     #{company},
+                     #{duration},
+                     #{description},
+                     #{indate}
+                 )
+    </insert>
+
+    <!-- LinkedIn 프로필 학력 정보 저장 -->
+    <insert id="insertLinkedInEducation" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="educationSeq" keyColumn="education_seq">
+        INSERT INTO fb_ai_linkedin_educations (
+            profile_seq,
+            school,
+            degree,
+            field_of_study,
+            duration,
+            indate
+        ) VALUES (
+                     #{profileSeq},
+                     #{school},
+                     #{degree},
+                     #{fieldOfStudy},
+                     #{duration},
+                     #{indate}
+                 )
+    </insert>
+
+    <!-- LinkedIn 프로필 스킬 정보 저장 -->
+    <insert id="insertLinkedInSkill" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="skillSeq" keyColumn="skill_seq">
+        INSERT INTO fb_ai_linkedin_skills (
+            profile_seq,
+            skill_name,
+            indate
+        ) VALUES (
+                     #{profileSeq},
+                     #{skillName},
+                     #{indate}
+                 )
+    </insert>
+
+    <!-- LinkedIn URL로 프로필 조회 -->
+    <select id="selectProfileByLinkedInUrl" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            profile_seq as profile_seq,
+            linkedin_url as linkedin_url,
+            name as name,
+            headline as headline,
+            company as company,
+            location as location,
+            summary as summary,
+            profile_image_url as profile_image_url,
+            relevance as relevance,
+            indate as indate,
+            ldate as ldate,
+            delete_yn as delete_yn
+        FROM
+            fb_ai_linkedin_profiles
+        WHERE
+            linkedin_url = #{linkedinUrl}
+          AND delete_yn = 'N'
+    </select>
+
+    <!-- LinkedIn 프로필 목록 조회 (페이지네이션) -->
+    <select id="selectLinkedInProfiles" parameterType="RequestBox" resultType="DataBox">
+        <include refid="PageMapper.spage"/>
+        SELECT
+        <include refid="PageMapper.sorder"/>
+        <if test="p_order != null and p_order != ''">
+            ORDER BY sub.${p_order.substring(2)} ${p_sortorder}
+        </if>
+        <if test="p_order == null or p_order == ''">
+            ORDER BY sub.profile_seq DESC
+        </if>
+        <include refid="PageMapper.eorder"/>
+        sub.*
+        FROM
+        (
+        SELECT
+        profile_seq as profile_seq,
+        linkedin_url as linkedin_url,
+        name as name,
+        headline as headline,
+        company as company,
+        location as location,
+        summary as summary,
+        profile_image_url as profile_image_url,
+        relevance as relevance,
+        indate as indate,
+        ldate as ldate,
+        delete_yn as delete_yn
+        FROM
+        fb_ai_linkedin_profiles
+        WHERE
+        delete_yn = 'N'
+        <if test="company != null and company != ''">
+            AND company LIKE CONCAT('%', #{company}, '%')
+        </if>
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="profileSeq != null">
+            AND profile_seq = #{profileSeq}
+        </if>
+        ) sub
+        <include refid="PageMapper.epage"/>
+    </select>
+
+    <!-- LinkedIn 프로필 총 개수 조회 -->
+    <select id="selectLinkedInProfilesCount" parameterType="RequestBox" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM
+        fb_ai_linkedin_profiles
+        WHERE
+        delete_yn = 'N'
+        <if test="company != null and company != ''">
+            AND company LIKE CONCAT('%', #{company}, '%')
+        </if>
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="profileSeq != null">
+            AND profile_seq = #{profileSeq}
+        </if>
+    </select>
+
+    <!-- LinkedIn 프로필 정보 조회 -->
+    <select id="selectProfileByProfileSeq" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            profile_seq,
+            linkedin_url,
+            name,
+            headline,
+            company,
+            location,
+            summary,
+            profile_image_url,
+            relevance,
+            indate,
+            ldate,
+            delete_yn
+        FROM
+            fb_ai_linkedin_profiles
+        WHERE
+            profile_seq = #{profileSeq}
+            AND delete_yn = 'N'
+    </select>
+
+    <!-- LinkedIn 프로필 경력 정보 목록 조회 -->
+    <select id="selectExperiencesByProfileSeq" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            experience_seq as experience_seq,
+            profile_seq as profile_seq,
+            title as title,
+            company as company,
+            duration as duration,
+            description as description,
+            indate as indate
+        FROM
+            fb_ai_linkedin_experiences
+        WHERE
+            profile_seq = #{profileSeq}
+        ORDER BY
+            indate DESC
+    </select>
+
+    <!-- LinkedIn 프로필 학력 정보 목록 조회 -->
+    <select id="selectEducationsByProfileSeq" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            education_seq as education_seq,
+            profile_seq as profile_seq,
+            school as school,
+            degree as degree,
+            field_of_study as field_of_study,
+            duration as duration,
+            indate as indate
+        FROM
+            fb_ai_linkedin_educations
+        WHERE
+            profile_seq = #{profileSeq}
+        ORDER BY
+            indate DESC
+    </select>
+
+    <!-- LinkedIn 프로필 스킬 목록 조회 -->
+    <select id="selectSkillsByProfileSeq" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            skill_seq as skill_seq,
+            profile_seq as profile_seq,
+            skill_name as skill_name,
+            indate as indate
+        FROM
+            fb_ai_linkedin_skills
+        WHERE
+            profile_seq = #{profileSeq}
+        ORDER BY
+            indate ASC
+    </select>
+
+    <!-- LinkedIn 프로필 삭제 (논리적 삭제) -->
+    <update id="updateLinkedInProfileDeleteYn" parameterType="RequestBox">
+        UPDATE
+            fb_ai_linkedin_profiles
+        SET
+            delete_yn = 'Y',
+            ldate = #{ldate}
+        WHERE
+            profile_seq = #{profileSeq}
+    </update>
+
+    <!-- 키워드로 LinkedIn 프로필 검색 -->
+    <select id="searchLinkedInProfiles" parameterType="RequestBox" resultType="DataBox">
+        <include refid="PageMapper.spage"/>
+        SELECT
+        <include refid="PageMapper.sorder"/>
+        <if test="p_order != null and p_order != ''">
+            ORDER BY sub.${p_order} ${p_sortorder}
+        </if>
+        <if test="p_order == null or p_order == ''">
+            ORDER BY sub.relevance DESC
+        </if>
+        <include refid="PageMapper.eorder"/>
+        sub.*
+        FROM
+        (
+        SELECT
+        p.profile_seq as profile_seq,
+        p.linkedin_url as linkedin_url,
+        p.name as name,
+        p.headline as headline,
+        p.company as company,
+        p.location as location,
+        p.summary as summary,
+        p.profile_image_url as profile_image_url,
+        p.relevance as relevance,
+        p.indate as indate,
+        p.ldate as ldate
+        FROM
+        fb_ai_linkedin_profiles p
+        LEFT JOIN
+        fb_ai_linkedin_skills s ON p.profile_seq = s.profile_seq
+        WHERE
+        p.delete_yn = 'N'
+        <if test="keyword != null and keyword != ''">
+            AND (
+            p.name LIKE CONCAT('%', #{keyword}, '%')
+            OR p.headline LIKE CONCAT('%', #{keyword}, '%')
+            OR p.company LIKE CONCAT('%', #{keyword}, '%')
+            OR p.summary LIKE CONCAT('%', #{keyword}, '%')
+            OR s.skill_name LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        GROUP BY
+        p.profile_seq
+        ) sub
+        <include refid="PageMapper.epage"/>
+    </select>
+
+    <!-- 키워드로 검색된 LinkedIn 프로필 총 개수 -->
+    <select id="searchLinkedInProfilesCount" parameterType="RequestBox" resultType="int">
+        SELECT
+        COUNT(DISTINCT p.profile_seq)
+        FROM
+        fb_ai_linkedin_profiles p
+        LEFT JOIN
+        fb_ai_linkedin_skills s ON p.profile_seq = s.profile_seq
+        WHERE
+        p.delete_yn = 'N'
+        <if test="keyword != null and keyword != ''">
+            AND (
+            p.name LIKE CONCAT('%', #{keyword}, '%')
+            OR p.headline LIKE CONCAT('%', #{keyword}, '%')
+            OR p.company LIKE CONCAT('%', #{keyword}, '%')
+            OR p.summary LIKE CONCAT('%', #{keyword}, '%')
+            OR s.skill_name LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+    </select>
+</mapper>

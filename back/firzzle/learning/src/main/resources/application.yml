@@ -1,0 +1,293 @@
+# 공통 설정 (common)
+spring:
+  application:
+    name: learning-server
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  # S3 이미지 저장
+  cloud:
+    aws:
+      credentials:
+        access-key: ENC(MH3DsW5DO9DSw5aP/gdY/o1cjnNi7QSEAnnQl4aY5FbrcUYsJdiBlXcUknRJEIML)
+        secret-key: ENC(7VVjL2sGQ2LJyrum4kIQtV4iR4lmX0kujH9A1pk3UnEHylYousond8y8Bl0FKflNGtZW5l5IPKFslQhv257fNQ==)
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: ENC(AsfY/vDz1TICh9gXi/tN7HR+3l1/bTqe1ZiEAJrYoX0=)
+
+aws:
+  s3:
+    bucket: ENC(AsfY/vDz1TICh9gXi/tN7HR+3l1/bTqe1ZiEAJrYoX0=)
+    baseUrl: ENC(rDEAsV6F9TSsxfRew5GM+A9HMwtk/SI7M9jGfiL9v/gE2My+/qGMU9ANT8bc2mWGrBjfEbXBkk4LccGpR4GO4A==)
+    enabled: true # 애플리케이션 설정
+
+app:
+  file-storage:
+    upload-dir: /data/firzzle/uploads
+
+# Swagger/OpenAPI 설정
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  packages-to-scan: com.firzzle.learning.controller, com.firzzle.learning.ai.controller, com.firzzle.learning.image.controller, com.firzzle.learning.expert.controller
+
+#Jasypt 설정
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+  secret-key: ${JASYPT_SECRET_KEY}
+
+# JWT 설정
+jwt:
+  secret: your-secret-key-should-be-at-least-32-bytes-long
+
+openai:
+  api:
+    key: ENC(Plt2GhFueGU1jjrNurLTJtCefqnyh2I3nWoNuc/6CcGAu7xSHKYFba8bBDeVVu5WYwFbhlyB2YjNyfOG/VC7uLmGCkzREpOgdDXo3YutBA66kGe1gCE8wIQ629xHRCb0KGS/8eVKeJnL/Y9fM8bItWppom8B4R6R7st/wvdRF5Z8Z3LF1t15QkaxlKNDi65RtFYEyRxysXYx2jOVEd3ymbzHHcCu/LCNPvq+e1KBDRl1fQuwLgE//QeiM1stDW3o)
+    url: https://api.openai.com
+
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
+server:
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+linkedin:
+  crawler:
+    max-profiles: 10  # 최대 크롤링 프로필 수
+    timeout-seconds: 600  # 크롤링 타임아웃 (초)
+    user-agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
+    enabled: true
+
+# 공통 설정에 추가
+apify:
+  api:
+    token: ENC(QDmoZIyqqBHd17WQ15fMG3QLp/Ad6pFudh/fWKeZV4gTptAAsSRxXRZFuTF6DjooamlSvWcDvJ0QgXhCBFpdkQ==)  # Jasypt로 암호화하여 설정
+  actor:
+    id: ENC(G1LXa9NAMrchgVHI9MKGe2Mn2JWWE6c0I0ApU70lUjSi5q13JU/6N/L4506qcNb9)  # Apify에서 사용할 액터 ID
+
+---
+# 로컬 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+#    jdbc-url: jdbc:p6spy:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8  # 로컬에서만 query문 로깅 포맷팅을 위해 jdbc:p6spy:mysql 사용
+#    jdbc-url: ENC(OvwLQr1WRx28Jf8teIXvvLXBlxMgNu0eP1KixLtefm5/bf0S7dHl1O5ETSNxw/7va+UrhvZjnt8yZOEi8jYIIQQNvZTXC2W7fJO9gm5jAQGbekBgF604D9FPOZUwxH/5wT79h4i8mJW+P867NgOM965KCxSTMx+nFCLQVmXyceyIQKHiaYJK1c1+jbpHCS0b)
+    jdbc-url: jdbc:p6spy:mysql://localhost:3306/firzzle_ai_playground?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+#    username: ENC(4F57/zxTR7+cKbKWB9GOfD5lSWPM66+bnkDcIN44FYI=)
+    username: root
+#    password: ENC(gvdMztDAGBXU3MgJPamk6hN4VU0kIzf7fkKvqEflgkA=)
+    password: 4245
+    maximum-pool-size: 10
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
+    consumer:
+      group-id: learning-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8084
+
+# Eureka 설정
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(gcqgrb530BaHAxfrXv+H99Truf7GbhCtAnVug3PXHz8rD8pTQgy3sMOl7rhKPFpY)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Eureka 통해 LLM 서비스 접근
+llm:
+  service:
+    url: ENC(T6+waASraE7AHZaf2daM1V4oEpStJAhLWnNhT7HBvvENbwTYkrPcG9/Mg7mOFxJP)  # 
+
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.learning.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+# P6Spy 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+
+logging:
+  config: classpath:logback/logback-local.xml
+
+# Kafka 토픽 설정
+app:
+  kafka:
+    topic:
+      linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
+  url:
+    base: ENC(7sOLzFedm3q4VS1FLRsa7YPZ7tB3IHHC7mNKqIB+Bbagkmux2AG+lUjUo0HNyd0U)
+
+---
+# 개발 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 10
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ENC(AuzpvRjsfNfXV5Re6NFHzTYnHPJYaRToi9aEpi4mjZg=)
+    consumer:
+      group-id: learning-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+
+# Eureka 설정
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Eureka 통해 LLM 서비스 접근
+llm:
+  service:
+    url: ENC(v54bCDm3EFz+yF5tkeRzvAM/TuCC99wOlv7k0o78ctf3ygtKXOzM6IHspd24WN6z)  # 
+
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.learning.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+# P6Spy 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
+logging:
+  config: classpath:logback/logback-dev.xml
+
+# Kafka 토픽 설정
+app:
+  kafka:
+    topic:
+      linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
+  url:
+    base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)
+
+---
+# 프로덕션 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: production
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    jdbc-url: ENC(ApPE5/heucpTHeTJ6+Axjilq7GH8GkObxfm5QR+BnOQg3LiADkQOVETlEKQYFcUjuMSs8kL31EgPqZsvKLt9AZKw7H+cswqMIofHrk+8ZjN+oZy9rbFAcs1vpFR+LyUeBTR8xcQJN+2fXDqogdXWk/NgcoGolAnjgYXhKJT09YI=)
+    username: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    password: ENC(W0ssI5QXuEkllv3MHnpW5SQ7zkbUoHs+2xX9DngxXJI=)
+    maximum-pool-size: 20
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ENC(XJ6DY46VjPc79rxdBRrA0QjyyzBVYQdeBtagp1pE8hlwUEBAqicJj7J6iiKJe8so)
+    consumer:
+      group-id: learning-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+server:
+  port: 8080
+
+# Eureka 설정
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ENC(spKgsrOQzjPYIfzNCX3o9c+mzyWel4+5R1g8oUDOHSzeruJ0KI6i1yueMvxoYYomaFswLccx4QM596V7LROVHg==)
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Eureka 통해 LLM 서비스 접근
+llm:
+  service:
+    url: ENC(v54bCDm3EFz+yF5tkeRzvAM/TuCC99wOlv7k0o78ctf3ygtKXOzM6IHspd24WN6z)  # 
+
+# MyBatis 설정.
+mybatis:
+  mapper-locations: classpath:mappers/**/*.xml
+  type-aliases-package: com.firzzle.learning.dto,com.firzzle.common.library
+  configuration:
+    map-underscore-to-camel-case: true
+  type-aliases:
+    - alias: DataBox
+      type: com.firzzle.common.library.DataBox
+    - alias: RequestBox
+      type: com.firzzle.common.library.RequestBox
+
+# P6Spy 설정
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: false
+
+logging:
+  config: classpath:logback/logback-production.xml
+
+# Kafka 토픽 설정
+app:
+  kafka:
+    topic:
+      linkedin-profile-crawled: linkedin-profile-crawled  # LinkedIn 프로필 크롤링 이벤트 토픽
+  url:
+    base: ENC(FCZgI6VuDw9xSrWyDvoOwO8TdZJF3lknVW9zg0KCMqImZAPg7wW74XeXm2gxoUbL)

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firzzle.llm.mapper.ChatMapper">
+
+    <insert id="insertChat" parameterType="com.firzzle.llm.dto.ChatDTO">
+        INSERT INTO fb_ai_chats (
+            content_seq, user_seq, question, answer, indate
+        ) VALUES (
+            #{contentSeq}, #{userSeq}, #{question}, #{answer}, #{indate}
+        )
+    </insert>
+
+	<select id="selectChatsByCursor" resultType="com.firzzle.llm.dto.ChatDTO">
+	    SELECT
+	        chat_seq,
+	        question,
+	        answer,
+	        indate
+	    FROM
+	        fb_ai_chats
+	    WHERE
+	        content_seq = #{contentSeq}
+	        AND user_seq = #{userSeq}
+	        <if test="lastIndate != null">
+	            AND indate &lt; #{lastIndate}
+	        </if>
+	    ORDER BY
+	        indate DESC
+	    LIMIT #{limit}
+	</select>
+	
+	<select id="selectRandomUnsolvedExam" resultType="com.firzzle.llm.dto.ExamsDTO">
+	    SELECT *
+	    FROM fb_ai_exams e
+	    WHERE e.content_seq = #{contentSeq}
+	      AND NOT EXISTS (
+	          SELECT 1
+	          FROM fb_ai_exams_answer a
+	          WHERE a.exam_seq = e.exam_seq
+	            AND a.user_seq = #{userSeq}
+	      )
+	    ORDER BY RAND()
+	    LIMIT 1
+	</select>
+
+</mapper>

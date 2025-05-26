@@ -1,0 +1,18 @@
+# 서버 (HTTP 헤더 전달 전략, UTF-8)
+server:
+  port: 8761
+  forward-headers-strategy: native
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: eureka-server
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false

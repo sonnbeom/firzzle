@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="AuthMapper">
+
+    <!-- 이메일로 사용자 조회 -->
+    <select id="selectUserByEmail" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            user_seq,
+            uuid,
+            username,
+            email,
+            password,
+            name,
+            role,
+            profile_image_url,
+            indate,
+            ldate,
+            last_login,
+            active_yn,
+            delete_yn,
+            signup_type,
+            provider_code
+        FROM
+            fb_ai_users
+        WHERE
+            email = #{email}
+          AND delete_yn = 'N'
+    </select>
+
+    <!-- 사용자명으로 사용자 조회 -->
+    <select id="selectUserByUsername" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            user_seq,
+            uuid,
+            username,
+            email,
+            password,
+            name,
+            role,
+            profile_image_url,
+            indate,
+            ldate,
+            last_login,
+            active_yn,
+            delete_yn,
+            signup_type,
+            provider_code
+        FROM
+            fb_ai_users
+        WHERE
+            username = #{username}
+          AND delete_yn = 'N'
+    </select>
+
+    <!-- UUID로 사용자 조회 -->
+    <select id="selectUserByUuid" parameterType="RequestBox" resultType="DataBox">
+        SELECT
+            user_seq,
+            uuid,
+            username,
+            email,
+            password,
+            name,
+            role,
+            profile_image_url,
+            indate,
+            ldate,
+            last_login,
+            active_yn,
+            delete_yn,
+            signup_type,
+            provider_code
+        FROM
+            fb_ai_users
+        WHERE
+            uuid = #{uuid}
+          AND delete_yn = 'N'
+    </select>
+
+    <!-- 사용자 등록 -->
+    <insert id="insertUser" parameterType="RequestBox">
+        INSERT INTO fb_ai_users (
+            uuid,
+            username,
+            email,
+            password,
+            name,
+            role,
+            profile_image_url,
+            indate,
+            ldate,
+            last_login,
+            active_yn,
+            delete_yn,
+            signup_type,
+            provider_code
+        ) VALUES (
+                     #{uuid},
+                     #{username},
+                     #{email},
+                     #{password, jdbcType=VARCHAR},
+                     #{name},
+                     #{role},
+                     #{profile_image_url, jdbcType=VARCHAR},
+                     #{indate},
+                     #{ldate},
+                     #{last_login},
+                     'Y',
+                     'N',
+                     #{signup_type},
+                     #{provider_code, jdbcType=VARCHAR}
+                 )
+    </insert>
+
+    <!-- 사용자 정보 업데이트 -->
+    <update id="updateUser" parameterType="RequestBox">
+        UPDATE fb_ai_users
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="role != null">role = #{role},</if>
+            <if test="profile_image_url != null">profile_image_url = #{profile_image_url},</if>
+            <if test="last_login != null">last_login = #{last_login},</if>
+            <if test="ldate != null">ldate = #{ldate},</if>
+            <if test="active_yn != null">active_yn = #{active_yn}</if>
+        </set>
+        WHERE uuid = #{uuid}
+    </update>
+
+</mapper>

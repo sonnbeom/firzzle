@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ContentMapper">
+
+    <!-- 공통 컬럼 정의 -->
+    <sql id="contentColumns">
+        C.content_seq,
+        C.video_id,
+        C.url,
+        C.title,
+        C.description,
+        C.category,
+        C.thumbnail_url,
+        C.duration,
+        C.process_status,
+        C.indate,
+        C.completed_at,
+        C.delete_yn,
+        (SELECT GROUP_CONCAT(tag SEPARATOR ',') FROM fb_ai_content_tags WHERE content_seq = C.content_seq) AS tags
+    </sql>
+
+    <!-- 콘텐츠 등록 -->
+    <insert id="insertContent" parameterType="RequestBox" useGeneratedKeys="true" keyProperty="contentSeq">
+        INSERT INTO fb_ai_contents (
+            video_id,
+            url,
+            title,
+            description,
+            category,
+            thumbnail_url,
+            duration,
+            process_status,
+            indate
+        ) VALUES (
+                     #{videoId},
+                     #{url},
+                     #{title},
+                     #{description},
+                     #{category},
+                     #{thumbnailUrl},
+                     #{duration},
+                     #{processStatus},
+                     #{indate}
+                 )
+    </insert>
+
+    <!-- 사용자-콘텐츠 매핑 등록 -->
+    <insert id="insertUserContent" parameterType="RequestBox">
+        INSERT INTO fb_ai_user_contents (
+            user_seq,
+            content_seq,
+            progress,
+            indate,
+            last_accessed_at
+        ) VALUES (
+                     get_user_seq_by_uuid(#{uuid}),
+                     #{contentSeq},
+                     0,
+                     #{indate},
+                     #{indate}
+                 )
+    </insert>
+
+    <!-- 콘텐츠 태그 등록 -->
+    <insert id="insertContentTags" parameterType="RequestBox">
+        INSERT INTO fb_ai_content_tags (
+        content_seq,
+        tag
+        ) VALUES
+        <foreach collection="tags" item="tag" separator=",">
+            (#{contentSeq}, #{tag})
+        </foreach>
+    </insert>
+
+    <!-- 콘텐츠 정보 조회 (DataBox 반환) -->
+    <select id="selectContentDataBoxByUuidContentSeq" resultType="DataBox" parameterType="RequestBox">
+        SELECT
+        <include refid="contentColumns" />
+        , UC.user_content_seq
+        FROM
+        fb_ai_contents C
+        JOIN
+        fb_ai_user_contents UC ON C.content_seq = UC.content_seq
+        WHERE
+        C.content_seq = #{contentSeq}
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
+        AND C.delete_yn = 'N'
+    </select>
+
+    <!-- 사용자 콘텐츠 정보를 통해 콘텐츠 정보 조회 (DataBox 반환) -->
+    <select id="selectContentByUserContentSeq" resultType="DataBox" parameterType="RequestBox">
+        SELECT
+        <include refid="contentColumns" />,
+        UC.progress as progress,
+        UC.last_accessed_at as last_accessed_at
+        , UC.user_content_seq
+        FROM
+        fb_ai_user_contents UC
+        JOIN
+        fb_ai_contents C ON UC.content_seq = C.content_seq
+        WHERE
+        UC.user_content_seq = #{userContentSeq}
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
+        AND C.delete_yn = 'N'
+    </select>
+
+    <!-- YouTube ID로 콘텐츠 정보 조회 -->
+    <select id="selectContentByVideoId" resultType="DataBox" parameterType="RequestBox">
+        SELECT
+        <include refid="contentColumns" />
+        FROM
+        fb_ai_contents C
+        WHERE
+        video_id = #{videoId}
+        AND process_status = 'C'
+        AND delete_yn = 'N'
+    </select>
+
+    <!-- 사용자-콘텐츠 매핑 개수 조회 -->
+    <select id="selectUserContentCount" resultType="int" parameterType="RequestBox">
+        SELECT
+            COUNT(*)
+        FROM
+            fb_ai_user_contents UC
+                JOIN
+            fb_ai_users U ON UC.user_seq = U.user_seq
+        WHERE
+            UC.content_seq = #{contentSeq}
+          AND U.uuid = #{uuid}
+          AND U.delete_yn = 'N'
+    </select>
+
+    <!-- 콘텐츠 목록 조회 (DataBox 반환) - PageMapper 활용 -->
+    <select id="selectContentListDataBox" resultType="DataBox" parameterType="RequestBox">
+        <include refid="PageMapper.spage"/>
+        SELECT
+        <include refid="PageMapper.sorder"/>
+        ORDER BY
+        <choose>
+            <when test="p_order != null and p_order != ''">
+                <choose>
+                    <when test="p_order == 'indate'">C.indate</when>
+                    <when test="p_order == 'title'">C.title</when>
+                    <otherwise>C.indate</otherwise>
+                </choose>
+                <choose>
+                    <when test="p_sortorder != null and p_sortorder == 'ASC'">ASC</when>
+                    <otherwise>DESC</otherwise>
+                </choose>
+            </when>
+            <otherwise>C.indate DESC</otherwise>
+        </choose>
+        <include refid="PageMapper.eorder"/>
+        <include refid="contentColumns" />
+        , UC.user_content_seq
+        FROM
+        fb_ai_contents C
+        JOIN
+        fb_ai_user_contents UC ON C.content_seq = UC.content_seq
+        WHERE
+        C.delete_yn = 'N'
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
+        <if test="keyword != null and keyword != ''">
+            AND (
+            C.title LIKE CONCAT('%', #{keyword}, '%')
+            OR C.description LIKE CONCAT('%', #{keyword}, '%')
+            OR EXISTS (
+            SELECT 1 FROM fb_ai_content_tags T
+            WHERE T.content_seq = C.content_seq
+            AND T.tag LIKE CONCAT('%', #{keyword}, '%')
+            )
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND C.category = #{category}
+        </if>
+        <choose>
+            <when test="status != null and status != ''">
+                AND C.process_status = #{status}
+            </when>
+            <otherwise>
+                AND C.process_status = 'C'
+            </otherwise>
+        </choose>
+        <include refid="PageMapper.epage"/>
+    </select>
+
+    <!-- 콘텐츠 개수 조회 -->
+    <select id="selectContentCount" resultType="int" parameterType="RequestBox">
+        SELECT
+        COUNT(*)
+        FROM
+        fb_ai_contents C
+        JOIN
+        fb_ai_user_contents UC ON C.content_seq = UC.content_seq
+        WHERE
+        C.delete_yn = 'N'
+        AND UC.user_seq = get_user_seq_by_uuid(#{uuid})
+        <if test="keyword != null and keyword != ''">
+            AND (
+            C.title LIKE CONCAT('%', #{keyword}, '%')
+            OR C.description LIKE CONCAT('%', #{keyword}, '%')
+            OR EXISTS (
+            SELECT 1 FROM fb_ai_content_tags T
+            WHERE T.content_seq = C.content_seq
+            AND T.tag LIKE CONCAT('%', #{keyword}, '%')
+            )
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND C.category = #{category}
+        </if>
+        <if test="status != null and status != ''">
+            AND C.process_status = #{status}
+        </if>
+    </select>
+
+    <!-- 콘텐츠 정보 수정 (RequestBox 사용) -->
+    <update id="updateContentBox" parameterType="RequestBox">
+        UPDATE fb_ai_contents
+        SET
+        title = #{title},
+        description = #{description},
+        category = #{category}
+        <if test="thumbnailUrl != null and thumbnailUrl != ''">, thumbnail_url = #{thumbnailUrl}</if>
+        <if test="duration != null and duration != ''">, duration = #{duration}</if>
+        WHERE
+        content_seq = #{contentSeq}
+    </update>
+
+    <!-- 콘텐츠 삭제 -->
+    <update id="deleteContent" parameterType="RequestBox">
+        UPDATE fb_ai_contents
+        SET delete_yn = 'Y'
+        WHERE content_seq = #{contentSeq}
+    </update>
+
+    <!-- 콘텐츠 분석 상태 업데이트 (RequestBox 사용) -->
+    <update id="updateAnalysisStatusBox" parameterType="RequestBox">
+        UPDATE fb_ai_contents
+        SET
+        process_status = #{status}
+        <if test="status == 'C'">, completed_at = #{completedAt}</if>
+        WHERE
+        content_seq = #{contentSeq}
+    </update>
+
+    <!-- YouTube ID로 콘텐츠 존재 여부 확인 -->
+    <select id="selectCountByVideoId" resultType="int" parameterType="RequestBox">
+        SELECT COUNT(*)
+        FROM fb_ai_contents
+        WHERE video_id = #{videoId}
+          AND delete_yn = 'N'
+    </select>
+
+    <!-- 태그별 콘텐츠 목록 조회 (DataBox 반환) - PageMapper 활용 -->
+    <select id="selectContentListByTagDataBox" resultType="DataBox" parameterType="RequestBox">
+        <include refid="PageMapper.spage"/>
+        SELECT
+        <include refid="PageMapper.sorder"/>
+        ORDER BY C.indate DESC
+        <include refid="PageMapper.eorder"/>
+        <include refid="contentColumns" />
+        FROM
+        fb_ai_contents C
+        WHERE
+        C.delete_yn = 'N'
+        AND EXISTS (
+        SELECT 1 FROM fb_ai_content_tags T
+        WHERE T.content_seq = C.content_seq
+        AND T.tag = #{tag}
+        )
+        <if test="keyword != null and keyword != ''">
+            AND (
+            C.title LIKE CONCAT('%', #{keyword}, '%')
+            OR C.description LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND C.category = #{category}
+        </if>
+        <if test="status != null and status != ''">
+            AND C.process_status = #{status}
+        </if>
+        <include refid="PageMapper.epage"/>
+    </select>
+
+    <!-- 태그별 콘텐츠 개수 조회 -->
+    <select id="selectContentCountByTag" resultType="int" parameterType="RequestBox">
+        SELECT
+        COUNT(*)
+        FROM
+        fb_ai_contents C
+        WHERE
+        C.delete_yn = 'N'
+        AND EXISTS (
+        SELECT 1 FROM fb_ai_content_tags T
+        WHERE T.content_seq = C.content_seq
+        AND T.tag = #{tag}
+        )
+        <if test="keyword != null and keyword != ''">
+            AND (
+            C.title LIKE CONCAT('%', #{keyword}, '%')
+            OR C.description LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="category != null and category != ''">
+            AND C.category = #{category}
+        </if>
+        <if test="status != null and status != ''">
+            AND C.process_status = #{status}
+        </if>
+    </select>
+
+    <!-- 콘텐츠 태그 삭제 -->
+    <delete id="deleteContentTags" parameterType="RequestBox">
+        DELETE FROM fb_ai_content_tags
+        WHERE content_seq = #{contentSeq}
+    </delete>
+</mapper>

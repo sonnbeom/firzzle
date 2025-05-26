@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.firzzle.llm.mapper.ContentMapper">
+	<!-- 공통 컬럼 정의 -->
+    <sql id="contentColumns">
+        C.content_seq,
+        C.video_id,
+        C.url,
+        C.title,
+        C.description,
+        C.category,
+        C.thumbnail_url,
+        C.duration,
+        C.process_status,
+        C.indate,
+        C.completed_at,
+        C.delete_yn,
+        (SELECT GROUP_CONCAT(tag SEPARATOR ',') FROM fb_ai_content_tags WHERE content_seq = C.content_seq) AS tags
+    </sql>
+    
+    <insert id="insertContentTags" parameterType="map">
+	    INSERT INTO fb_ai_content_tags (content_seq, tag)
+	    VALUES
+	    <foreach collection="tags" item="tag" separator=",">
+	        (#{contentSeq}, #{tag})
+	    </foreach>
+	</insert>
+	
+	<update id="updateProcessStatusAndCompletedAtByContentSeq" parameterType="map">
+	    UPDATE fb_ai_contents
+	    SET 
+	        process_status = #{processStatus},
+	        completed_at = #{completedAt}
+	    WHERE content_seq = #{contentSeq}
+	</update>
+
+	<select id="selectContentSummaryByContentSeq" parameterType="long" resultType="com.firzzle.llm.dto.ContentDTO">
+	    SELECT
+	        url,
+	        title,
+	        thumbnail_url
+	    FROM fb_ai_contents
+	    WHERE content_seq = #{contentSeq}
+	</select>
+	
+	<select id="selectRecommendContentListBySeqList"
+        parameterType="list"
+        resultType="com.firzzle.llm.dto.RecommendContentDTO">
+	    SELECT
+	        C.content_seq,
+	        C.video_id,
+	        C.url,
+	        C.title,
+	        C.description,
+	        C.category AS content_type,
+	        C.thumbnail_url,
+	        C.duration,
+	        C.process_status,
+	        C.indate,
+	        C.completed_at,
+	        C.delete_yn,
+	        (SELECT GROUP_CONCAT(tag SEPARATOR ',') 
+	         FROM fb_ai_content_tags 
+	         WHERE content_seq = C.content_seq) AS tags
+	    FROM fb_ai_contents C
+	    WHERE C.content_seq IN
+	    <foreach collection="list" item="seq" open="(" separator="," close=")">
+	        #{seq}
+	    </foreach>
+	</select>
+
+	<delete id="deleteUserContent" parameterType="long">
+		DELETE FROM fb_ai_user_contents
+		WHERE user_content_seq = #{userContentSeq}
+	</delete>
+
+	<update id="updateDeleteYnByContentSeq" parameterType="map">
+		UPDATE fb_ai_contents
+		SET delete_yn = #{deleteYn}
+		WHERE content_seq = #{contentSeq}
+	</update>
+
+	<select id="selectUserContentSeqsByContentSeq" parameterType="long" resultType="long">
+		SELECT user_content_seq
+		FROM fb_ai_user_contents
+		WHERE content_seq = #{contentSeq}
+	</select>
+</mapper>
